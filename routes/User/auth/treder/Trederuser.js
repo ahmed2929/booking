@@ -23,7 +23,7 @@ Router.put('/register',
         }).catch(err=>{
             
             
-            return next(err)
+           throw err
         
         
         })
@@ -50,7 +50,7 @@ Router.put('/register',
                 return Promise.reject('phone allready exists!');
             }
         }).catch(err=>{
-            return next(err)
+            throw err
         })
     })
 ]
