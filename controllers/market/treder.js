@@ -142,7 +142,7 @@ var editAdById= async (req,res,next)=>{
         return next(error) ; 
     }
     const {country,city,streetAdress,catigory,price,services,NumOfRooms,details,title,beds,beach}=req.body;
-
+    console.debug(catigory)
     if(!Number(price)){
         const error = new Error('invalid price');
         error.statusCode = 404 ;
@@ -152,6 +152,7 @@ var editAdById= async (req,res,next)=>{
 
     const imageUrl = req.files;
     const catigo = await Catigory.findById(catigory);
+    console.debug(catigo)
     if(!catigo){
         const error = new Error('catigory not found');
         error.statusCode = 404 ;
@@ -179,12 +180,12 @@ var editAdById= async (req,res,next)=>{
 
 
 
-
+    console.debug(AD.catigory.toString()!=catigory.toString())
     if(AD.catigory.toString()!=catigory.toString()){
 
         const cato=await Catigory.findById(AD.catigory)
-        const catIndexinArray=cato.ads.indexOfAD.catigory.toString()
-           if (userIndex > -1) {
+        const catIndexinArray=cato.ads.indexOf(catigory.toString())
+           if (catIndexinArray > -1) {
                cato.ads.splice(catIndexinArray, 1);
              }
            await cato.save()
@@ -192,6 +193,7 @@ var editAdById= async (req,res,next)=>{
            const catonew=await Catigory.findById(catigory)
            catonew.ads.push(AD._id)
               await catonew.save()
+
             }
 
 
