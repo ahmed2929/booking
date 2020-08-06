@@ -5,7 +5,7 @@ const {validationResult} = require('express-validator');
 const ADS = require('../../models/ADS');
 //const Catigory=require('../../models/Catigory');
 //console.debug( Catigory)
-const Catigory =require('../../models/Catigory')
+const Catigory =require('../../models/catigory')
 const { json } = require('body-parser');
 const { countDocuments } = require('../../models/ADS');
 const fs = require('fs');
