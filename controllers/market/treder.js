@@ -45,7 +45,7 @@ var CreateAppartment=async (req,res,next)=>{
     const imageUrl = req.files;
     const catigo = await Catigory.findById(catigory);
     if(!catigo){
-        const error = new Error('User not Found');
+        const error = new Error('catigory not Found');
         error.statusCode = 404 ;
         return next( error) ;
     }
