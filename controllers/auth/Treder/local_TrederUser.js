@@ -9,7 +9,7 @@ const nodemailerMailgun=require('../../../helpers/sendEmail');
 var register=async (req,res,next)=>{
 
     const errors = validationResult(req);
-    console.debug(errors)
+   // console.debug(errors)
     if(!errors.isEmpty()){
         const error = new Error('validation faild');
         error.statusCode = 422 ;
@@ -36,7 +36,13 @@ var register=async (req,res,next)=>{
         return newUser.save();
     })   
     .then(user=>{
-       return res.status(201).json({state:1,message:'user created',userId:user._id});
+        const token  = jwt.sign(
+            {
+                userId:user._id.toString()
+            },
+            process.env.JWT_PRIVATE_KEY
+        );
+       return res.status(201).json({state:1,message:'user created',userId:user._id,token});
     })
     .catch(err=>{
         if(!err.statusCode){

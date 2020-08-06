@@ -37,7 +37,7 @@ const userSchema = new schema({
     }],
     pendingRequestTo:[{
         type:schema.Types.ObjectId,
-        ref:'Request'
+        ref:'request'
     }],
     notfications:[{
         data:{

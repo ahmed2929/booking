@@ -1,0 +1,202 @@
+baseURL:https://bookingbackendv1.herokuapp.com
+
+NOTE: {/treder} if the acount is treder {/customer} if the acount is for customer
+EXAMPLE:
+1- https://bookingbackendv1.herokuapp.com/auth/user/treder/register
+2-https://bookingbackendv1.herokuapp.com/auth/user/customer/register 
+
+
+autherization:
+-----------------------------------
+
+register:- 
+
+URL/auth/user/{treder OR customer}/register                  
+
+request:
+
+method :PUT
+
+body:json
+{
+    email:String,                                'unique'
+    password:String,
+    comfirmPassword:String,
+    name:String,
+    mobile:String                                'unique'
+}
+
+res:
+{
+    "state": 1,
+    "message": "user created",
+    "userId": "5f22e6590688401a00d50a73",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZjIyZTY1OTA2ODg0MDFhMDBkNTBhNzMiLCJpYXQiOjE1OTYxMjI3MTN9.evIR69yTGUcihEKo0-NcdNdmDrHmyHtpOAegwuv7qJs"
+}
+
+______________________________________________________
+
+login:- 
+
+URL/auth/user/{customer OR treder}/login                 
+
+request:
+
+POST
+
+body:json
+{
+    email:String,
+    password:String,
+    FCM:String
+}
+
+res: example response
+{
+    "state": 1,
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZjIyMzI3ZWUzNWMyMTJlZDRkZTAyNmIiLCJpYXQiOjE1OTYxMjE5NTJ9.gNgYOjctmX6RO20MdftsJjiyaVCAVoKSF-FU6o7Nn0k",
+    "name": "ahmed",
+    "email": "test2@test.com",
+    "mobile": "01129292542",
+    "emailVerfied": false,
+    "mobileVerfied": false,
+    "notfications": [],
+    "pendingRequestTo": [],
+    "status": "customer"
+}
+
+______________________________________________________
+
+logout:-  barber token should be provided
+
+URL/auth/user/customer/logout             
+
+request:
+
+POST
+
+body:json
+{
+    FCM:String
+}
+
+headers:
+{
+    Authorization:hello <token>           "the space after 'hello' must be provided"
+}
+
+res:
+{
+    state: 1 
+    message:'FCM deleted'
+}
+
+
+
+__________________________________________________________
+
+                # forget password logic #
+
+-1 /auth/user/customer/forgetPassword
+request:
+
+POST
+
+body:json
+{
+    email:String
+}
+
+res:
+{
+    "state": 1,
+    "message": "the code has been sent succefuly",
+    "buf": "fad5a1" //this code will be sent via email but it returned now for testing 
+}
+
+2- /auth/user/customer/VerfyCode
+
+request:
+
+POST
+
+body:json
+{
+    email:String
+    code:String
+}
+
+res:
+{
+    "state": 1,
+    "message": "correct code",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI" //this token will be used in rest password
+}
+
+3-/auth/user/customer/PasswordRest  // NOTE this request is valid for 1h from verfiycode runs
+request:
+
+put
+
+body:json
+{
+    password:string,
+    comfirmPassword:string
+}
+
+headers:
+{
+    Authorization:hello <token> //token which returned from verfiycode           "the space after 'hello' must be provided"
+}
+
+res:
+{
+    "state": 1,
+    "message": "password updated"
+}
+
+__________________________________________________________
+
+                # confirm password #
+
+    1- /auth/user/customer/SendactivateEmail
+
+request:
+
+POST
+
+
+headers:
+{
+    Authorization:hello <token>           "the space after 'hello' must be provided"
+}
+
+res:
+{
+    "state": 1,
+    "message": "the code has been sent succefuly",
+    "buf": "47fc5d"
+}
+
+         2- /auth/user/customer/VerfyActiveEmailCode
+
+request:
+
+{
+    code:string
+}
+
+POST
+
+
+headers:
+{
+    Authorization:hello <token>           "the space after 'hello' must be provided"
+}
+
+res:
+{
+    state:1,
+    message:'your email is verfied'
+}
+         

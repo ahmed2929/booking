@@ -36,14 +36,14 @@ const userSchema = new schema({
         type:String
     }],
     MyWonAds:[{ 
-        ADS:{
+        
             type:schema.Types.ObjectId,
-            ref:'ADS'
-        }      
+            ref:'ads'
+             
     }],
     RecivedRequest:[{
         type:schema.Types.ObjectId,
-        ref:'Request'
+        ref:'request'
     }],
     notfications:[{
         data:{
