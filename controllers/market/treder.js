@@ -3,7 +3,8 @@ var bycript = require('bcryptjs');
 var jwt = require('jsonwebtoken');
 const {validationResult} = require('express-validator');
 const ADS = require('../../models/ADS');
-const Catigory=require('../../models/Catigory');
+//const Catigory=require('../../models/Catigory');
+//console.debug( Catigory)
 const { json } = require('body-parser');
 const { countDocuments } = require('../../models/ADS');
 const fs = require('fs');
