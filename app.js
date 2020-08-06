@@ -23,6 +23,7 @@ mongoose.connect(remoteDB,{ useNewUrlParser: true,useUnifiedTopology: true },()=
      
 
 })
+app.use('/images',express.static(path.join(__dirname,'images')));
 
 app=configMiddleware(app);
 
