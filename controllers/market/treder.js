@@ -160,18 +160,46 @@ var editAdById= async (req,res,next)=>{
     let images = [];
 
     if(imageUrl.length!=0){
+
+        AD.images.forEach((i) => {
+            console.debug(i)
+          fs.unlink(path.join(i),(err)=>{
+           console.debug(err)
+          });
+
         AD.images=[]
         imageUrl.forEach(image=>{
             images.push(image.path);
-        
-    });     
-    
-    }else{
+        })
+            
+    });   
+    } else{
         images=AD.images
     }
 
-   
+
+
+
+    if(AD.catigory.toString()!=catigory.toString()){
+
+        const cato=await Catigory.findById(AD.catigory)
+        const catIndexinArray=cato.ads.indexOfAD.catigory.toString()
+           if (userIndex > -1) {
+               cato.ads.splice(catIndexinArray, 1);
+             }
+           await cato.save()
+
+           const catonew=await Catigory.findById(catigory)
+           catonew.ads.push(AD._id)
+              await catonew.save()
+            }
+
+
     
+
+
+
+         
             
             AD.country=country,
             AD.city=city
@@ -201,9 +229,10 @@ var editAdById= async (req,res,next)=>{
             }
             return next(err);
     }
-
-
 }
+
+
+
 
 var deleteById=async (req,res,next)=>{
     try{
