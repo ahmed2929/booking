@@ -145,7 +145,7 @@ var editAdById= async (req,res,next)=>{
         error.data = errors.array();
         return next(error) ; 
     }
-    const {country,city,streetAdress,catigory,price,services,NumOfRooms,details,title,beds,beach}=req.body;
+    const {country,city,streetAdress,catigory,price,services,NumOfRooms,details,title,beds,beach,N,E}=req.body;
     console.debug(catigory)
     if(!Number(price)){
         const error = new Error('invalid price');
@@ -219,6 +219,8 @@ var editAdById= async (req,res,next)=>{
             AD.title=title
             AD.beds=beds
             AD.beach=beach
+            AD.GPS.E=E
+            AD.GPS.N=N
     
         
         await AD.save();
