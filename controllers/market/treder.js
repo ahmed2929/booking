@@ -33,7 +33,7 @@ var CreateAppartment=async (req,res,next)=>{
         error.data = errors.array();
         return next(error) ; 
     }
-    const {country,city,streetAdress,catigory,price,services,NumOfRooms,details,title,beds,beach,GPS}=req.body;
+    const {country,city,streetAdress,catigory,price,services,NumOfRooms,details,title,beds,beach,N,E}=req.body;
 
     if(!Number(price)){
         const error = new Error('invalid price');
@@ -76,7 +76,10 @@ var CreateAppartment=async (req,res,next)=>{
             title,
             beds,
             beach,
-            GPS
+            GPS:{
+                N:N,
+                E:E
+            }
     
         })
         await NewAd.save();
