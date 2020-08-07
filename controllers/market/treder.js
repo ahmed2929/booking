@@ -376,7 +376,8 @@ var getMyADs=async (req,res,next)=>{
                 catigoryName:value.catigory.name,
                 price:value.price,
                 services:value.services,
-                title:value.title
+                title:value.title,
+                GPS:value.GPS
 
             
             }

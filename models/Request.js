@@ -28,6 +28,9 @@ const RequestSchema = new schema({
         children:{
             type:Number
         },
+        gender:{
+            type:String
+        },
         services:[
             {
                 serviceType:{

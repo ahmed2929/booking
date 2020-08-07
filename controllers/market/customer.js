@@ -27,7 +27,7 @@ const Book=async (req,res,next)=>{
             return next(error) ; 
         }
 
-       var {AdId,StartDate,EndDate,Adult,children,services,FinalservicePrice,finalPrice,ArivalTime}=req.body
+       var {AdId,StartDate,EndDate,Adult,children,services,FinalservicePrice,finalPrice,ArivalTime,gender}=req.body
             StartDate =new Date(StartDate)
             EndDate =new Date(EndDate)
         
@@ -79,9 +79,10 @@ const Book=async (req,res,next)=>{
             services:services,
             FinalservicePrice,
             finalPrice,
-            ArivalTime
+            ArivalTime,
+            gender
            }
-
+           
        })
        await newRequest.save()
        var editCustomer=await CustomerUser.findById(req.userId)
