@@ -33,7 +33,7 @@ var CreateAppartment=async (req,res,next)=>{
         error.data = errors.array();
         return next(error) ; 
     }
-    const {country,city,streetAdress,catigory,price,services,NumOfRooms,details,title,beds,beach}=req.body;
+    const {country,city,streetAdress,catigory,price,services,NumOfRooms,details,title,beds,beach,GPS}=req.body;
 
     if(!Number(price)){
         const error = new Error('invalid price');
@@ -75,7 +75,8 @@ var CreateAppartment=async (req,res,next)=>{
             details,
             title,
             beds,
-            beach
+            beach,
+            GPS
     
         })
         await NewAd.save();
@@ -406,7 +407,7 @@ var getAllRequests=async(req,res,next)=>{
         .populate({ path: 'RecivedRequest', populate: { path: 'from'}})
         .populate({ path: 'RecivedRequest', populate: { path: 'AD'}})
     .populate({ path: 'RecivedRequest', populate: { path: 'RequestData.services.serviceType'}})
-        console.debug(Treder.RecivedRequest[0].RequestData.services[0].serviceType)
+        //console.debug(Treder.RecivedRequest[0].RequestData.services[0].serviceType)
         
         var limitedResult=paginate(Treder.RecivedRequest,itemPerPage,page)
         var totalNumOfRequests=Treder.RecivedRequest.length
