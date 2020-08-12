@@ -5,8 +5,12 @@ const multer    = require('multer');
 
 const authCustomer=require('../routes/User/auth/customer/CustomerUser')
 const authTreder=require('../routes/User/auth/treder/Trederuser')
+const socialmediaCustomer=require('../routes/User/auth/socialMedia/customer')
+const socialmediaTreder=require('../routes/User/auth/socialMedia/treder')
 const marketTreder=require('../routes/User/market/treder')
 const marketcustomer=require('../routes/User/market/customer')
+const admin=require('../routes/admin/admin')
+const shop=require('../routes/shop/shop')
 
 const generalMargetRoutes=require('../routes/User/market/general')
 
@@ -32,9 +36,13 @@ module.exports=(app)=>{
 
    app.use('/auth/user/customer',authCustomer);
    app.use('/auth/user/treder',authTreder);
+   app.use('/auth/socialmedia/customer',socialmediaCustomer)
+   app.use('/auth/socialmedia/treder',socialmediaTreder)
    app.use('/market/treder',marketTreder)
    app.use('/market/customer',marketcustomer)
    app.use('/market/general',generalMargetRoutes)
+   app.use('/shop/',shop)
+   app.use('/admin',admin)
   
 
 

@@ -21,6 +21,17 @@ var register=async (req,res,next)=>{
     const name      = req.body.name;
     const mobile    = req.body.mobile;
     const validMobile    = validatePhoneNumber.validate(mobile); 
+
+    const findEmailLocal=await CustomerUser.findOne({"local.email":email})
+    const findEmailgoogle=await CustomerUser.findOne({"google.email":email})
+    const findEmailfacebook=await CustomerUser.findOne({"facebook.email":email})
+
+    if(findEmailLocal||findEmailfacebook||findEmailgoogle){
+        const error = new Error('email alreay exist please try to login with  ');
+        error.statusCode = 422;
+       return next(error) ;
+    }
+
     if(!validMobile){
         const error = new Error('invalid mobile number!!');
         error.statusCode = 422;
@@ -28,10 +39,15 @@ var register=async (req,res,next)=>{
     }
     bycript.hash(password,12).then(hashedPass=>{
         const newUser = new CustomerUser({
-            email:email,
-            password:hashedPass,
-            name:name,
-            mobile:mobile,
+            method:['local'],
+            local:{
+                email:email,
+                password:hashedPass,
+               
+            },
+           mobile:mobile,
+           email:email,
+           name:name,
         });
         return newUser.save();
     })   
@@ -68,16 +84,29 @@ var login=async(req,res,next)=>{
         }
         const {email,password,FCM}=req.body
         
-            
-           
-             const user = await CustomerUser.findOne({email:email}) 
+        const usergoogle = await CustomerUser.findOne({'google.email':email}) 
+        if(usergoogle){
+            const error = new Error('please try to login with your google acount');
+            error.statusCode = 401 ;
+            return next(error) ;
+        }
+        const userfacebook = await CustomerUser.findOne({'facebook.email':email}) 
+
+        if(userfacebook){
+            const error = new Error('please try to login with your facebook acount');
+            error.statusCode = 401 ;
+            return next(error) ;
+        }
+
+
+             const user = await CustomerUser.findOne({'local.email':email}) 
             
                 if(!user){
                     const error = new Error('user not found');
                     error.statusCode = 404 ;
                     return next(error) ;
                 }    
-                const isEqual = await bycript.compare(password,user.password);
+                const isEqual = await bycript.compare(password,user.local.password);
                 if(!isEqual){
                     const error = new Error('incorrect password');
                     error.statusCode = 401 ;

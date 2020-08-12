@@ -7,10 +7,6 @@ const uploadImage=require('../../../helpers/uploadImage');
 const bodyParser = require('body-parser');
 const conttroller=require('../../../controllers/market/treder')
 Router.put('/createApartment',verfiyToken,uploadImage.array('image'),[
-   
-    body('country')
-    .not()
-    .isEmpty(),
     body('city')
     .not()
     .isEmpty(),

@@ -1,7 +1,7 @@
 const mongoose=require('mongoose');
 var bycript = require('bcryptjs');
 var jwt = require('jsonwebtoken');
-const {validationResult} = require('express-validator');
+const {validationResult, Result} = require('express-validator');
 const ADS = require('../../models/ADS');
 //const Catigory=require('../../models/Catigory');
 //console.debug( Catigory)
@@ -416,11 +416,20 @@ var getAllRequests=async(req,res,next)=>{
         .populate({ path: 'RecivedRequest', populate: { path: 'AD'}})
     .populate({ path: 'RecivedRequest', populate: { path: 'RequestData.services.serviceType'}})
         //console.debug(Treder.RecivedRequest[0].RequestData.services[0].serviceType)
-        
+        console.debug(Treder.RecivedRequest)
+        if(!Treder.RecivedRequest){
+            res.status(404).json({state:1,msg:'no requests are resived',Result:[]})
+        }
         var limitedResult=paginate(Treder.RecivedRequest,itemPerPage,page)
         var totalNumOfRequests=Treder.RecivedRequest.length
         var mapedLimitedResult=limitedResult.map(oldObj=>{ 
-        var customerName=oldObj.from.name
+            var FResult={}
+            if(!oldObj.AD){
+                
+                return 
+            }
+
+            var customerName=oldObj.from.name
         var image=oldObj.AD.images[0]
         var city=oldObj.AD.city
         var streetAdress=oldObj.AD.streetAdress
@@ -429,7 +438,7 @@ var getAllRequests=async(req,res,next)=>{
         var status=  oldObj.RequestData.status 
         var arrivalTime=  oldObj.RequestData.ArivalTime 
 
-        var FResult={
+         var FResult={
             customerName,
             image,
             city,
@@ -441,6 +450,8 @@ var getAllRequests=async(req,res,next)=>{
             arrivalTime
     
         }
+           
+        
     
             return FResult
     
@@ -448,9 +459,12 @@ var getAllRequests=async(req,res,next)=>{
     
          })
     
+         mapedLimitedResult = mapedLimitedResult.filter(function (el) {
+            return el != null;
+          });
     
-    
-        res.status(200).json({state:1,totalNumOfRequests:totalNumOfRequests,hasNextPage:itemPerPage*page<totalNumOfRequests,hasPerivousPage:page>1,nextPage:page+1,previousPage:page-1,Result:mapedLimitedResult})
+    //totalNumOfRequests:totalNumOfRequests,hasNextPage:itemPerPage*page<totalNumOfRequests,hasPerivousPage:page>1,nextPage:page+1,previousPage:page-1
+        res.status(200).json({state:1,Result:mapedLimitedResult})
         //if(Date.now()<cus)
     
     

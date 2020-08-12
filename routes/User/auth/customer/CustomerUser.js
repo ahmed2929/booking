@@ -11,23 +11,7 @@ Router.put('/register',
     body('email')
     .isEmail()
     .withMessage('please enter a valid email.')
-    .normalizeEmail()
-    .custom((value,{req,res,next})=>{
-        console.debug('will search email')
-        return CustumerUser.findOne({email:value})
-        .then(result=>{
-            console.debug(result)
-            if(result){
-                return Promise.reject('E-mail allready exists!');
-            }
-        }).catch(err=>{
-            
-            
-            throw err
-        
-        
-        })
-    }),
+    .normalizeEmail(),
     body('password','enter a password with only number and text and at least 5 characters.')
     .isLength({min:5})
     .trim()

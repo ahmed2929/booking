@@ -3,22 +3,19 @@ const mongoose = require('mongoose');
 const schema   = mongoose.Schema;
 
 const Productchema = new schema({
-    Creator:{
-        type:schema.Types.ObjectId,
-        ref:'admin'
-    },
-    images:[
+   images:[
         {
-            url:String
+           type:String
         }
     ],
-    catigory:[{
+   catigory:{
         type:schema.Types.ObjectId,
         ref:'shopcatigory'
-    }],
+    },
     price:Number,
     desc:String,
-    tiltle:String
+    title:String,
+    avilableNumber:Number
     
 }, {timestamps:true});
 

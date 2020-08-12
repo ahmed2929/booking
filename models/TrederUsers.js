@@ -3,22 +3,61 @@ const mongoose = require('mongoose');
 const schema   = mongoose.Schema;
 
 const userSchema = new schema({
+    methods: {
+        type: [String],
+        required: true
+      },
+      local: {
+        email: {
+          type: String,
+          lowercase: true
+        },
+        password: {
+          type: String
+        },
+        name:{
+            type:String,
+            
+        },
+        
+      },
+      google: {
+        id: {
+          type: String
+        },
+        email: {
+          type: String,
+          lowercase: true
+        },
+        name: {
+            type: String
+          },
+          photo:{
+            type: String
+          }
+      },
+      facebook: {
+        id: {
+          type: String
+        },
+        email: {
+          type: String,
+          lowercase: true
+        }
+    },
     name:{
         type:String,
         required:true
     },
     mobile:{
         type:String,
-        required:true
     },
     email:{
         type:String,
         required:true
     },
-    password:{
-        type:String,
-        required:true
-    },
+    photo:String,
+    
     emailVerfied:{
         type:Boolean,
         default:false
@@ -60,10 +99,6 @@ const userSchema = new schema({
             required:true
         }
     }],
-    img:{
-     type:String,
-     default:''
-    },
     EmailActiveCode:String,
     phoneActiveCode:String
     ,

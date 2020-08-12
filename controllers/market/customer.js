@@ -10,9 +10,10 @@ const fs = require('fs');
 const path=require('path')
 const CustomerUser=require('../../models/CustomerUser')
 const trederUser=require('../../models/TrederUsers')
-
+const Product=require('../../models/ShopProducts')
 const AvilableServices=require('../../models/AvilableServices')
-const Request=require('../../models/Request')
+const Request=require('../../models/Request');
+const { use } = require('passport');
 const paginate=require('../../helpers/general/helpingFunc').paginate
 
 const Book=async (req,res,next)=>{
@@ -27,7 +28,7 @@ const Book=async (req,res,next)=>{
             return next(error) ; 
         }
 
-       var {AdId,StartDate,EndDate,Adult,children,services,FinalservicePrice,finalPrice,ArivalTime,gender}=req.body
+       var {AdId,StartDate,EndDate,Adult,children,services,finalPrice,ArivalTime,gender}=req.body
             StartDate =new Date(StartDate)
             EndDate =new Date(EndDate)
         
@@ -77,7 +78,6 @@ const Book=async (req,res,next)=>{
             Adult:Adult,
             children:children,
             services:services,
-            FinalservicePrice,
             finalPrice,
             ArivalTime,
             gender
@@ -115,8 +115,13 @@ try{
     .populate({ path: 'pendingRequestTo', populate: { path: 'to'}})
     .populate({ path: 'pendingRequestTo', populate: { path: 'AD'}})
     var limitedResult=paginate(customer.pendingRequestTo,itemPerPage,page)
-    var totalNumOfRequests=customer.pendingRequestTo.length
+    
     var mapedLimitedResult=limitedResult.map(oldObj=>{ 
+        var FResult={}
+        if(!oldObj.AD){
+            
+            return 
+        }
     var StartDate=oldObj.RequestData.StartDate
     var EndDate=oldObj.RequestData.EndDate
     var renterPhone=oldObj.to.mobile
@@ -133,7 +138,7 @@ try{
     var message=oldObj.refuseMassage
     var adId=oldObj.AD._id
 
-    var FResult={
+     FResult={
         StartDate,
         EndDate,
         renterPhone,
@@ -159,9 +164,11 @@ try{
 
      })
 
-
-
-    res.status(200).json({state:1,totalNumOfRequests:totalNumOfRequests,hasNextPage:itemPerPage*page<totalNumOfRequests,hasPerivousPage:page>1,nextPage:page+1,previousPage:page-1,Result:mapedLimitedResult})
+     mapedLimitedResult = mapedLimitedResult.filter(function (el) {
+        return el != null;
+      });
+      
+    res.status(200).json({state:1,Result:mapedLimitedResult})
     //if(Date.now()<cus)
 
 
@@ -329,6 +336,81 @@ const Rate=async(req,res,next)=>{
         return next(err);
     
 }
+}
+
+const putItemToCart=async(req,res,next)=>{
+    try{
+        
+        const {ProductId}=req.body
+        const product=await Product.findById(ProductId)
+        if(!product){
+            const error = new Error('product not found');
+            error.statusCode = 422 ;
+            return next(error) ; 
+    
+        }
+        const user=await CustomerUser.findById(req.userId)
+        if(!user){
+
+            const error = new Error('user not found');
+            error.statusCode = 422 ;
+            return next(error) ; 
+
+
+        }
+        if(product.avilableNumber<=0){
+            const error = new Error('sorry product out of stock');
+            error.statusCode = 422 ;
+            return next(error) ; 
+        }
+
+        const productIndex=user.cart.product.indexOf(ProductId.toString())
+
+        if(productIndex>-1){
+            user.cart.push({
+                product:ProductId,
+                numberNeeded:user.cart[productIndex].numberNeeded +1
+            })
+        }else{
+
+            user.cart.push({
+                product:ProductId,
+            })
+
+        }
+        await user.save()
+
+         res.status(200).json({state:1,msg:'the item added to the cart'})
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+    }
+}
+
+const getCartItems=async(req,res,next)=>{
+    try{
+        
+            const usercart=await CustomerUser.findById(req.userId)
+            .populate('cart.product')
+            .select('cart')
+
+        
+
+         res.status(200).json({state:1,Cart:usercart})
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+    }
 }
 
 module.exports={

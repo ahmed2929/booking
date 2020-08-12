@@ -3,21 +3,50 @@ const mongoose = require('mongoose');
 const schema   = mongoose.Schema;
 
 const userSchema = new schema({
-    name:{
-        type:String,
-        required:true
+    methods: {
+        type: [String],
+        required: true
+      },
+      local: {
+        email: {
+          type: String,
+          lowercase: true
+        },
+        password: {
+          type: String
+        },
+        name:{
+            type:String,
+            
+        },
+        
+      },
+      google: {
+        id: {
+          type: String
+        },
+        email: {
+          type: String,
+          lowercase: true
+        },
+        name: {
+            type: String
+          },
+          photo:{
+            type: String
+          }
+      },
+      facebook: {
+        id: {
+          type: String
+        },
+        email: {
+          type: String,
+          lowercase: true
+        }
     },
     mobile:{
         type:String,
-        required:true
-    },
-    email:{
-        type:String,
-        required:true
-    },
-    password:{
-        type:String,
-        required:true
     },
     emailVerfied:{
         type:Boolean,
@@ -54,6 +83,9 @@ const userSchema = new schema({
             required:true
         }
     }],
+    name:String,
+    email:String,
+    photo:String,
     EmailActiveCode:String,
     phoneActiveCode:String
     ,
@@ -66,9 +98,13 @@ const userSchema = new schema({
         default:'customer'
        },
     cart:[{
-        type:schema.Types.ObjectId,
+        product:{type:schema.Types.ObjectId,
         ref:'product'
-
+        },
+        numberNeeded:{
+          type:Number,
+          default:1,
+        }
     }]
 });
 

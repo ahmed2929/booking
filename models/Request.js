@@ -40,12 +40,10 @@ const RequestSchema = new schema({
                 numberWanted:{
                     type:Number
                 },
-
+                FinalservicePrice:Number
             }
         ],
-        FinalservicePrice:{
-                type:Number
-        },
+
         finalPrice:Number,
         ArivalTime:String,
         status:{
