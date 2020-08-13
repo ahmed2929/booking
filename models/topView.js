@@ -8,7 +8,8 @@ ad:{
     ref:'ads'
 },
 position:{
-    type:Number
+    type:Number,
+    default:1
 }
 
 });

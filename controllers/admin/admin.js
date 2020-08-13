@@ -7,6 +7,7 @@ const admin = require('../../models/admin');
 const Catigory=require('../../models/shopcatigory');
 const Product=require('../../models/shopProducts')
 const ADS=require('../../models/ADS')
+const TopView=require('../../models/topView')
 const { connected } = require('process');
 const path=require('path')
 //const validatePhoneNumber = require('validate-phone-number-node-js');
@@ -465,7 +466,7 @@ var CreateProduct=async (req,res,next)=>{
     
     }
 
-    var AddTopView=async (req,res,next)=>{
+    var setTopView=async (req,res,next)=>{
         try{
             const errors = validationResult(req);
                 console.debug(errors)
@@ -476,40 +477,36 @@ var CreateProduct=async (req,res,next)=>{
             return next(error) ; 
         }
     
-            const {ADId,position} =req.body
-            const ad=await ADS.findById(ADId)
+            const {adId,position} =req.body
+            const ad=await ADS.findById(adId)
             if(!ad){
             const error = new Error('No ad found !!');
             error.statusCode = 404 ;
             return next( error) ;
     
             }
+            var itemExist=await TopView.findOne({ad:ad._id})
+            if(itemExist){
+                itemExist.position=position
         
+                await itemExist.save()
+                return res.status(200).json({state:1,message:'product added to top view suceesfuly'});
+
+            }
             
+            const topview=new TopView({
+                ad:{
+                    _id:ad._id
+                },
+                position:position
+            })
+            await topview.save()
            // console.debug(AD)
     
-        const catigory=await Catigory.findById(product.catigory)
-        console.debug(catigory)
-        const catigoryIndex=await catigory.products.indexOf(productID.toString())
-        if (catigoryIndex > -1) {
-            console.debug('index',catigoryIndex,'array',catigory.products)
-            catigory.products.splice(catigoryIndex, 1);
-          }
-          console.debug( 'catigory array',catigory.ads)
-          await catigory.save()
-         await Product.findByIdAndDelete(productID);
+            
     
     
-          product.images.forEach((i) => {
-             console.debug(i)
-           fs.unlink(path.join(i),(err)=>{
-            console.debug(err)
-           });
-      
-      });
-    
-    
-         res.status(200).json({state:1,message:'product deleted Sucessfully'});
+         res.status(200).json({state:1,message:'product added to top view suceesfuly'});
     
     
     
@@ -532,7 +529,8 @@ module.exports={
     deleteProductCatigory,
     CreateProduct,
     editProduct,
-    deleteById
+    deleteById,
+    setTopView
 
 
 

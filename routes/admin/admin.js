@@ -97,6 +97,13 @@ Router.post('/deleteProduct',[
                     
 ],verfiyToken,controller.deleteById);  
 
+Router.post('/setTopView',[
+    
+    body('adId')
+    .not()
+    .isEmpty(),
+                    
+],verfiyToken,controller.setTopView);  
 
 
 

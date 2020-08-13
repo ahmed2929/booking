@@ -58,7 +58,8 @@ var CreateAppartment=async (req,res,next)=>{
     }
 
     imageUrl.forEach(image=>{
-            images.push(image.path);
+        
+            images.push(image.filename);
         
     });
     

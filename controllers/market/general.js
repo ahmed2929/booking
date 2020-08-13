@@ -10,7 +10,7 @@ const fs = require('fs');
 const path=require('path')
 const AvilableServices=require('../../models/AvilableServices');
 const { start } = require('repl');
-
+const mostView=require('../../models/topView')
 
 
 var getAvilableCatigories=async (req,res,next)=>{
@@ -199,6 +199,43 @@ const getAdsFilter=async (req,res,next)=>{
 }
 }
 
+
+const getMostView=async (req,res,next)=>{
+    try{
+    const mostview=await mostView.find()
+    .sort('position')
+    .populate('ad')
+   res.status(200).json({state:1,mostview})
+}
+   catch(err){
+    console.debug(err)
+    if(!err.statusCode){
+        err.statusCode = 500;
+    }
+    return next(err);
+
+}
+}
+
+const getAllads=async (req,res,next)=>{
+    try{
+    const allAds=await ADS.find()
+    .sort({'star':-1})
+    .populate('ad')
+   res.status(200).json({state:1,allAds})
+}
+   catch(err){
+    console.debug(err)
+    if(!err.statusCode){
+        err.statusCode = 500;
+    }
+    return next(err);
+
+}
+}
+
+
+
 module.exports={
 getAvilableCatigories,
 getAvilableServices,
@@ -206,6 +243,8 @@ getADSWithCatigrories,
 getAvilabecites,
 getAdDetailsById,
 getCatigoriesAdById,
-getAdsFilter
+getAdsFilter,
+getMostView,
+getAllads
 
 }
