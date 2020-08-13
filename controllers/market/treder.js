@@ -12,7 +12,7 @@ const fs = require('fs');
 const path=require('path')
 const TrederUsers=require('../../models/TrederUsers')
 const AvilableServices=require('../../models/AvilableServices')
-const Request=require('../../models/request')
+const Request=require('../../models/Request')
 const paginate=require('../../helpers/general/helpingFunc').paginate
 var CreateAppartment=async (req,res,next)=>{
     console.debug('controller runas')
