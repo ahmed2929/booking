@@ -199,7 +199,7 @@ const ForgetPassword=async (req,res,next)=>{
             return next(error); 
         }
         const user = await CustomerUser.findOne({email:email});
-        const buf = crypto.randomBytes(3).toString('hex');
+        const buf = crypto.randomBytes(2).toString('hex');
         const hashedCode = await bycript.hash(buf,12)
         user.forgetPasswordCode = hashedCode;
         user.codeExpireDate =  Date.now()  + 3600000 ;

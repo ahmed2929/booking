@@ -5,9 +5,12 @@ const crypto = require('crypto');
 const {validationResult} = require('express-validator');
 const admin = require('../../models/admin');
 const Catigory=require('../../models/shopcatigory');
+const MarketCatigory=require('../../models/catigory') 
 const Product=require('../../models/shopProducts')
 const ADS=require('../../models/ADS')
 const TopView=require('../../models/topView')
+const customer=require('../../models/CustomerUser')
+const treder=require('../../models/TrederUsers')
 const { connected } = require('process');
 const path=require('path')
 //const validatePhoneNumber = require('validate-phone-number-node-js');
@@ -521,6 +524,135 @@ var CreateProduct=async (req,res,next)=>{
     
     }
 
+    var createApprtmentCatigory=async(req,res,next)=>{
+
+    
+        try{
+        
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+        const {name}=req.body;
+        var newname=name.toLowerCase();
+        const catigo = await MarketCatigory.findOne({name:newname});
+        if(catigo){
+            const error = new Error('catigory already exist');
+            error.statusCode = 404 ;
+            return next( error) ;
+        }
+        
+            const NewCat= new MarketCatigory({
+               name:newname
+            })
+            await NewCat.save(); 
+            res.status(201).json({state:1,msg:'catigory created '})
+    
+        }catch(err){
+            console.debug(err)
+                if(!err.statusCode){
+                    err.statusCode = 500; 
+                }
+                return next(err);
+        }
+        
+    
+    }
+        
+     var blockCustomerUser=async(req,res,next)=>{
+
+    
+        try{
+        
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+        const {userId,block,status}=req.body;
+        var user 
+       if(status=='customer'){
+         user = await customer.findById(userId);
+       }else if(status=='treder'){
+         user = await treder.findById(userId);
+       }
+        
+        if(!user){
+            const error = new Error('user not found');
+            error.statusCode = 404 ;
+            return next( error) ;
+        }
+        
+            user.blocked=block
+            await user.save(); 
+            res.status(201).json({state:1,msg:'user status changed'})
+    
+        }catch(err){
+            console.debug(err)
+                if(!err.statusCode){
+                    err.statusCode = 500; 
+                }
+                return next(err);
+        }
+        
+    
+    }
+
+    var getAllUsers=async(req,res,next)=>{
+
+    
+        try{
+        
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+        const status=req.params.status;
+        console.debug(status)
+        var user 
+       if(status=='customer'){
+         user = await customer.find();
+       }else if(status=='treder') {
+         user = await treder.find();
+       }
+        
+        if(!user){
+            const error = new Error('user not found');
+            error.statusCode = 404 ;
+            return next( error) ;
+        }
+        const fUser=user.map(obj=>{
+            return {
+                name:obj.name,
+                email:obj.email,
+                Id:obj._id
+            }
+        })
+        
+            res.status(200).json({state:1,status:status,fUser})
+    
+        }catch(err){
+            console.debug(err)
+                if(!err.statusCode){
+                    err.statusCode = 500; 
+                }
+                return next(err);
+        }
+        
+    
+    }
+
 module.exports={
     register,
     login,
@@ -530,7 +662,10 @@ module.exports={
     CreateProduct,
     editProduct,
     deleteById,
-    setTopView
+    setTopView,
+    createApprtmentCatigory,
+    blockCustomerUser,
+    getAllUsers
 
 
 

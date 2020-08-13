@@ -33,6 +33,11 @@ Router.get('/getMyRequests',verfiyToken,conttroller.getMyRequests)
 Router.put('/reschedule',verfiyToken,conttroller.reschedule)
 Router.post('/Rate',verfiyToken,conttroller.Rate)
 Router.post('/putItemToCart',verfiyToken,conttroller.putItemToCart)
+Router.get('/getCartItems',verfiyToken,conttroller.getCartItems)
+Router.post('/decreseCartItem',verfiyToken,conttroller.decreseCartItem)
+Router.get('/getMyProfile',verfiyToken,conttroller.getMyProfile)
+
+
 
 
 

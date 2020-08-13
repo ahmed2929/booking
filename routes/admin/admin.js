@@ -104,6 +104,30 @@ Router.post('/setTopView',[
     .isEmpty(),
                     
 ],verfiyToken,controller.setTopView);  
+Router.post('/createApprtmentCatigory',[
+    
+    body('name')
+    .not()
+    .isEmpty(),
+                    
+],verfiyToken,controller.createApprtmentCatigory); 
+
+Router.post('/blockCustomerUser',[
+    
+    body('userId')
+    .not()
+    .isEmpty(),
+    body('block')
+    .not()
+    .isEmpty(),
+    body('status')
+    .not()
+    .isEmpty(),
+                    
+],verfiyToken,controller.blockCustomerUser); 
+
+Router.get('/getAllUsers/:status',verfiyToken,controller.getAllUsers); 
+
 
 
 

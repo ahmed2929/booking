@@ -406,13 +406,14 @@ const putItemToCart=async(req,res,next)=>{
             }
             return next(err);
         
-    }
+}
 }
 
 const getCartItems=async(req,res,next)=>{
     try{
         
             const usercart=await CustomerUser.findById(req.userId)
+            .populate('cart')
             .populate('cart.product')
             .select('cart')
 
@@ -430,12 +431,119 @@ const getCartItems=async(req,res,next)=>{
     }
 }
 
+const decreseCartItem=async(req,res,next)=>{
+    try{
+        
+        const {ProductId}=req.body
+        const product=await Product.findById(ProductId)
+        if(!product){
+            const error = new Error('product not found');
+            error.statusCode = 422 ;
+            return next(error) ; 
+    
+        }
+        const user=await CustomerUser.findById(req.userId)
+        if(!user){
+
+            const error = new Error('user not found');
+            error.statusCode = 422 ;
+            return next(error) ; 
+
+
+        }
+        if(product.avilableNumber<=0){
+            const error = new Error('sorry product out of stock');
+            error.statusCode = 422 ;
+            return next(error) ; 
+        }
+        var foundAndseted=false
+        var deleteIndex;
+        var deleteItem=false
+        var editCart=user.cart.map((obj,index)=>{
+            if(obj.product._id.toString()==ProductId.toString()){
+                if(obj.numberNeeded>=2){
+                    obj.numberNeeded-=1;
+              
+                foundAndseted=true
+                return obj
+                }else{
+                    deleteItem=true;
+                    deleteIndex=index
+                    return obj
+                }
+                
+                
+            }
+            return obj
+        })
+         if(foundAndseted){
+             console.debug('it exist and its mm run')
+             user.cart=editCart
+             console.debug('user',user.cart)
+           await user.save();
+           foundAndseted=false
+            return res.status(200).json({state:1,msg:'the decresed from  cart'})
+            
+            
+
+        }
+
+            if(deleteItem){
+                user.cart.splice(deleteIndex,1)
+                deleteItem=false
+                await user.save()
+                return res.status(200).json({state:1,msg:'the item deleted'})
+
+            }
+        
+
+          
+
+          res.status(422).json({state:0,msg:'cant decrese this is item ,item not foun in your cart'})
+        
+           
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+const getMyProfile=async(req,res,next)=>{
+    try{
+        
+        const user=await CustomerUser.findById(req.userId)
+        .select('-local')
+        .select('-methods')
+        
+        
+
+          res.status(200).json({state:1,user:user})
+        
+           
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
 module.exports={
 
     Book,
-    getMyRequests,
-    reschedule ,
+    getMyRequests,   
+     reschedule ,
     Rate ,
-    putItemToCart
+    putItemToCart,
+    getCartItems,
+    decreseCartItem,
+    getMyProfile
 
 }

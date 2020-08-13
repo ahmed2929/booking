@@ -4,6 +4,7 @@ var jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const {validationResult} = require('express-validator');
 const TrederUsers = require('../../../models/TrederUsers');
+const CustomerUser=require('../../../models/CustomerUser')
 const validatePhoneNumber = require('validate-phone-number-node-js');
 const nodemailerMailgun=require('../../../helpers/sendEmail');
 var register=async (req,res,next)=>{
@@ -202,7 +203,7 @@ const ForgetPassword=async (req,res,next)=>{
             return next(error); 
         }
         const user = await TrederUsers.findOne({email:email});
-        const buf = crypto.randomBytes(3).toString('hex');
+        const buf = crypto.randomBytes(2).toString('hex');
         const hashedCode = await bycript.hash(buf,12)
         user.forgetPasswordCode = hashedCode;
         user.codeExpireDate =  Date.now()  + 3600000 ;

@@ -33,7 +33,7 @@ const userSchema = new schema({
             type: String
           },
           photo:{
-            type: String
+            type: String,
           }
       },
       facebook: {
@@ -85,7 +85,10 @@ const userSchema = new schema({
     }],
     name:String,
     email:String,
-    photo:String,
+    photo:{
+      type:String,
+      default:'https://img.icons8.com/bubbles/50/000000/user-male.png'
+    },
     EmailActiveCode:String,
     phoneActiveCode:String
     ,
