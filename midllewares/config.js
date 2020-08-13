@@ -3,8 +3,8 @@ const bodyParser=require('body-parser');
 const path      = require('path');
 const multer    = require('multer');
 
-const authCustomer=require('../routes/User/auth/customer/CustomerUser')
-const authTreder=require('../routes/User/auth/treder/Trederuser')
+const authCustomer=require('../routes/User/auth/customer/customeruser')
+const authTreder=require('../routes/User/auth/treder/trederuser')
 const socialmediaCustomer=require('../routes/User/auth/socialMedia/customer')
 const socialmediaTreder=require('../routes/User/auth/socialMedia/treder')
 const marketTreder=require('../routes/User/market/treder')

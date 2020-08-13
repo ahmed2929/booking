@@ -12,7 +12,7 @@ const CustomerUser=require('../../models/CustomerUser')
 const trederUser=require('../../models/TrederUsers')
 const Product=require('../../models/ShopProducts')
 const AvilableServices=require('../../models/AvilableServices')
-const Request=require('../../models/Request');
+const Request=require('../../models/request');
 const { use } = require('passport');
 const paginate=require('../../helpers/general/helpingFunc').paginate
 
