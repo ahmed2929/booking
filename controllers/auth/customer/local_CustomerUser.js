@@ -3,7 +3,7 @@ var bycript = require('bcryptjs');
 var jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const {validationResult} = require('express-validator');
-const CustomerUser = require('../../../models/CustomerUser');
+const CustomerUser = require('../../../models/customerUser');
 const validatePhoneNumber = require('validate-phone-number-node-js');
 const nodemailerMailgun=require('../../../helpers/sendEmail');
 var register=async (req,res,next)=>{
