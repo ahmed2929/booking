@@ -363,27 +363,44 @@ const putItemToCart=async(req,res,next)=>{
             error.statusCode = 422 ;
             return next(error) ; 
         }
-
-        const productIndex=user.cart.product.indexOf(ProductId.toString())
-
-        if(productIndex>-1){
-            user.cart.push({
-                product:ProductId,
-                numberNeeded:user.cart[productIndex].numberNeeded +1
-            })
-        }else{
-
-            user.cart.push({
-                product:ProductId,
-            })
+        var foundAndseted=false
+        var editCart=user.cart.map(obj=>{
+            if(obj.product._id.toString()==ProductId.toString()){
+                
+                obj.numberNeeded+=1;
+              
+                foundAndseted=true
+                return obj
+            }
+            return obj
+        })
+         if(foundAndseted){
+             console.debug('it exist and its mm run')
+             user.cart=editCart
+             console.debug('user',user.cart)
+           await user.save();
+             res.status(200).json({state:1,msg:'the item added to the cart'})
+             foundAndseted=false
+            
 
         }
-        await user.save()
+        else{
 
-         res.status(200).json({state:1,msg:'the item added to the cart'})
+             user.cart.push({
+                product:ProductId,
+         })
+
+         await user.save()
+
+          res.status(200).json({state:1,msg:'the item added to the cart'})
+        
+         }
+      
+
+           
        
         }catch(err){
-            console.debug(err)
+            //console.debug(err)
             if(!err.statusCode){
                 err.statusCode = 500;
             }
@@ -418,6 +435,7 @@ module.exports={
     Book,
     getMyRequests,
     reschedule ,
-    Rate 
+    Rate ,
+    putItemToCart
 
 }

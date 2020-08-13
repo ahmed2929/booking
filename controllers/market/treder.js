@@ -17,6 +17,7 @@ const paginate=require('../../helpers/general/helpingFunc').paginate
 var CreateAppartment=async (req,res,next)=>{
     console.debug('controller runas')
     try{
+        console.debug(req.body.services)
         if(req.body.services){
             req.body.services=JSON.parse( req.body.services)
         }else{

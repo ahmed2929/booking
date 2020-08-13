@@ -9,7 +9,7 @@ const nodemailerMailgun=require('../../../helpers/sendEmail');
 var register=async (req,res,next)=>{
 
     const errors = validationResult(req);
-    console.debug(errors)
+   // console.debug(errors)
     if(!errors.isEmpty()){
         const error = new Error('validation faild');
         error.statusCode = 422 ;
@@ -160,7 +160,7 @@ var login=async(req,res,next)=>{
 }
 
 const Logout = async (req,res,next)=>{
-    console.debug('logut run')
+    //console.debug('logut run')
     const FCM = req.body.FCM ;
     try{
     const errors = validationResult(req);
@@ -298,7 +298,7 @@ const PasswordRest = (req,res,next)=>{ //put
         }
     
         bycript.hash(password,12).then(hashed=>{
-            console.log(hashed);
+           // console.log(hashed);
             
             user.password = hashed ;
             return user.save();
@@ -377,7 +377,7 @@ try{
 
     user.emailVerfied=true;
     await user.save()
-    console.debug(user.emailVerfied)
+   // console.debug(user.emailVerfied)
     
 
     res.status(200).json({state:1,message:'your email is verfied'})
