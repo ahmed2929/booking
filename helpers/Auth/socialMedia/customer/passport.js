@@ -1,7 +1,7 @@
 const passport = require('passport');
 const GooglePlusTokenStrategy = require('passport-google-plus-token');
 const FacebookTokenStrategy = require('passport-facebook-token');
-const customerUser = require('../../../../models/customerUser');
+const customerUser = require('../../../../models/CustomerUser');
 
 // Google OAuth Strategy
 passport.use('googleToken', new GooglePlusTokenStrategy({

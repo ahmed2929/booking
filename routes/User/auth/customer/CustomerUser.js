@@ -2,7 +2,7 @@ const express=require('express');
 const Router=express.Router();
 const controller=require('../../../../controllers/auth/customer/local_CustomerUser')
 const {body} =require('express-validator')  
-const CustumerUser=require('../../../../models/customerUser');
+const CustumerUser=require('../../../../models/CustomerUser');
 const { json } = require('body-parser');
 const verfiyToken=require('../../../../helpers/Auth/CustomerAuth')
 
