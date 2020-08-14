@@ -38,7 +38,7 @@ try{
     const Services=await AvilableServices.find({})
     console.debug(Services)
     const resServices=Services.map(ser=>{
-        return {id:ser._id,name:ser.name}
+        return {id:ser._id,name:ser.name,iconUrl:ser.image}
     })
     res.status(200).json({state:1,resServices});
 }catch(err){
