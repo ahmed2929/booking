@@ -147,6 +147,9 @@ body:json
 headers:
 {
     Authorization:hello <token> //token which returned from verfiycode           "the space after 'hello' must be provided"
+
+    Authorization:hello eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZjIyNDhiZTNlMTZlMjAwMDQ3YzQ3MGMiLCJpYXQiOjE1OTY3MzY1NjR9.WS-fqNkqv3z3RBFkT3knRMcZsNbOkVMiB7-XAHSBtrE
+
 }
 
 res:

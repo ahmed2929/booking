@@ -25,8 +25,10 @@ module.exports = async (req,res,next)=>{
 
         const user   = await User.findById(decodedToken.userId) ;
        // console.debug('user',user)
-
+        //console.debug('user',user,'tokenID',decodedToken.userId)
         if(!user){
+            console.debug('a7a it shousnt run')
+
             const error = new Error('user not found');
             error.statusCode = 404 ;
             return next(error) ;
@@ -39,7 +41,7 @@ module.exports = async (req,res,next)=>{
         next();
 
     } catch(err){
-        //console.debug(err)
+        console.debug(err)
         if(!err.statusCode){
             err.statusCode = 500;
         }

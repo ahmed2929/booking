@@ -7,6 +7,7 @@ const {body} =require('express-validator')
 const verfiyToken=require('../../helpers/Auth/admin');
 const uploadImage=require('../../helpers/uploadImage');
 
+
 Router.post('/login',[
 body('email')
 .not()
@@ -128,6 +129,14 @@ Router.post('/blockCustomerUser',[
 
 Router.get('/getAllUsers/:status',verfiyToken,controller.getAllUsers); 
 
+Router.post('/createService',uploadImage.array('image'),[
+    
+    
+    body('name')
+    .not()
+    .isEmpty(),
+                    
+],verfiyToken,controller.createService); 
 
 
 

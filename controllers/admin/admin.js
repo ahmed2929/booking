@@ -11,6 +11,7 @@ const ADS=require('../../models/ADS')
 const TopView=require('../../models/topView')
 const customer=require('../../models/CustomerUser')
 const treder=require('../../models/TrederUsers')
+const AvilableService=require('../../models/AvilableServices')
 const { connected } = require('process');
 const path=require('path')
 //const validatePhoneNumber = require('validate-phone-number-node-js');
@@ -653,6 +654,68 @@ var CreateProduct=async (req,res,next)=>{
     
     }
 
+    var createService=async (req,res,next)=>{
+        
+        try{
+            console.debug('controller runas')
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+        var {name}=req.body;
+        name=name.toLowerCase();
+        const imageUrl = req.files;
+        console.debug(name)
+        const service = await AvilableService.findOne({name:name});
+       
+        if(service){
+            
+            const error = new Error('service already exist');
+            error.statusCode = 404 ;
+            return next( error) ;
+        }
+        let images = [];
+    
+        if(imageUrl.length===0){
+            const error = new Error('u should provide image');
+            error.statusCode = 422 ;
+            return next(error) ;
+        }
+    
+        imageUrl.forEach(image=>{
+            
+                images.push(image.filename);
+            
+        });
+        
+            const Newservice= new AvilableService({
+                name:name,
+                image:images[0]||''
+        
+            })
+            await Newservice.save();
+                
+                res.status(200).json({state:1,message:'service created Sucessfully'});
+            
+            
+    
+        }catch(err){
+            
+            console.debug(err)
+                if(!err.statusCode){
+                    err.statusCode = 500; 
+                }
+                return next(err);
+        }
+        
+    
+    
+        }
+
 module.exports={
     register,
     login,
@@ -665,7 +728,8 @@ module.exports={
     setTopView,
     createApprtmentCatigory,
     blockCustomerUser,
-    getAllUsers
+    getAllUsers,
+    createService
 
 
 

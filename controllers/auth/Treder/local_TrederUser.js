@@ -304,7 +304,7 @@ const PasswordRest = (req,res,next)=>{ //put
         bycript.hash(password,12).then(hashed=>{
             console.log(hashed);
             
-            user.password = hashed ;
+            user.local.password = hashed ;
             return user.save();
         });
         
