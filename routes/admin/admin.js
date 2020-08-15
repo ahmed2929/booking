@@ -129,7 +129,7 @@ Router.post('/blockCustomerUser',[
 
 Router.get('/getAllUsers/:status',verfiyToken,controller.getAllUsers); 
 
-Router.post('/createService',uploadImage.array('image'),[
+Router.post('/createService',[
     
     
     body('name')
