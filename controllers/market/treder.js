@@ -628,6 +628,28 @@ var disAgree=async (req,res,next)=>{
 
 }
 
+const getMyProfile=async(req,res,next)=>{
+    try{
+        
+        const user=await CustomerUser.findById(req.userId)
+        .select('-local')
+        .select('-methods')
+        
+        
+
+          res.status(200).json({state:1,user:user})
+        
+           
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
 module.exports={
 
 CreateAppartment,
@@ -639,6 +661,7 @@ getMyADs,
 getAllRequests,
 getRequestbyId,
 acceptRequest,
-disAgree
+disAgree,
+getMyProfile
 
 }

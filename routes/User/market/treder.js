@@ -52,6 +52,7 @@ Router.get('/getRequestbyId/:RequestId',verfiyToken,conttroller.getRequestbyId)
 Router.post('/acceptRequest',verfiyToken,conttroller.acceptRequest)
 Router.post('/DisAgreeRequest',verfiyToken,conttroller.disAgree)
 
+Router.get('/getMyProfile',verfiyToken,conttroller.getMyProfile)
 
 
 
