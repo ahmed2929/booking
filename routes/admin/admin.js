@@ -136,7 +136,7 @@ Router.post('/createService',[
     .not()
     .isEmpty(),
                     
-],verfiyToken,controller.createService); 
+],verfiyToken,uploadImage.array('image'),controller.createService); 
 
 
 
