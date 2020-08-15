@@ -631,7 +631,7 @@ var disAgree=async (req,res,next)=>{
 const getMyProfile=async(req,res,next)=>{
     try{
         
-        const user=await CustomerUser.findById(req.userId)
+        const user=await TrederUsers.findById(req.userId)
         .select('-local')
         .select('-methods')
         
