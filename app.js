@@ -52,7 +52,7 @@ mongoose.connect(remoteDB,{ useNewUrlParser: true,useUnifiedTopology: true },()=
     }
   }
    
- app.use(multer({ storage: storage,fileFilter:fileFilter }).array('image'))
+ //app.use(multer({ storage: storage,fileFilter:fileFilter }).array('image'))
 
 
 
