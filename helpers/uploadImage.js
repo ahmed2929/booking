@@ -1,10 +1,12 @@
 
 const path=require('path');
-const multer=require('multer')
+const multer=require('multer');
+const { compare } = require('bcryptjs');
 
 
  var storage = multer.diskStorage({
     destination: function (req, file, cb) {
+      console.debug( __dirname+path.join('..','..','images'))
       cb(null, __dirname+path.join('..','..','images'))
     },
     filename: function (req, file, cb) {
