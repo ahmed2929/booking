@@ -6,7 +6,28 @@ const verfiyToken=require('../../../helpers/Auth/TrederAuth')
 const uploadImage=require('../../../helpers/uploadImage');
 const bodyParser = require('body-parser');
 const conttroller=require('../../../controllers/market/treder')
-Router.put('/createApartment',verfiyToken,uploadImage.array('image'),conttroller.CreateAppartment);
+Router.put('/createApartment',verfiyToken,[
+    body('city')
+    .not()
+    .isEmpty(),
+    body('streetAdress')
+    .not()
+    .isEmpty(),
+    body('catigory')
+    .not()
+    .isEmpty(),
+    body('price')
+    .not()
+    .isEmpty(),
+    body('title')
+    .not()
+    .isEmpty(),
+    body('details')
+    .not()
+    .isEmpty(),
+
+
+],conttroller.CreateAppartment);
 
 
 
