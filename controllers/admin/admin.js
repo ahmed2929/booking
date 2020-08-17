@@ -626,6 +626,11 @@ var CreateProduct=async (req,res,next)=>{
          user = await customer.find();
        }else if(status=='treder') {
          user = await treder.find();
+       }else{
+        var user = await customer.find();
+        var tuser = await treder.find();
+        user.concat(tuser)
+
        }
         
         if(!user){
@@ -716,6 +721,50 @@ var CreateProduct=async (req,res,next)=>{
     
         }
 
+        var getTotalNumOfUsers=async(req,res,next)=>{
+
+    
+            try{
+            var TotalNumOfUsers
+            const errors = validationResult(req);
+            console.debug(errors)
+            if(!errors.isEmpty()){
+                const error = new Error('validation faild');
+                error.statusCode = 422 ;
+                error.data = errors.array();
+                return next(error) ; 
+            }
+            const status=req.params.status;
+          var custNum=user = await customer.find()
+          .countDocuments()
+            var tNum= user = await treder.find()
+            .countDocuments()
+             
+           if(status=='customer'){
+            TotalNumOfUsers=custNum
+
+           }else if(status=='treder') {
+            TotalNumOfUsers=tNum
+           }else{
+            TotalNumOfUsers=tNum+custNum
+    
+           }
+            
+                res.status(200).json({state:1,TotalNumOfUsers})
+        
+            }catch(err){
+                console.debug(err)
+                    if(!err.statusCode){
+                        err.statusCode = 500; 
+                    }
+                    return next(err);
+            }
+            
+        
+        }
+    
+
+
 module.exports={
     register,
     login,
@@ -729,7 +778,8 @@ module.exports={
     createApprtmentCatigory,
     blockCustomerUser,
     getAllUsers,
-    createService
+    createService,
+    getTotalNumOfUsers
 
 
 

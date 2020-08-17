@@ -321,7 +321,7 @@ const PasswordRest = (req,res,next)=>{ //put
 const SendactivateEmail=async (req,res,next)=>{
     try{
     const user = await CustomerUser.findById(req.userId);
-    const buf = crypto.randomBytes(3).toString('hex');
+    const buf = crypto.randomBytes(2).toString('hex');
     const hashedCode = await bycript.hash(buf,12)
     user.EmailActiveCode = hashedCode;
     user.codeExpireDate =  Date.now()  + 3600000 ;

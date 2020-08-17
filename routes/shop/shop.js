@@ -10,10 +10,4 @@ const conttroller=require('../../controllers/shop/shop')
  Router.get('/getAllProducts',conttroller.getAllProducts)
  Router.get('/getProductsByCatigory/:id',conttroller.getProductsByCatigory)
  Router.get('/getProductByID/:id',conttroller.getProductByID)
-
-
-
-
-
-
 module.exports=Router

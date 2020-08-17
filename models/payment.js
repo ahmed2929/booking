@@ -22,6 +22,11 @@ const RequestSchema = new schema({
     totalMoney:{
         type:Number,
         required:true
+    },
+    finalPrice:Number,
+    descPerc:{
+       type: Number,
+       default:0
     }
     
 }, {timestamps:true});

@@ -16,7 +16,7 @@ const Request=require('../../models/Request');
 const { use } = require('passport');
 const paginate=require('../../helpers/general/helpingFunc').paginate
 const Payment=require('../../models/payment')
-const order=require('../../models/order')
+const Order=require('../../models/order')
 
 const Book=async (req,res,next)=>{
     try{
@@ -343,6 +343,7 @@ const Rate=async(req,res,next)=>{
 
 const putItemToCart=async(req,res,next)=>{
     try{
+        console.debug(req.userId)
         
         const {ProductId}=req.body
         const product=await Product.findById(ProductId)
@@ -604,6 +605,8 @@ const MakeOrder=async(req,res,next)=>{
 
         const {paymentMethod,cartPrice,usedPromoCode,finalPrice,descPerc,address}=req.body
         const user =await CustomerUser.findById(req.userId)
+        .populate({ path: 'cart', populate: { path: 'product'}})
+
         if(!user){
             const error = new Error('user not found');
             error.statusCode = 422 ;
@@ -617,15 +620,17 @@ const MakeOrder=async(req,res,next)=>{
             error.data = errors.array();
             return next(error) ; 
         }
+        
         if(paymentMethod=='cach'){
             const NewPayMent=new Payment({
                 cuser:user._id,
                 methodOfPay:'cach',
                 totalMoney:cartPrice,
-                finalPrice:finalPrice
+                finalPrice:finalPrice,
+                descPerc:descPerc
             })
             await NewPayMent.save()
-            const order=new order({
+            const order=new Order({
                 cuser:req._id,
                 cart:user.cart,
                 payment:NewPayMent._id,
@@ -633,10 +638,57 @@ const MakeOrder=async(req,res,next)=>{
 
             })
             await order.save()
+           // console.debug(user.cart)
+           
+            for(let elem of user.cart){
+            
+                const editProduct= await Product.findById(elem.product._id)
+               editProduct.avilableNumber-=elem.numberNeeded
+               
+                   await editProduct.save()
+            }
+            user.cart=[]
+            await user.save()
+
             res.status(200).json({state:1,msg:'order created succesfuly'})
 
-        }
+        }else if(paymentMethod=='elec'){
 
+            const NewPayMent=new Payment({
+                cuser:user._id,
+                methodOfPay:'elec',
+                totalMoney:cartPrice,
+                finalPrice:finalPrice,
+                status:1,
+                descPerc:descPerc
+            })
+            await NewPayMent.save()
+            const order=new Order({
+                cuser:req._id,
+                cart:user.cart,
+                payment:NewPayMent._id,
+                address:address,
+
+            })
+            await order.save()
+           // console.debug(user.cart)
+           
+            for(let elem of user.cart){
+            
+                const editProduct= await Product.findById(elem.product._id)
+               editProduct.avilableNumber-=elem.numberNeeded
+               
+                   await editProduct.save()
+            }
+            user.cart=[]
+            await user.save()
+
+            res.status(200).json({state:1,msg:'order created succesfuly'})
+            
+        }else{
+            res.status(422).json({state:1,msg:'invalid payment method'})
+        }
+       
 
 
        
@@ -660,6 +712,7 @@ module.exports={
     getCartItems,
     decreseCartItem,
     getMyProfile,
-    editMyProfile
+    editMyProfile,
+    MakeOrder
 
 }

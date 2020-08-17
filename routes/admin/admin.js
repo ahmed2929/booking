@@ -128,6 +128,9 @@ Router.post('/blockCustomerUser',[
 ],verfiyToken,controller.blockCustomerUser); 
 
 Router.get('/getAllUsers/:status',verfiyToken,controller.getAllUsers); 
+Router.get('/getAllUsers/',verfiyToken,controller.getAllUsers); 
+Router.get('/getTotalNumOfUsers/:status',verfiyToken,controller.getTotalNumOfUsers);
+Router.get('/getTotalNumOfUsers/',verfiyToken,controller.getTotalNumOfUsers); 
 
 Router.post('/createService',uploadImage.array('image'),[
     

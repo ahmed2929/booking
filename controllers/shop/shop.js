@@ -10,7 +10,8 @@ const { connected } = require('process');
 const path=require('path')
 //const validatePhoneNumber = require('validate-phone-number-node-js');
 //const nodemailerMailgun=require('../../../helpers/sendEmail');
-const fs=require('fs')
+const fs=require('fs');
+const shopcatigory = require('../../models/shopcatigory');
      
 
 var getAllProducts=async(req,res,next)=>{
@@ -37,12 +38,14 @@ var getProductsByCatigory=async(req,res,next)=>{
     try{
         const catigoryID=req.params.id
     
-          const products=await Product.find({
-              Catigory:catigoryID
-          })
+        //   const products=await Product.find({
+        //       Catigory:catigoryID
+        //   })
+          const cato=await shopcatigory.findById(catigoryID)
+          .populate('products')
           
        
-            res.status(201).json({state:1,products})
+            res.status(200).json({state:1,cato})
     
         }catch(err){
             console.debug(err)
@@ -62,7 +65,7 @@ var getProductByID=async(req,res,next)=>{
           const product=await Product.findById(productId)
           
        
-            res.status(201).json({state:1,product})
+            res.status(200).json({state:1,product})
     
         }catch(err){
             console.debug(err)
