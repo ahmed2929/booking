@@ -3,19 +3,27 @@ const mongoose = require('mongoose');
 const schema   = mongoose.Schema;
 
 const RequestSchema = new schema({
-    user:{
+    Cuser:{
         type:schema.Types.ObjectId,
-        ref:'user'
+        ref:'CustomerUser'
     },
-    product:{
+    Tuser:{
         type:schema.Types.ObjectId,
-        ref:'product'
+        ref:'TrederUser'
+    },
+    methodOfPay:{
+        type:String,
+        required:true
     },
     status:{
         type:Number,
         default:0
+    },
+    totalMoney:{
+        type:Number,
+        required:true
     }
     
 }, {timestamps:true});
 
-module.exports = mongoose.model('request',RequestSchema);
+module.exports = mongoose.model('payment',RequestSchema);

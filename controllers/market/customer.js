@@ -15,6 +15,8 @@ const AvilableServices=require('../../models/AvilableServices')
 const Request=require('../../models/Request');
 const { use } = require('passport');
 const paginate=require('../../helpers/general/helpingFunc').paginate
+const Payment=require('../../models/payment')
+const order=require('../../models/order')
 
 const Book=async (req,res,next)=>{
     try{
@@ -582,6 +584,64 @@ const editMyProfile=async(req,res,next)=>{
        
         }catch(err){
             console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+const MakeOrder=async(req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        const {paymentMethod,cartPrice,usedPromoCode,finalPrice,descPerc,address}=req.body
+        const user =await CustomerUser.findById(req.userId)
+        if(!user){
+            const error = new Error('user not found');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        if(user.cart.length<=0){
+            const error = new Error('cart is empty');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+        if(paymentMethod=='cach'){
+            const NewPayMent=new Payment({
+                cuser:user._id,
+                methodOfPay:'cach',
+                totalMoney:cartPrice,
+                finalPrice:finalPrice
+            })
+            await NewPayMent.save()
+            const order=new order({
+                cuser:req._id,
+                cart:user.cart,
+                payment:NewPayMent._id,
+                address:address,
+
+            })
+            await order.save()
+            res.status(200).json({state:1,msg:'order created succesfuly'})
+
+        }
+
+
+
+       
+        }catch(err){
+            //console.debug(err)
             if(!err.statusCode){
                 err.statusCode = 500;
             }

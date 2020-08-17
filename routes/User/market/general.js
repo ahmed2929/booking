@@ -7,9 +7,9 @@ const uploadImage=require('../../../helpers/uploadImage');
 const bodyParser = require('body-parser');
 const conttroller=require('../../../controllers/market/general')
 
+ Router.get('/getAvilableCatigories/:catigoryId',conttroller.getAvilableCatigories)
  Router.get('/getAvilableCatigories',conttroller.getAvilableCatigories)
-
- Router.get('/getAvilableServices',conttroller.getAvilableServices)
+ Router.get('/getAvilableServices/:serviceId',conttroller.getAvilableServices)
  Router.get('/getAvilableServices',conttroller.getAvilableServices)
  Router.get('/getCatigoriesWithAds',conttroller.getADSWithCatigrories)
  Router.get('/getAvilabecites',conttroller.getAvilabecites)

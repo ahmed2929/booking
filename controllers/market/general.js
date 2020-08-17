@@ -16,6 +16,20 @@ const mostView=require('../../models/topView')
 var getAvilableCatigories=async (req,res,next)=>{
 
     try{
+        const catId=req.params.catigoryId
+        if(catId){
+
+            const catigories=await Catigory.findById(catId)
+        //console.debug(catigories)
+        if(!catigories){
+           return res.status(404).json({state:1,msg:'catigoryNotFound'});
+        }
+     return res.status(200).json({state:1,catigoryNae:catigories.name});
+
+
+        }
+
+
     const catigories=await Catigory.find({})
     console.debug(catigories)
     const resCatigory=catigories.map(cat=>{
@@ -35,6 +49,21 @@ var getAvilableCatigories=async (req,res,next)=>{
 
 var getAvilableServices=async (req,res,next)=>{
 try{
+    const serId=req.params.serviceId
+    if(serId){
+        
+    const Service=await AvilableServices.findById(serId)
+    if(!Service){
+        return res.status(404).json({state:0,mgs:"service not found"});
+
+    }
+    return res.status(200).json({state:1,Service});
+
+
+    }
+
+
+
     const Services=await AvilableServices.find({})
     console.debug(Services)
     const resServices=Services.map(ser=>{

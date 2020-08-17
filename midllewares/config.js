@@ -12,7 +12,7 @@ const marketcustomer=require('../routes/User/market/customer')
 const admin=require('../routes/admin/admin')
 const shop=require('../routes/shop/shop')
 request = require('request');
-
+const SearchApi=require('../controllers/general/general').Search
 const generalMargetRoutes=require('../routes/User/market/general')
 
 
@@ -44,6 +44,8 @@ module.exports=(app)=>{
    app.use('/market/general',generalMargetRoutes)
    app.use('/shop/',shop)
    app.use('/admin',admin)
+   app.use('/search',SearchApi)
+   
   app.get('/images/*',(req,res)=>{
 
    request('https://www.tibs.org.tw/images/default.jpg').pipe(res)
