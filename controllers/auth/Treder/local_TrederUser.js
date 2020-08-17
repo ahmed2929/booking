@@ -43,7 +43,7 @@ var register=async (req,res,next)=>{
     }
     bycript.hash(password,12).then(hashedPass=>{
         const newUser = new TrederUsers({
-            method:['local'],
+            methods:'local',
             local:{
                 email:email,
                 password:hashedPass,

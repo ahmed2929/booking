@@ -289,40 +289,41 @@ const Rate=async(req,res,next)=>{
 
     }
 
-    if(request.from.toString()!=req.userId){
-        const error = new Error('usr id doesnt match request sender id');
-        error.statusCode = 404 ;
-        return next( error) ;
+     if(request.from.toString()!=req.userId){
+         const error = new Error('usr id doesnt match request sender id');
+         error.statusCode = 404 ;
+         return next( error) ;
 
-    }
-    console.debug(request.RequestData.status)
-    if(request.RequestData.status!=1){
-        const error = new Error('you cant rate this ad');
-        error.statusCode = 404 ;
-        return next( error) ;
+     }
+     console.debug(request.RequestData.status)
+     if(request.RequestData.status!=1){
+         const error = new Error('you cant rate this ad');
+         error.statusCode = 404 ;
+         return next( error) ;
 
-    }
-    if(request.StartDate>Date.now()){
-        const error = new Error('you cant rate this ad wait when your vication start');
-        error.statusCode = 404 ;
-        return next( error) ;
+     }
+     if(request.StartDate>Date.now()){
+         const error = new Error('you cant rate this ad wait when your vication start');
+         error.statusCode = 404 ;
+         return next( error) ;
 
-    }
-    if(request.RateState.status==1){
-        const error = new Error('you cant rate agin you already rated this ad');
-        error.statusCode = 404 ;
-        return next( error) ;
+     }
+     if(request.RateState.status==1){
+         const error = new Error('you cant rate agin you already rated this ad');
+         error.statusCode = 404 ;
+         return next( error) ;
 
-    }
+     }
 
     const rateAd=await ADS.findById(request.AD)
-    rateAd.Rate.addToSet({user:req.userId,userRate:star})
+    rateAd.Rate.addToSet({user:req.userId,userRate:star,date:Date.now()})
     var sumOfRates=0
     rateAd.Rate.forEach(element => {
         sumOfRates+=element.userRate
     })
     rateAd.star=sumOfRates/rateAd.Rate.length
     console.debug(rateAd.star)
+    //rateAd.Rate.date=Date.now()
     await rateAd.save()
     request.RateState.status=1
     request.RateState.star=star
@@ -516,12 +517,66 @@ const getMyProfile=async(req,res,next)=>{
     try{
         
         const user=await CustomerUser.findById(req.userId)
-        .select('-local')
-        .select('-methods')
-        
+        .select('name')
+        .select('email')
+        .select('photo')
+        .select('status')
+        .select('method')
         
 
           res.status(200).json({state:1,user:user})
+        
+           
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+const editMyProfile=async(req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+        const {name,email}=req.body
+
+       var imageUrl 
+       if( req.files[0]){
+        imageUrl = req.files[0].filename;
+       }
+       
+        //console.debug(req.files,req.file)
+        var user=await CustomerUser.findById(req.userId)
+        console.debug(user.methods)
+        if(email&&user.methods!='local'){
+
+            const error = new Error('you cant edit your email');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+
+        }
+        user.name=name||user.name
+        user.email=email||user.email
+        user.photo=imageUrl||user.photo
+        if(email){
+            user.emailVerfied=false
+        }
+        await user.save()
+        
+        
+        
+
+          res.status(200).json({state:1,msg:"user info updated"})
         
            
        
@@ -544,6 +599,7 @@ module.exports={
     putItemToCart,
     getCartItems,
     decreseCartItem,
-    getMyProfile
+    getMyProfile,
+    editMyProfile
 
 }

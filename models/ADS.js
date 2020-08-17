@@ -38,10 +38,12 @@ const ADSchema = new schema({
     Rate:[{
         user:{
             type:schema.Types.ObjectId,
-        ref:'user'
+            ref:'CustomerUser'
     },
-    userRate:Number
-
+    userRate:Number,
+    date:{
+        type:Date, 
+    }
     }],
     star:{
        type: Number,

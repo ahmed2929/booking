@@ -36,7 +36,7 @@ Router.post('/putItemToCart',verfiyToken,conttroller.putItemToCart)
 Router.get('/getCartItems',verfiyToken,conttroller.getCartItems)
 Router.post('/decreseCartItem',verfiyToken,conttroller.decreseCartItem)
 Router.get('/getMyProfile',verfiyToken,conttroller.getMyProfile)
-
+Router.put('/editMyProfile',uploadImage.array('image'),verfiyToken,conttroller.editMyProfile)
 
 
 

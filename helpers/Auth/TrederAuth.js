@@ -24,7 +24,7 @@ module.exports = async (req,res,next)=>{
         }
 
         const user   = await User.findById(decodedToken.userId) ;
-       // console.debug('user',user)
+       //console.debug('user',user)
 
         if(!user){
             const error = new Error('user not found');

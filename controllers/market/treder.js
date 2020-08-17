@@ -11,6 +11,7 @@ const { countDocuments } = require('../../models/ADS');
 const fs = require('fs');
 const path=require('path')
 const TrederUsers=require('../../models/TrederUsers')
+
 const AvilableServices=require('../../models/AvilableServices')
 const Request=require('../../models/Request')
 const paginate=require('../../helpers/general/helpingFunc').paginate
@@ -407,7 +408,7 @@ var getMyADs=async (req,res,next)=>{
     }
 
 var getAllRequests=async(req,res,next)=>{
-
+    console.debug('controller')
     try{
         const page = req.query.page *1 || 1;
         const itemPerPage = 20;
@@ -418,7 +419,7 @@ var getAllRequests=async(req,res,next)=>{
         .populate({ path: 'RecivedRequest', populate: { path: 'AD'}})
     .populate({ path: 'RecivedRequest', populate: { path: 'RequestData.services.serviceType'}})
         //console.debug(Treder.RecivedRequest[0].RequestData.services[0].serviceType)
-        console.debug(Treder.RecivedRequest)
+        //console.debug(Treder.RecivedRequest)
         if(!Treder.RecivedRequest){
             res.status(404).json({state:1,msg:'no requests are resived',Result:[]})
         }
@@ -430,7 +431,7 @@ var getAllRequests=async(req,res,next)=>{
                 
                 return 
             }
-
+           // console.debug(Treder.RecivedRequest[1])
             var customerName=oldObj.from.name
         var image=oldObj.AD.images[0]
         var city=oldObj.AD.city
@@ -632,9 +633,11 @@ const getMyProfile=async(req,res,next)=>{
     try{
         
         const user=await TrederUsers.findById(req.userId)
-        .select('-local')
-        .select('-methods')
-        
+        .select('name')
+        .select('email')
+        .select('photo')
+        .select('status')
+        .select('method')
         
 
           res.status(200).json({state:1,user:user})
@@ -650,6 +653,130 @@ const getMyProfile=async(req,res,next)=>{
         
 }
 }
+
+const editMyProfile=async(req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+        const {name,email}=req.body
+
+       var imageUrl 
+       if( req.files[0]){
+        imageUrl = req.files[0].filename;
+       }
+       
+        //console.debug(req.files,req.file)
+        var user=await TrederUsers.findById(req.userId)
+        if(email&&user.methods!='local'){
+
+            const error = new Error('you cant edit your email');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+
+        }
+        user.name=name||user.name
+        user.email=email||user.email
+        user.photo=imageUrl||user.photo
+        if(email){
+            user.emailVerfied=false
+        }
+        await user.save()
+        
+        
+        
+
+          res.status(200).json({state:1,msg:"user info updated"})
+        
+           
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
+const getLatestReviews=async(req,res,next)=>{
+    try{
+        
+        var user=await TrederUsers.findById(req.userId)
+        .populate({ path: 'MyWonAds', populate: { path: 'Rate'},select:'Rate'})
+        .populate({ path: 'MyWonAds', populate: { path: 'Rate.user'},select:'user.name'})
+       .select('Rate')
+        
+        var fUser=user.MyWonAds.filter(data=>{
+            if(data.Rate.length>0){
+               
+               return data.Rate
+
+            }
+           
+        })
+        //console.debug('fuser is 0',fUser[0].Rate[1].user)
+      //  console.debug('fuser is 1',fUser[1].Rate[0].user)
+       fUser=fUser.map((data,index)=>{
+       console.debug(data.Rate.length)
+         //  console.debug(data.Rate[index])
+        var fobj= data.Rate.map(elem=>{
+            //console.debug(data)
+            var obj= {
+                name:elem.user.name,
+                userid:elem.user._id,
+                star:elem.userRate,
+                adid:data._id,
+                date:elem.date
+            }
+            return obj
+
+        })
+           
+
+        return fobj
+
+         })
+         var arrayOfAllObj=[]
+         fUser.forEach(arr=>{
+             arr.forEach(obj=>{
+                 if(!obj.date){
+                    obj.date='2020-01-16T23:51:23.247Z'
+                 }
+                arrayOfAllObj.push(obj)
+             })
+         })
+
+         arrayOfAllObj.sort(function(a,b){
+            // Turn your strings into dates, and then subtract them
+            // to get a value that is either negative, positive, or zero.
+            return new Date(b.date) - new Date(a.date);
+          });
+
+          res.status(200).json({state:1,user:arrayOfAllObj})
+        
+           
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
+
+
+
 module.exports={
 
 CreateAppartment,
@@ -662,6 +789,8 @@ getAllRequests,
 getRequestbyId,
 acceptRequest,
 disAgree,
-getMyProfile
+getMyProfile,
+editMyProfile,
+getLatestReviews
 
 }

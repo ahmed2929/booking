@@ -54,6 +54,15 @@ Router.post('/DisAgreeRequest',verfiyToken,conttroller.disAgree)
 
 Router.get('/getMyProfile',verfiyToken,conttroller.getMyProfile)
 
+Router.put('/editMyProfile',verfiyToken,uploadImage.array('image'),[
+    body('name')
+    .not()
+    .isEmpty()
+
+
+],conttroller.editMyProfile);
+
+Router.get('/getReviews',verfiyToken,conttroller.getLatestReviews)
 
 
 
