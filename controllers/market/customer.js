@@ -518,6 +518,7 @@ const decreseCartItem=async(req,res,next)=>{
 }
 const getMyProfile=async(req,res,next)=>{
     try{
+            
         
         const user=await CustomerUser.findById(req.userId)
         .select('name')
@@ -526,7 +527,7 @@ const getMyProfile=async(req,res,next)=>{
         .select('status')
         .select('method')
         
-
+        console.log(user)
           res.status(200).json({state:1,user:user})
         
            

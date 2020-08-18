@@ -510,6 +510,7 @@ var getRequestbyId=async(req,res,next)=>{
             return next( error) ;
     
             }
+            console.debug(request)
     
         var finalResult={
                 RequestId,
@@ -565,11 +566,39 @@ var acceptRequest =async (req,res,next)=>{
             return next( error) ;
 
         }
+       
+        const ad=await ADS.findById(request.AD)
+        console.debug(request)
+        if(request.RequestData.status==2){
+            ad.NotAvilable.forEach(obj=>{
+                if(obj.requestId.toString()==request._id.toString()){
+                    obj.startDate=request.RequestData.StartDate
+                    obj.EndDate=request.RequestData.EndDate
+                }
+               
+            })
+            console.debug(ad.NotAvilable)
+            await ad.save()
+        }else if(request.RequestData.status==0){
+            console.debug('add it for the first time')
+            ad.NotAvilable.push({
+                startDate:request.RequestData.StartDate,
+                EndDate:request.RequestData.EndDate,
+                requestId:request._id
+    
+            })
+            await ad.save()
+        }else if(request.RequestData.status==1){
+            return res.status(200).json({state:0,msg:'request already accepted'})
+        }else{
+            return res.status(422).json({state:0,msg:'invalid request'})
+        }
+
+
+
+      
         request.RequestData.status=1;
-       await request.save();
-
-
-
+        await request.save();
         res.status(200).json({state:1,msg:'request accepted'})
     }catch(err){
         console.debug(err)

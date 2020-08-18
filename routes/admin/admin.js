@@ -6,7 +6,7 @@ const {body} =require('express-validator')
 //const { json } = require('body-parser');
 const verfiyToken=require('../../helpers/Auth/admin');
 const uploadImage=require('../../helpers/uploadImage');
-
+const trederController=require('../../controllers/market/treder')
 
 Router.post('/login',[
 body('email')
@@ -131,6 +131,8 @@ Router.get('/getAllUsers/:status',verfiyToken,controller.getAllUsers);
 Router.get('/getAllUsers/',verfiyToken,controller.getAllUsers); 
 Router.get('/getTotalNumOfUsers/:status',verfiyToken,controller.getTotalNumOfUsers);
 Router.get('/getTotalNumOfUsers/',verfiyToken,controller.getTotalNumOfUsers); 
+Router.get('/getuserProfile/:type/:UserId',verfiyToken,controller.getuserProfile);
+Router.get('/getRequestById/:RequestId',verfiyToken,trederController.getRequestbyId);
 
 Router.post('/createService',uploadImage.array('image'),[
     

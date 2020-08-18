@@ -61,14 +61,19 @@ const ADSchema = new schema({
             type:String
         }
     },
-    NotAvilable:{
+    NotAvilable:[{
         startDate:{
             type:Date
         },
         EndDate:{
             type:Date
+        },
+        requestId:{
+            type:schema.Types.ObjectId,
+            ref:'request'
         }
-    }
+    }]
+    
 }, {timestamps:true});
 
 module.exports = mongoose.model('ads',ADSchema);

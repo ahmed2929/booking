@@ -762,6 +762,66 @@ var CreateProduct=async (req,res,next)=>{
             
         
         }
+
+        const getuserProfile=async(req,res,next)=>{
+            console.debug('controller run')
+            try{
+                const UserId=req.params.UserId
+                const type=req.params.type
+               // console.debug(type,UserId)
+                if(type=="treder"){
+                    console.debug('if run')
+                    const user=await treder.findById(UserId.toString())
+                    //console.debug(user)
+                     .populate({ path: 'MyWonAds', select:'title details images _id'})
+                     .populate({ path: 'cart'})
+                    
+                    .select('name')
+                    .select('email')
+                    .select('photo')
+                    .select('status')
+                    .select('emailVerfied')
+                    .select('mobileVerfied')
+                    .select('mobile')
+                    .select('blocked')
+                    .select('MyWonAds')
+                    if(!user){
+                        return res.status(404).json({state:0,msg:'user not found'})
+                    }
+                     return res.status(200).json({state:1,user:user})
+                    
+                }else if(type=="customer"){
+                    const user=await customer.findById(UserId.toString())
+                    //console.debug(user)
+                     .populate({ path: 'pendingRequestTo' ,select:'RequestData.status _id'})
+                    
+                    .select('name')
+                    .select('email')
+                    .select('photo')
+                    .select('status')
+                    .select('emailVerfied')
+                    .select('mobileVerfied')
+                    .select('mobile')
+                    .select('blocked')
+                    .select('pendingRequestTo')
+                    if(!user){
+                        return res.status(404).json({state:0,msg:'user not found'})
+                    }
+
+                    return res.status(200).json({state:1,user:user})
+                }
+                    
+                     return res.status(422).json({state:0,msg:'invalid Type'})
+                }
+                catch(err){
+                    console.debug(err)
+                    if(!err.statusCode){
+                        err.statusCode = 500;
+                    }
+                    return next(err);
+                
+        }
+        }
     
 
 
@@ -779,7 +839,8 @@ module.exports={
     blockCustomerUser,
     getAllUsers,
     createService,
-    getTotalNumOfUsers
+    getTotalNumOfUsers,
+    getuserProfile
 
 
 
