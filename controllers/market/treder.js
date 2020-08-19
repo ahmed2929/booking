@@ -498,7 +498,7 @@ var getAllRequests=async(req,res,next)=>{
 var getRequestbyId=async(req,res,next)=>{
 
     try{
-        const RequestId=req.params.RequestId
+        const RequestId=req.params.RequestId||req.body.RequestId
 
         const request=await Request.findById(RequestId)
         .populate('from')

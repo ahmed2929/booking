@@ -49,6 +49,7 @@ Router.delete('/deleteApartment',verfiyToken,uploadImage.array('image'),[
 Router.get('/getMyADs',verfiyToken,conttroller.getMyADs)
 Router.get('/getAllRequests',verfiyToken,conttroller.getAllRequests)
 Router.get('/getRequestbyId/:RequestId',verfiyToken,conttroller.getRequestbyId)
+Router.get('/getRequestbyId/',verfiyToken,conttroller.getRequestbyId)
 Router.post('/acceptRequest',verfiyToken,conttroller.acceptRequest)
 Router.post('/DisAgreeRequest',verfiyToken,conttroller.disAgree)
 
