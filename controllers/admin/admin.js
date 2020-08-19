@@ -12,11 +12,14 @@ const TopView=require('../../models/topView')
 const customer=require('../../models/CustomerUser')
 const treder=require('../../models/TrederUsers')
 const AvilableService=require('../../models/AvilableServices')
+const Order=require('../../models/order')
 const { connected } = require('process');
 const path=require('path')
 //const validatePhoneNumber = require('validate-phone-number-node-js');
 //const nodemailerMailgun=require('../../../helpers/sendEmail');
-const fs=require('fs')
+const fs=require('fs');
+const shopcatigory = require('../../models/shopcatigory');
+const PromoCode=require('../../models/promocode')
 var register=async (req,res,next)=>{
 
     const errors = validationResult(req);
@@ -246,7 +249,7 @@ var CreateProduct=async (req,res,next)=>{
         error.data = errors.array();
         return next(error) ; 
     }
-    const {title,details,price,CatigoryName}=req.body;
+    const {title,details,price,CatigoryName,avilableNum}=req.body;
 
     if(!Number(price)){
         const error = new Error('invalid price');
@@ -271,7 +274,7 @@ var CreateProduct=async (req,res,next)=>{
     }
 
     imageUrl.forEach(image=>{
-            images.push(image.path);
+            images.push(image.filename);
         
     });
     
@@ -281,7 +284,8 @@ var CreateProduct=async (req,res,next)=>{
             details,
             price,
             catigory:catigo._id,
-            images:images
+            images:images,
+            avilableNumber:avilableNum
             
         })
         await NewProduct.save();
@@ -327,7 +331,7 @@ var CreateProduct=async (req,res,next)=>{
             error.data = errors.array();
             return next(error) ; 
         }
-        const {title,details,price,CatigoryName}=req.body;
+        const {title,details,price,CatigoryName,avilableNum}=req.body;
         
         if(!Number(price)){
             const error = new Error('invalid price');
@@ -356,7 +360,7 @@ var CreateProduct=async (req,res,next)=>{
     
               product.images=[]
             imageUrl.forEach(image=>{
-                images.push(image.path);
+                images.push(image.filename);
             })
                 
         });   
@@ -392,7 +396,7 @@ var CreateProduct=async (req,res,next)=>{
                 product.images=images
                 product.details=details
                 product.title=title
-              
+                product.avilableNumber=avilableNum
         
             
             await product.save();
@@ -822,9 +826,470 @@ var CreateProduct=async (req,res,next)=>{
                 
         }
         }
+
+ const getAllProducts=async(req,res,next)=>{
+
+ try{
+    const page = req.query.page || 1;
+    const productPerPage = 10;
+    const filter = req.query.filter 
+    const optinalSearchParam=req.query.SearchBy
+    console.debug(filter,optinalSearchParam)
+    let totalProducts;
+    let products;
+    if (filter == 'sold') {
+        totalProducts= await Product.find({sold: {$gte: 0}}).countDocuments();
+        products = await Product.find({sold: {$gte: 0}})
+        .populate({path:'catigory' ,select:'name'})
+        .skip((page - 1) * productPerPage)
+        .limit(productPerPage)
+        .sort({'sold':'-1'})
+    } else if (filter == 'catigory') {
+        const cato=await Catigory.findOne({name:optinalSearchParam})
+        if(!cato){
+            res.status(404).json({
+                state: 0,
+                msg: 'catigory not found',
+                
+              });
+        }
+        totalProducts= await Product.find({catigory:cato._id}).countDocuments();
+        products = await Product.find({catigory:cato._id})
+        .populate({path:'catigory' ,select:'name'})
+        .skip((page - 1) * productPerPage)
+        .limit(productPerPage)
+        .sort({'sold':'-1'})
+        console.debug(products)
+    }else if (filter == 'price') {
+        totalProducts= await Product.find().countDocuments();
+        var sortVal=1
+        if(optinalSearchParam=='top'){
+            console.debug('top run')
+            sortVal=-1
+        }
+        products = await Product.find()
+        .populate({path:'catigory' ,select:'name'})
+        .skip((page - 1) * productPerPage)
+        .limit(productPerPage)
+        .sort({'price':sortVal})
+    }else if(filter=='outOfStock'){
+        totalProducts= await Product.find().countDocuments();
+        var sortVal=1
+        products = await Product.find({avilableNumber: {$lte: 0}})
+        .populate({path:'catigory' ,select:'name'})
+        .skip((page - 1) * productPerPage)
+        .limit(productPerPage)
+        .sort({'price':sortVal})
+    }
+
+
+    if(!filter){
+        totalProducts= await Product.find().countDocuments()
+        products = await Product.find()
+        .populate({path:'catigory' ,select:'name'})
+        .skip((page - 1) * productPerPage)
+        .limit(productPerPage)
+        .sort({'sold':`-1`})
+
+
+       return res.status(200).json({
+            state: 1,
+            NumOfProducts: totalProducts,
+            products: products,
+          });
+    }
+    res.status(200).json({
+      state: 1,
+      NumOfProducts: totalProducts,
+      products: products,
+    });
+             
+            }catch(err){
+                console.debug(err)
+                    if(!err.statusCode){
+                        err.statusCode = 500; 
+                    }
+                    return next(err);
+            }
+            
+        
+        }
+
+const TotalNum=async(req,res,next)=>{
+try{
+    var TotalNum;
+    var DataObj=[]
+    const status=req.params.status;
+    switch (status) {
+        case 'customer':
+            TotalNum=await customer.find()
+            .countDocuments()
+            break;
+            case 'treder':
+            TotalNum= await treder.find()
+            .countDocuments()
+            break;
+            case 'users':
+            var tuser=user = await treder.find()
+            .countDocuments()
+            var cuser=user = await customer.find()
+            .countDocuments()
+            TotalNum=tuser+cuser
+            break;
+            case 'products':
+                TotalNum= await Product.find()
+                .countDocuments()
+                break;
+            case 'ads':
+                 TotalNum= await ADS.find()
+                    .countDocuments()
+                    break;
+            case 'shopCatigory':
+                var shopCat= await shopcatigory.find()
+                shopCat.forEach(obj=>{
+                    console.debug(obj)
+                    DataObj.push({
+                        catoName:obj.name,
+                        numOfProduct:obj.products.length
+
+                    })
+                })
+                     break;
+
+                     case 'MarketCatigory':
+                        var shopCat= await MarketCatigory.find()
+                        shopCat.forEach(obj=>{
+                            console.debug(obj)
+                            DataObj.push({
+                                catoName:obj.name,
+                                numOfProduct:obj.ads.length
+        
+                            })
+                        })
+                             break;
+                
+    
+        default:
+           return res.status(404).json({state:0,msg:'invalid param'})
+           
+    }
+    
+    if(DataObj.length>0){
+       return res.status(200).json({state:1,Data:DataObj})
+    }
+    
+        res.status(200).json({state:1,TotalNum})
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
     
 
+}
 
+    
+        const getAllAds=async(req,res,next)=>{
+
+    
+            try{
+            
+            const errors = validationResult(req);
+            console.debug(errors)
+            if(!errors.isEmpty()){
+                const error = new Error('validation faild');
+                error.statusCode = 422 ;
+                error.data = errors.array();
+                return next(error) ; 
+            }
+            const id=req.params.id;
+            if(id){
+                const ad =await ADS.findById(id)
+                if(!ad){
+                    const error = new Error('user not found');
+                error.statusCode = 404 ;
+                return next( error) ;
+                }
+
+
+               return res.status(200).json({state:1,ad:ad})
+
+
+
+            }
+
+            const ads =await ADS.find()
+           return res.status(200).json({state:1,ads:ads})
+
+             
+            }catch(err){
+                console.debug(err)
+                    if(!err.statusCode){
+                        err.statusCode = 500; 
+                    }
+                    return next(err);
+            }
+            
+        
+        }
+
+        const getAllshopOrders=async(req,res,next)=>{
+
+    
+            try{
+            
+            const errors = validationResult(req);
+            console.debug(errors)
+            if(!errors.isEmpty()){
+                const error = new Error('validation faild');
+                error.statusCode = 422 ;
+                error.data = errors.array();
+                return next(error) ; 
+            }
+            const id=req.params.id;
+            if(id){
+                const order =await Order.findById(id)
+                if(!order){
+                    const error = new Error('order not found');
+                error.statusCode = 404 ;
+                return next( error) ;
+                }
+
+
+               return res.status(200).json({state:1,order:order})
+
+
+
+            }
+
+            const orders =await Order.find()
+           return res.status(200).json({state:1,orders:orders})
+
+             
+            }catch(err){
+                console.debug(err)
+                    if(!err.statusCode){
+                        err.statusCode = 500; 
+                    }
+                    return next(err);
+            }
+            
+        
+        }
+const getItemsByCatigory=async(req,res,next)=>{
+
+    try{
+       const page = req.query.page || 1;
+       const productPerPage = 10;
+       const type = req.query.type 
+       const optinalSearchParam=req.query.catigory
+     
+       let totalItems;
+       let Items;
+        if (type == 'products') {
+           const cato=await Catigory.findOne({name:optinalSearchParam})
+           if(!cato){
+               res.status(404).json({
+                   state: 0,
+                   msg: 'catigory not found',
+                   
+                 });
+           }
+           totalItems= await Product.find({catigory:cato._id}).countDocuments();
+           Items = await Product.find({catigory:cato._id})
+           .populate({path:'catigory' ,select:'name'})
+           .skip((page - 1) * productPerPage)
+           .limit(productPerPage)
+           .sort({'sold':'-1'})
+       }else if (type == 'ads') {
+        const cato=await MarketCatigory.findOne({name:optinalSearchParam})
+        if(!cato){
+            res.status(404).json({
+                state: 0,
+                msg: 'catigory not found',
+                
+              });
+        }
+        totalItems= await ADS.find({catigory:cato._id}).countDocuments();
+        Items = await ADS.find({catigory:cato._id})
+        .populate({path:'catigory' ,select:'name'})
+        .skip((page - 1) * productPerPage)
+        .limit(productPerPage)
+        .sort({'star':'-1'})
+       // console.debug(Items)
+       }
+   
+   
+       if(!type){
+          return res.status(404).json({
+               state: 0,
+              msg:'invalid type'
+             });
+       }
+       res.status(200).json({
+         state: 1,
+         NumOfItems: totalItems,
+         items: Items,
+       });
+                
+               }catch(err){
+                   console.debug(err)
+                       if(!err.statusCode){
+                           err.statusCode = 500; 
+                       }
+                       return next(err);
+               }
+}   
+
+const createPromo=async(req,res,next)=>{
+
+    
+    try{
+    
+    const errors = validationResult(req);
+    console.debug(errors)
+    if(!errors.isEmpty()){
+        const error = new Error('validation faild');
+        error.statusCode = 422 ;
+        error.data = errors.array();
+        return next(error) ; 
+    }
+    const {name,descPercent}=req.body;
+    
+        const NewPromo= new PromoCode({
+           name,
+           descPercent
+        })
+        await NewPromo.save(); 
+        res.status(201).json({state:1,msg:'promo created '})
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+const editPromo=async(req,res,next)=>{
+
+    
+    try{
+    
+    const errors = validationResult(req);
+    console.debug(errors)
+    if(!errors.isEmpty()){
+        const error = new Error('validation faild');
+        error.statusCode = 422 ;
+        error.data = errors.array();
+        return next(error) ; 
+    }
+    const {name,descPercent,PromoId}=req.body;
+
+    const promo=await PromoCode.findById(PromoId)
+    promo.name=name
+    promo.descPercent=descPercent
+
+        await promo.save(); 
+        res.status(200).json({state:1,msg:'promo edited '})
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+const deletePromo=async(req,res,next)=>{
+
+    
+    try{
+    
+    const errors = validationResult(req);
+    console.debug(errors)
+    if(!errors.isEmpty()){
+        const error = new Error('validation faild');
+        error.statusCode = 422 ;
+        error.data = errors.array();
+        return next(error) ; 
+    }
+    const {PromoId}=req.body;
+
+    await PromoCode.findByIdAndDelete(PromoId)
+    
+        res.status(200).json({state:1,msg:'promo deleted '})
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+const getAllPromo=async(req,res,next)=>{
+
+    
+    try{
+    
+   
+    
+        const promos =await PromoCode.find()
+
+        res.status(201).json({state:1,promos})
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+
+const getOrders=async(req,res,next)=>{
+
+    
+    try{
+        const orderId=req.params.orderId
+        if(orderId){
+            const order =await Order.findById(orderId.toString())
+            .populate({path:'Cuser'})
+            .populate({path:'Tuser'})
+            .populate({path:'payment'})
+            if(!order){
+               return res.status(404).json({state:0,msg:'order not found'})
+            }
+            return res.status(404).json({state:1,msg:order})
+        }
+        const orders =await Order.find()
+        .populate({path:'Cuser'})
+            .populate({path:'Tuser'})
+            .populate({path:'payment'})
+        res.status(201).json({state:1,orders})
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
 module.exports={
     register,
     login,
@@ -840,7 +1305,16 @@ module.exports={
     getAllUsers,
     createService,
     getTotalNumOfUsers,
-    getuserProfile
+    getuserProfile,
+    getAllProducts,
+    TotalNum,
+    getItemsByCatigory,
+    createPromo,
+    editPromo,
+    deletePromo
+    ,getAllPromo,
+    getOrders
+    
 
 
 

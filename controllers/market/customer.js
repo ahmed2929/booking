@@ -645,7 +645,7 @@ const MakeOrder=async(req,res,next)=>{
             
                 const editProduct= await Product.findById(elem.product._id)
                editProduct.avilableNumber-=elem.numberNeeded
-               
+               editProduct.sold+=elem.numberNeeded
                    await editProduct.save()
             }
             user.cart=[]

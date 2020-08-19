@@ -250,7 +250,8 @@ const getAllads=async (req,res,next)=>{
     try{
     const allAds=await ADS.find()
     .sort({'star':-1})
-    .populate('ad')
+    .populate({path:'services.serviceType',select:'name image'})
+    .populate({path:'catigory', select:'name'})
    res.status(200).json({state:1,allAds})
 }
    catch(err){

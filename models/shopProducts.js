@@ -15,7 +15,11 @@ const Productchema = new schema({
     price:Number,
     desc:String,
     title:String,
-    avilableNumber:Number
+    avilableNumber:Number,
+    sold:{
+        type:Number,
+        default:0
+    }
     
 }, {timestamps:true});
 

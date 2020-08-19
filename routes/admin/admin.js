@@ -126,13 +126,49 @@ Router.post('/blockCustomerUser',[
     .isEmpty(),
                     
 ],verfiyToken,controller.blockCustomerUser); 
+Router.post('/createPromo',[
+    
+    body('name')
+    .not()
+    .isEmpty(),
+    body('descPercent')
+    .not()
+    .isEmpty(),
+                    
+],verfiyToken,controller.createPromo); 
+Router.post('/editPromo',[
+    
+    body('name')
+    .not()
+    .isEmpty(),
+    body('descPercent')
+    .not()
+    .isEmpty(),
+    body('PromoId')
+    .not()
+    .isEmpty(),
+                    
+],verfiyToken,controller.editPromo); 
 
+Router.post('/deletePromo',[
+    
+    body('PromoId')
+    .not()
+    .isEmpty(),
+                    
+],verfiyToken,controller.deletePromo); 
+Router.get('/getOrders/:orderId',verfiyToken,controller.getOrders); 
+Router.get('/getOrders',verfiyToken,controller.getOrders); 
+Router.get('/getAllPromo',verfiyToken,controller.getAllPromo); 
 Router.get('/getAllUsers/:status',verfiyToken,controller.getAllUsers); 
 Router.get('/getAllUsers/',verfiyToken,controller.getAllUsers); 
 Router.get('/getTotalNumOfUsers/:status',verfiyToken,controller.getTotalNumOfUsers);
 Router.get('/getTotalNumOfUsers/',verfiyToken,controller.getTotalNumOfUsers); 
 Router.get('/getuserProfile/:type/:UserId',verfiyToken,controller.getuserProfile);
 Router.get('/getRequestById/:RequestId',verfiyToken,trederController.getRequestbyId);
+Router.get('/getAllProducts/',verfiyToken,controller.getAllProducts);
+Router.get('/TotalNum/:status',verfiyToken,controller.TotalNum);
+Router.get('/getItemsByCatigory/',verfiyToken,controller.getItemsByCatigory);
 
 Router.post('/createService',uploadImage.array('image'),[
     
