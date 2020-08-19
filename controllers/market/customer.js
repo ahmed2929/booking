@@ -19,6 +19,7 @@ const Payment=require('../../models/payment')
 const Order=require('../../models/order')
 
 const Book=async (req,res,next)=>{
+    console.debug('request body',req.body)
     try{
 
         const errors = validationResult(req);
