@@ -104,7 +104,16 @@ Router.post('/setTopView',[
     .not()
     .isEmpty(),
                     
-],verfiyToken,controller.setTopView);  
+],verfiyToken,controller.setTopView);
+
+Router.post('/deleteFromTopView',[
+    
+    body('adId')
+    .not()
+    .isEmpty(),
+                    
+],verfiyToken,controller.deleteFromTopView);
+
 Router.post('/createApprtmentCatigory',[
     
     body('name')
@@ -113,7 +122,7 @@ Router.post('/createApprtmentCatigory',[
                     
 ],verfiyToken,controller.createApprtmentCatigory); 
 
-Router.post('/blockCustomerUser',[
+Router.post('/blockUser',[
     
     body('userId')
     .not()
@@ -152,11 +161,30 @@ Router.post('/editPromo',[
 
 Router.post('/deletePromo',[
     
-    body('PromoId')
-    .not()
-    .isEmpty(),
-                    
+ 
 ],verfiyToken,controller.deletePromo); 
+
+Router.post('/editFQ',[
+    
+    
+                    
+],verfiyToken,controller.editFQ); 
+Router.post('/createFQ',[
+    
+                    
+],verfiyToken,controller.createFQ); 
+
+Router.post('/deleteFQ',[
+    
+  
+                    
+],verfiyToken,controller.deleteFQ); 
+
+
+ Router.get('/getFQ/:id',verfiyToken,controller.getFQ); 
+ Router.get('/getFQ',verfiyToken,controller.getFQ); 
+Router.get('/getBookingOpertaions/:status',verfiyToken,controller.getBookingOpertaions); 
+Router.get('/getBookingOpertaions',verfiyToken,controller.getBookingOpertaions); 
 Router.get('/getOrders/:orderId',verfiyToken,controller.getOrders); 
 Router.get('/getOrders',verfiyToken,controller.getOrders); 
 Router.get('/getAllPromo',verfiyToken,controller.getAllPromo); 

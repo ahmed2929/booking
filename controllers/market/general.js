@@ -10,7 +10,9 @@ const fs = require('fs');
 const path=require('path')
 const AvilableServices=require('../../models/AvilableServices');
 const { start } = require('repl');
-const mostView=require('../../models/topView')
+const mostView=require('../../models/topView');
+const { all } = require('../../routes/admin/admin');
+const { any } = require('../../helpers/uploadImage');
 
 
 var getAvilableCatigories=async (req,res,next)=>{
@@ -198,24 +200,51 @@ const getCatigoriesAdById=async (req,res,next)=>{
 const getAdsFilter=async (req,res,next)=>{
     try{
     const {city,rooms,type,priceFrom,priceTo,review,beds,beach}=req.body //review,beds,beach,
-    console.debug('controller run')
-    const AD=await ADS.find({
-        price:{ $gte :  priceFrom,$lte:priceTo},
-        city:city,
-        star:{$gte :review},
-        NumOfRooms:rooms,
-        beds:beds,
-        beach:beach
+        var AD
+    if(beach===null){
+         AD=await ADS.find({
+            price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
+            city:city||{ $exists:true}  ,
+            star:{$gte :review||-1},
+            NumOfRooms:rooms||{ $exists:true},
+            beds:beds||{ $exists:true},
+        })
+        .populate({
+            path: 'catigory',
+            select: 'name',
+        })
+        .populate({
+            path: 'services.serviceType',
+            select: 'name',
+        })
+    }else{
 
-    })
-    .populate({
-        path: 'catigory',
-        select: 'name',
-    })
-  
+     AD=await ADS.find({
+            price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
+            city:city||{ $exists:true}  ,
+            star:{$gte :review||-1},
+            NumOfRooms:rooms||{ $exists:true},
+            beds:beds||{ $exists:true},
+            beach:beach
+        })
+        .populate({
+            path: 'catigory',
+            select: 'name',
+        })
+        .populate({
+            path: 'services.serviceType',
+        })
+
+    }
+
+   
+    var finalRes=AD
+  if(type){
     var finalRes=AD.filter(obj=>{
         return obj.catigory.name===type
     })
+  }
+    
    res.status(200).json({state:1,finalRes})
 }
    catch(err){

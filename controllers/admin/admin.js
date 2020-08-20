@@ -19,7 +19,10 @@ const path=require('path')
 //const nodemailerMailgun=require('../../../helpers/sendEmail');
 const fs=require('fs');
 const shopcatigory = require('../../models/shopcatigory');
-const PromoCode=require('../../models/promocode')
+const PromoCode=require('../../models/promocode');
+const topView = require('../../models/topView');
+const Request =require('../../models/Request')
+const FQ=require('../../models/f&q')
 var register=async (req,res,next)=>{
 
     const errors = validationResult(req);
@@ -528,7 +531,36 @@ var CreateProduct=async (req,res,next)=>{
         }
     
     }
-
+     var deleteFromTopView=async (req,res,next)=>{
+        try{
+            const errors = validationResult(req);
+                console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+    
+            const {adId} =req.body
+           await topView.findByIdAndDelete(adId)
+    
+    
+         res.status(200).json({state:1,message:'ad deleted from top view'});
+    
+    
+    
+    
+        }catch(err){
+            console.debug(err)
+                if(!err.statusCode){
+                    err.statusCode = 500; 
+                }
+                return next(err);
+        
+    
+    }
+     }
     var createApprtmentCatigory=async(req,res,next)=>{
 
     
@@ -630,11 +662,12 @@ var CreateProduct=async (req,res,next)=>{
          user = await customer.find();
        }else if(status=='treder') {
          user = await treder.find();
-       }else{
+       }
+
+       else{
         var user = await customer.find();
         var tuser = await treder.find();
         user.concat(tuser)
-
        }
         
         if(!user){
@@ -1290,6 +1323,196 @@ const getOrders=async(req,res,next)=>{
     
 
 }
+
+const getBookingOpertaions=async(req,res,next)=>{
+    try{
+        
+        const status=req.params.status
+        const request = await Request.find({
+        })
+        .populate({path:'from',select:'name email mobile _id'})
+        .populate({path:'to' ,select:'name email mobile _id'})
+        .populate({path:'AD' ,select:'images star price _id'})
+        console.debug(status)
+        if(status){
+            console.debug('if run')
+            Frequest=request.filter(obj=>{
+               // console.debug(obj.RequestData.status==status)
+               return obj.RequestData.status==status
+            })
+
+           return res.status(200).json({state:1,request:Frequest})
+
+        }
+        res.status(200).json({state:1,request})
+
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+
+const SupportMessagesFromUsers=async(req,res,next)=>{
+    try{
+        
+        const status=req.params.status
+        const request = await Request.find({
+        })
+        .populate({path:'from',select:'name email mobile _id'})
+        .populate({path:'to' ,select:'name email mobile _id'})
+        .populate({path:'AD' ,select:'images star price _id'})
+        console.debug(status)
+        if(status){
+            console.debug('if run')
+            Frequest=request.filter(obj=>{
+               // console.debug(obj.RequestData.status==status)
+               return obj.RequestData.status==status
+            })
+
+           return res.status(200).json({state:1,request:Frequest})
+
+        }
+        res.status(200).json({state:1,request})
+
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+const createFQ=async(req,res,next)=>{
+    try{
+
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        const {question,answer}=req.body
+        const newfq =new FQ({
+            question,
+            answer
+        })
+       await newfq.save()
+        
+        res.status(200).json({state:1,msg:"FQ created"})
+
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+const editFQ=async(req,res,next)=>{
+    try{
+
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        const {FQID,question,answer}=req.body
+       await FQ.findByIdAndUpdate(FQID,{
+        question,
+        answer
+       })
+       
+        
+        res.status(200).json({state:1,msg:'FQ updated'})
+
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+const deleteFQ=async(req,res,next)=>{
+    try{
+
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        const {FQID}=req.body
+       await FQ.findByIdAndDelete(FQID)
+       
+        
+        res.status(200).json({state:1,msg:'FQ deleted'})
+
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+const getFQ=async(req,res,next)=>{
+    try{
+
+     const {id}=req.params
+
+        if(id){
+           const fq= await FQ.findById(id)
+          return res.status(200).json({state:1,fq})
+        }    
+        const fqs= await FQ.find()
+        return res.status(200).json({state:1,fqs})
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+
 module.exports={
     register,
     login,
@@ -1313,7 +1536,13 @@ module.exports={
     editPromo,
     deletePromo
     ,getAllPromo,
-    getOrders
+    getOrders,
+    deleteFromTopView,
+    getBookingOpertaions,
+    createFQ,
+    editFQ,
+    deleteFQ,
+    getFQ
     
 
 
