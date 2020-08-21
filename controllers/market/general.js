@@ -295,7 +295,6 @@ const getAllads=async (req,res,next)=>{
     .sort({'star':-1})
     .populate({path:'services.serviceType',select:'name image -_id '})
     .select('images title city streetAdress price services ')
-    .select('-services.price')
     .skip((page - 1) * itemPerPage)
     .limit(itemPerPage)
     
