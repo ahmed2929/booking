@@ -65,6 +65,8 @@ Router.put('/editMyProfile',verfiyToken,uploadImage.array('image'),[
 
 Router.get('/getReviews',verfiyToken,conttroller.getLatestReviews)
 
+Router.put('/contactSupport',verfiyToken,conttroller.contactSupport)
+
 
 
 

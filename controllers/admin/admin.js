@@ -22,7 +22,9 @@ const shopcatigory = require('../../models/shopcatigory');
 const PromoCode=require('../../models/promocode');
 const topView = require('../../models/topView');
 const Request =require('../../models/Request')
-const FQ=require('../../models/f&q')
+const Isuues=require('../../models/isuues')
+const FQ=require('../../models/f&q');
+const { request } = require('express');
 var register=async (req,res,next)=>{
 
     const errors = validationResult(req);
@@ -1359,29 +1361,63 @@ const getBookingOpertaions=async(req,res,next)=>{
 
 }
 
-const SupportMessagesFromUsers=async(req,res,next)=>{
+const getSupportMessagesFromUsers=async(req,res,next)=>{
     try{
         
-        const status=req.params.status
-        const request = await Request.find({
-        })
-        .populate({path:'from',select:'name email mobile _id'})
-        .populate({path:'to' ,select:'name email mobile _id'})
-        .populate({path:'AD' ,select:'images star price _id'})
-        console.debug(status)
-        if(status){
-            console.debug('if run')
-            Frequest=request.filter(obj=>{
-               // console.debug(obj.RequestData.status==status)
-               return obj.RequestData.status==status
-            })
-
-           return res.status(200).json({state:1,request:Frequest})
-
+       const {status,id}=req.query
+       if(id){
+           
+        const isuue=await Isuues.findById(id)
+        .populate({path:'Cuser',select:'name email _id photo blocked emailVerfied'})
+        .populate({path:'Tuser',select:'name email _id photo blocked emailVerfied'})
+        if(!isuue){
+           return res.status(404).json({state:0,mgs:"isuue not found"})
         }
-        res.status(200).json({state:1,request})
+        return res.status(200).json({state:1,isuue})
+    }else if(status){
+        const isuues=await Isuues.find({
+            status:status
+        })
+        .populate({path:'Cuser',select:'name email _id photo blocked emailVerfied'})
+        .populate({path:'Tuser',select:'name email _id photo blocked emailVerfied'})
+        
+           return res.status(200).json({state:1,support:isuues})
+        
+    }else{
+        const isuues=await Isuues.find()
+        .populate({path:'Cuser',select:'name email _id photo blocked emailVerfied'})
+        .populate({path:'Tuser',select:'name email _id photo blocked emailVerfied'})
+        
+           return res.status(200).json({state:1,support:isuues})
 
+    }
 
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+const AnswerSupport=async(req,res,next)=>{
+    try{
+        
+       const {id,answer}=req.body
+       
+        var isuue=await Isuues.findById(id)
+       
+        if(!isuue){
+           return res.status(404).json({state:0,mgs:"isuue not found"})
+        }
+        
+        isuue.answer=answer
+        isuue.status=1
+        await isuue.save()
+        return res.status(200).json({state:1,mgs:"isuue saved"})
+        
 
     }catch(err){
         console.debug(err)
@@ -1542,7 +1578,9 @@ module.exports={
     createFQ,
     editFQ,
     deleteFQ,
-    getFQ
+    getFQ,
+    getSupportMessagesFromUsers,
+    AnswerSupport
     
 
 

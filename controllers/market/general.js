@@ -199,9 +199,12 @@ const getCatigoriesAdById=async (req,res,next)=>{
 
 const getAdsFilter=async (req,res,next)=>{
     try{
-    const {city,rooms,type,priceFrom,priceTo,review,beds,beach}=req.body //review,beds,beach,
+        console.debug(req.query)
+    const {city,rooms,type,priceFrom,priceTo,review,beds,beach}=req.query
+     //review,beds,beach,
+     console.debug(beach)
         var AD
-    if(beach===null){
+    if(beach===undefined||beach===undefined){
          AD=await ADS.find({
             price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
             city:city||{ $exists:true}  ,
@@ -259,11 +262,19 @@ const getAdsFilter=async (req,res,next)=>{
 
 
 const getMostView=async (req,res,next)=>{
+    const page = req.query.page *1 || 1;
+    const itemPerPage = 10; 
+    
     try{
+
+        const  totalAds = await mostView.find({}).countDocuments();   
     const mostview=await mostView.find()
+    .skip((page - 1) * itemPerPage)
+    .limit(itemPerPage)
+    .populate({path:'ad' ,select:'title price images city streetAdress _id '})
+    .select('-_id -position')
     .sort('position')
-    .populate('ad')
-   res.status(200).json({state:1,mostview})
+   res.status(200).json({state:1,totalAds,mostview})
 }
    catch(err){
     console.debug(err)
@@ -276,12 +287,18 @@ const getMostView=async (req,res,next)=>{
 }
 
 const getAllads=async (req,res,next)=>{
+    const page = req.query.page *1 || 1;
+    const itemPerPage = 10; 
     try{
+      const  totalAds = await ADS.find({}).countDocuments();   
     const allAds=await ADS.find()
+    .skip((page - 1) * itemPerPage)
+    .limit(itemPerPage)
     .sort({'star':-1})
-    .populate({path:'services.serviceType',select:'name image'})
-    .populate({path:'catigory', select:'name'})
-   res.status(200).json({state:1,allAds})
+    .populate({path:'services.serviceType',select:'name image -_id '})
+    .select('images title city streetAdress price services ')
+    .select('-services.price')
+   res.status(200).json({state:1,totalAds,allAds})
 }
    catch(err){
     console.debug(err)

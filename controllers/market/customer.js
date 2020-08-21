@@ -17,7 +17,7 @@ const { use } = require('passport');
 const paginate=require('../../helpers/general/helpingFunc').paginate
 const Payment=require('../../models/payment')
 const Order=require('../../models/order')
-
+const Isuue=require('../../models/isuues')
 const Book=async (req,res,next)=>{
     console.debug('request body',req.body)
     try{
@@ -111,6 +111,7 @@ const Book=async (req,res,next)=>{
 const getMyRequests=async (req,res,next)=>{
 try{
     const page = req.query.page *1 || 1;
+    const status=req.query.status
     const itemPerPage = 10;
     const customer=await CustomerUser.findById(req.userId)
     .select('pendingRequestTo')
@@ -168,7 +169,14 @@ try{
      })
 
      mapedLimitedResult = mapedLimitedResult.filter(function (el) {
-        return el != null;
+         console.debug(status,el.status)
+         if(status){
+            console.debug(el.status===status)
+            return el != null &&el.status==status
+         }else{
+            return el != null
+         }
+       
       });
       
     res.status(200).json({state:1,Result:mapedLimitedResult})
@@ -704,6 +712,37 @@ const MakeOrder=async(req,res,next)=>{
 }
 }
 
+const contactSupport=async(req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        const {message}=req.body
+        const newIsuue=new Isuue({
+            Cuser:req.userId,
+            message
+        })
+      await newIsuue.save()
+      res.status(200).json({state:1,msg:'isuue created successfuly'})
+
+
+       
+        }catch(err){
+            //console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
 module.exports={
 
     Book,
@@ -715,6 +754,7 @@ module.exports={
     decreseCartItem,
     getMyProfile,
     editMyProfile,
-    MakeOrder
+    MakeOrder,
+    contactSupport
 
 }

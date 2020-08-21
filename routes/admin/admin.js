@@ -179,8 +179,8 @@ Router.post('/deleteFQ',[
   
                     
 ],verfiyToken,controller.deleteFQ); 
-
-
+Router.post('/AnswerSupport',verfiyToken,controller.AnswerSupport); 
+Router.get('/getSupportMessagesFromUsers',verfiyToken,controller.getSupportMessagesFromUsers); 
  Router.get('/getFQ/:id',verfiyToken,controller.getFQ); 
  Router.get('/getFQ',verfiyToken,controller.getFQ); 
 Router.get('/getBookingOpertaions/:status',verfiyToken,controller.getBookingOpertaions); 

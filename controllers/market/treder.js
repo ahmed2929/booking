@@ -11,7 +11,7 @@ const { countDocuments } = require('../../models/ADS');
 const fs = require('fs');
 const path=require('path')
 const TrederUsers=require('../../models/TrederUsers')
-
+const Isuue =require('../../models/isuues')
 const AvilableServices=require('../../models/AvilableServices')
 const Request=require('../../models/Request')
 const paginate=require('../../helpers/general/helpingFunc').paginate
@@ -411,7 +411,8 @@ var getAllRequests=async(req,res,next)=>{
     console.debug('controller')
     try{
         const page = req.query.page *1 || 1;
-        const itemPerPage = 20;
+        const status=req.query.status
+        const itemPerPage = 10;
         const Treder=await TrederUsers.findById(req.userId)
         .select('RecivedRequest')
         .populate('RecivedRequest')
@@ -463,7 +464,13 @@ var getAllRequests=async(req,res,next)=>{
          })
     
          mapedLimitedResult = mapedLimitedResult.filter(function (el) {
-            return el != null;
+            if(status){
+                console.debug(el.status===status)
+                return el != null &&el.status==status
+             }else{
+                return el != null
+             }
+           
           });
     
     //totalNumOfRequests:totalNumOfRequests,hasNextPage:itemPerPage*page<totalNumOfRequests,hasPerivousPage:page>1,nextPage:page+1,previousPage:page-1
@@ -803,7 +810,36 @@ const getLatestReviews=async(req,res,next)=>{
 }
 }
 
+const contactSupport=async(req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
 
+        const {message}=req.body
+        const newIsuue=new Isuue({
+            Tuser:req.userId,
+            message
+        })
+      await newIsuue.save()
+      res.status(200).json({state:1,msg:'isuue created successfuly'})
+
+
+       
+        }catch(err){
+            //console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
 
 
 module.exports={
@@ -820,6 +856,7 @@ acceptRequest,
 disAgree,
 getMyProfile,
 editMyProfile,
-getLatestReviews
+getLatestReviews,
+contactSupport
 
 }
