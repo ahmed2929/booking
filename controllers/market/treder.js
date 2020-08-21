@@ -1131,6 +1131,32 @@ const MakeOrder=async(req,res,next)=>{
 }
 }
 
+const getNotifications=async(req,res,next)=>{
+    try{
+        const page = req.query.page *1 || 1;
+        const status=req.query.status
+        const itemPerPage = 10;
+        
+        const user=await TrederUsers.findById(req.userId)
+        .populate({path: 'notfications', options: { sort:'desc' } ,select:'notification action data createdAt'})
+        .select('notfications')
+        .skip((page - 1) * itemPerPage)
+        .limit(itemPerPage)
+        
+        console.log(user)
+          res.status(200).json({state:1,notfications:user.notfications})
+        
+           
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
 
 module.exports={
 
@@ -1151,6 +1177,7 @@ contactSupport,
 putItemToCart,
 getCartItems,
 decreseCartItem,
-MakeOrder
+MakeOrder,
+getNotifications
 
 }

@@ -56,7 +56,10 @@ const userSchema = new schema({
         type:String,
         required:true
     },
-    photo:String,
+    photo:{
+      type:String,
+      default:'https://img.icons8.com/bubbles/50/000000/user-male.png'
+    },
     
     emailVerfied:{
         type:Boolean,
@@ -84,21 +87,12 @@ const userSchema = new schema({
         type:schema.Types.ObjectId,
         ref:'request'
     }],
-    notfications:[{
-        data:{
-            id:String,
-            key:String,
-            data:String
-        },
-        notification:{
-            title:String,
-            body:String
-        },
-        date:{
-            type:String,
-            required:true
-        }
-    }],
+    notfications:[
+      {
+        type:schema.Types.ObjectId,
+        ref:'notification' 
+      }
+    ],
     EmailActiveCode:String,
     phoneActiveCode:String
     ,

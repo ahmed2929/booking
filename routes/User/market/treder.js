@@ -64,6 +64,8 @@ Router.put('/editMyProfile',verfiyToken,uploadImage.array('image'),[
 ],conttroller.editMyProfile);
 
 Router.get('/getReviews',verfiyToken,conttroller.getLatestReviews)
+Router.get('/getNotifications',verfiyToken,conttroller.getNotifications)
+
 
 Router.put('/contactSupport',verfiyToken,conttroller.contactSupport)
 Router.put('/MakeOrder',verfiyToken,conttroller.MakeOrder)

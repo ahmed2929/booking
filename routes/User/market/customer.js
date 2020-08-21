@@ -39,7 +39,7 @@ Router.get('/getMyProfile',verfiyToken,conttroller.getMyProfile)
 Router.put('/editMyProfile',uploadImage.array('image'),verfiyToken,conttroller.editMyProfile)
 Router.put('/MakeOrder',verfiyToken,conttroller.MakeOrder)
 Router.put('/contactSupport',verfiyToken,conttroller.contactSupport)
-
+Router.get('/getNotifications',verfiyToken,conttroller.getNotifications)
 
 
 

@@ -2,14 +2,14 @@ const express=require('express');
 const bodyParser=require('body-parser');
 const path      = require('path');
 const multer    = require('multer');
-
+const AppAdmin=require('../routes/admin/admin')
 const authCustomer=require('../routes/User/auth/customer/CustomerUser')
 const authTreder=require('../routes/User/auth/treder/Trederuser')
 const socialmediaCustomer=require('../routes/User/auth/socialMedia/customer')
 const socialmediaTreder=require('../routes/User/auth/socialMedia/treder')
 const marketTreder=require('../routes/User/market/treder')
 const marketcustomer=require('../routes/User/market/customer')
-const admin=require('../routes/admin/admin')
+const admin=require('firebase-admin')
 const shop=require('../routes/shop/shop')
 request = require('request');
 const SearchApi=require('../controllers/general/general').Search
@@ -23,7 +23,22 @@ module.exports=(app)=>{
    app.use(bodyParser.urlencoded({extended:true}));
    require('dotenv').config();
    
-  //app.use('/static', express.static(path.join(__dirname, 'public')))
+   admin.initializeApp({
+      credential: admin.credential.cert({
+        
+        clientEmail: process.env.FCM_CLINT_EMAIL,
+        privateKey:  process.env.FCM_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        projectId:   process.env.FCM_PROJ_ID ,
+  
+    }),
+  });
+  
+
+
+
+
+
+
 
    app.get('/',(req,res)=>{
       res.send('welcome please read the docs')
@@ -43,7 +58,7 @@ module.exports=(app)=>{
    app.use('/market/customer',marketcustomer)
    app.use('/market/general',generalMargetRoutes)
    app.use('/shop/',shop)
-   app.use('/admin',admin)
+   app.use('/admin',AppAdmin)
    app.use('/search',SearchApi)
    
   app.get('/images/*',(req,res)=>{

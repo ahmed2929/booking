@@ -69,19 +69,10 @@ const userSchema = new schema({
         ref:'request'
     }],
     notfications:[{
-        data:{
-            id:String,
-            key:String,
-            data:String
-        },
-        notification:{
-            title:String,
-            body:String
-        },
-        date:{
-            type:String,
-            required:true
-        }
+      
+        type:schema.Types.ObjectId,
+        ref:'notification' 
+      
     }],
     name:String,
     email:String,

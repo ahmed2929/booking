@@ -18,7 +18,7 @@ const paginate=require('../../helpers/general/helpingFunc').paginate
 const Payment=require('../../models/payment')
 const Order=require('../../models/order')
 const Isuue=require('../../models/isuues')
-
+const notificationSend=require('../../helpers/send-notfication').send
 function parseDate(str) {
     var mdy = str.split('-');
     return new Date(mdy[2], mdy[0]-1, mdy[1]);
@@ -106,6 +106,14 @@ const Book=async (req,res,next)=>{
        var editTreder=await trederUser.findById(ad.Creator)
        editTreder.RecivedRequest.push(newRequest._id)
        await editTreder.save()
+       const data={
+           RequestId:newRequest._id,
+       }
+       const notification={
+           title:'you have recived a new request',
+           body:`${editCustomer.name} wants to rent ${ad.title}`
+       }
+      const result=await notificationSend("RequestRecived",data,notification,ad.Creator,1)
        res.status(200).json({state:1,msg:'request sent'})
 
 
@@ -775,6 +783,34 @@ const contactSupport=async(req,res,next)=>{
         
 }
 }
+const getNotifications=async(req,res,next)=>{
+    try{
+        const page = req.query.page *1 || 1;
+        const status=req.query.status
+        const itemPerPage = 10;
+        
+        const user=await CustomerUser.findById(req.userId)
+        .populate({path: 'notfications', options: { sort:'desc' } ,select:'notification action data createdAt'})
+        .select('notfications')
+        .skip((page - 1) * itemPerPage)
+        .limit(itemPerPage)
+        
+        console.log(user)
+          res.status(200).json({state:1,notfications:user.notfications})
+        
+           
+        
+           
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
 
 module.exports={
 
@@ -788,6 +824,7 @@ module.exports={
     getMyProfile,
     editMyProfile,
     MakeOrder,
-    contactSupport
+    contactSupport,
+    getNotifications
 
 }
