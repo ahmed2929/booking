@@ -16,6 +16,7 @@ const Request=require('../../models/Request');
 const { use } = require('passport');
 const paginate=require('../../helpers/general/helpingFunc').paginate
 const shopcatigory=require('../../models/shopcatigory');
+const Promo=require('../../models/promocode')
 const { connected } = require('process');
 const Search = async (req, res, next) => {
     const search = req.query.search;
@@ -133,8 +134,8 @@ const Search = async (req, res, next) => {
     }
   };
 
-
 module.exports={
-    Search
+    Search,
+    
 
 }

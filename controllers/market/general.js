@@ -13,7 +13,7 @@ const { start } = require('repl');
 const mostView=require('../../models/topView');
 const { all } = require('../../routes/admin/admin');
 const { any } = require('../../helpers/uploadImage');
-
+const shopcatigory =require('../../models/shopcatigory')
 
 var getAvilableCatigories=async (req,res,next)=>{
 
@@ -309,7 +309,25 @@ const getAllads=async (req,res,next)=>{
 
 }
 }
-
+const getShopAvilablCatigory=async(req,res,next)=>{
+    
+    try{
+          const cato=await shopcatigory.find()
+          .select('name _id')
+          
+       
+            res.status(200).json({state:1,catigories:cato})
+    
+        }catch(err){
+            console.debug(err)
+                if(!err.statusCode){
+                    err.statusCode = 500; 
+                }
+                return next(err);
+        }
+        
+  
+  }  
 
 
 module.exports={
@@ -321,6 +339,7 @@ getAdDetailsById,
 getCatigoriesAdById,
 getAdsFilter,
 getMostView,
-getAllads
+getAllads,
+getShopAvilablCatigory
 
 }

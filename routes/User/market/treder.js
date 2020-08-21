@@ -66,8 +66,10 @@ Router.put('/editMyProfile',verfiyToken,uploadImage.array('image'),[
 Router.get('/getReviews',verfiyToken,conttroller.getLatestReviews)
 
 Router.put('/contactSupport',verfiyToken,conttroller.contactSupport)
-
-
+Router.put('/MakeOrder',verfiyToken,conttroller.MakeOrder)
+Router.post('/putItemToCart',verfiyToken,conttroller.putItemToCart)
+Router.get('/getCartItems',verfiyToken,conttroller.getCartItems)
+Router.post('/decreseCartItem',verfiyToken,conttroller.decreseCartItem)
 
 
 module.exports=Router

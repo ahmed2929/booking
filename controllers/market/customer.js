@@ -18,6 +18,18 @@ const paginate=require('../../helpers/general/helpingFunc').paginate
 const Payment=require('../../models/payment')
 const Order=require('../../models/order')
 const Isuue=require('../../models/isuues')
+
+function parseDate(str) {
+    var mdy = str.split('-');
+    return new Date(mdy[2], mdy[0]-1, mdy[1]);
+}
+
+function datediff(first, second) {
+    // Take the difference between the dates and divide by milliseconds per day.
+    // Round to nearest whole number to deal with DST.
+    return Math.round((second-first)/(1000*60*60*24));
+}
+
 const Book=async (req,res,next)=>{
     console.debug('request body',req.body)
     try{
@@ -135,14 +147,22 @@ try{
     var streetAdress= oldObj.AD.streetAdress
     var RequestId=oldObj._id
     var status=oldObj.RequestData.status
-    var InFuture=StartDate >Date.now() ?true:false
-    var InPast=EndDate <Date.now() ?true:false
-    var canRate=StartDate<Date.now()
+    var Adult=oldObj.RequestData.Adult
+    var children=oldObj.RequestData.children
+    var FinalservicePrice=oldObj.RequestData.FinalservicePrice
+    var finalPrice=oldObj.RequestData.finalPrice
+    var services=oldObj.RequestData.services  
+    
+    const NumOfDays=datediff( Date.now(),StartDate)  
+    //var InFuture=StartDate >Date.now() ?true:false
+    //var InPast=EndDate <Date.now() ?true:false
+    var canRate=StartDate<Date.now()&&oldObj.RequestData.status==1
     var arivalTime=oldObj.RequestData.ArivalTime
-    var message=oldObj.refuseMassage
+    //var message=oldObj.refuseMassage
     var adId=oldObj.AD._id
-
-     FResult={
+    
+    var CanReschedule=oldObj.RequestData.status==0&&NumOfDays>0?true:false
+         FResult={
         StartDate,
         EndDate,
         renterPhone,
@@ -150,14 +170,21 @@ try{
         title,
         RequestId,
         status,
-        InFuture,
-        InPast,
+       // InFuture,
+       // InPast,
         arivalTime,
-        message,
+      // message,
         adId,
         city,
         streetAdress,
-        canRate
+        canRate,
+        NumOfDays,
+        services,
+        Adult,
+        FinalservicePrice,
+        finalPrice,
+        children,
+        CanReschedule
         
 
     }
@@ -371,6 +398,8 @@ const putItemToCart=async(req,res,next)=>{
 
 
         }
+       
+        
         if(product.avilableNumber<=0){
             const error = new Error('sorry product out of stock');
             error.statusCode = 422 ;
@@ -379,7 +408,11 @@ const putItemToCart=async(req,res,next)=>{
         var foundAndseted=false
         var editCart=user.cart.map(obj=>{
             if(obj.product._id.toString()==ProductId.toString()){
-                
+                if(product.avilableNumber<obj.numberNeeded+1){
+                    const error = new Error('sorry you cant pay this amount right now');
+                    error.statusCode = 422 ;
+                    return next(error) ; 
+                }
                 obj.numberNeeded+=1;
               
                 foundAndseted=true
@@ -427,7 +460,7 @@ const getCartItems=async(req,res,next)=>{
         
             const usercart=await CustomerUser.findById(req.userId)
             .populate('cart')
-            .populate('cart.product')
+            .populate({path:'cart.product',select:'images price title avilableNumber'})
             .select('cart')
 
         
@@ -613,7 +646,7 @@ const MakeOrder=async(req,res,next)=>{
             return next(error) ; 
         }
 
-        const {paymentMethod,cartPrice,usedPromoCode,finalPrice,descPerc,address}=req.body
+        const {paymentMethod,cartPrice,finalPrice,descPerc,address}=req.body
         const user =await CustomerUser.findById(req.userId)
         .populate({ path: 'cart', populate: { path: 'product'}})
 

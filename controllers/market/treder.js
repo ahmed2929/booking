@@ -13,7 +13,8 @@ const path=require('path')
 const TrederUsers=require('../../models/TrederUsers')
 const Isuue =require('../../models/isuues')
 const AvilableServices=require('../../models/AvilableServices')
-const Request=require('../../models/Request')
+const Request=require('../../models/Request');
+
 const paginate=require('../../helpers/general/helpingFunc').paginate
 var CreateAppartment=async (req,res,next)=>{
     console.debug('controller runas')
@@ -841,6 +842,295 @@ const contactSupport=async(req,res,next)=>{
 }
 }
 
+const putItemToCart=async(req,res,next)=>{
+    try{
+        console.debug(req.userId)
+        
+        const {ProductId}=req.body
+        const product=await Product.findById(ProductId)
+        if(!product){
+            const error = new Error('product not found');
+            error.statusCode = 422 ;
+            return next(error) ; 
+    
+        }
+        const user=await TrederUsers.findById(req.userId)
+        if(!user){
+
+            const error = new Error('user not found');
+            error.statusCode = 422 ;
+            return next(error) ; 
+
+
+        }
+        if(product.avilableNumber<=0){
+            const error = new Error('sorry product out of stock');
+            error.statusCode = 422 ;
+            return next(error) ; 
+        }
+        var foundAndseted=false
+        var editCart=user.cart.map(obj=>{
+            if(obj.product._id.toString()==ProductId.toString()){
+                if(product.avilableNumber<obj.numberNeeded+1){
+                    const error = new Error('sorry you cant pay this amount right now');
+                    error.statusCode = 422 ;
+                    return next(error) ; 
+                }
+                obj.numberNeeded+=1;
+              
+                foundAndseted=true
+                return obj
+            }
+            return obj
+        })
+         if(foundAndseted){
+             console.debug('it exist and its mm run')
+             user.cart=editCart
+             console.debug('user',user.cart)
+           await user.save();
+             res.status(200).json({state:1,msg:'the item added to the cart'})
+             foundAndseted=false
+            
+
+        }
+        else{
+
+             user.cart.push({
+                product:ProductId,
+         })
+
+         await user.save()
+
+          res.status(200).json({state:1,msg:'the item added to the cart'})
+        
+         }
+      
+
+           
+       
+        }catch(err){
+            //console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
+const getCartItems=async(req,res,next)=>{
+    try{
+        
+            const usercart=await TrederUsers.findById(req.userId)
+            .populate('cart')
+            .populate('cart.product')
+            .select('cart')
+
+        
+
+         res.status(200).json({state:1,Cart:usercart})
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+    }
+}
+
+const decreseCartItem=async(req,res,next)=>{
+    try{
+        
+        const {ProductId}=req.body
+        const product=await Product.findById(ProductId)
+        if(!product){
+            const error = new Error('product not found');
+            error.statusCode = 422 ;
+            return next(error) ; 
+    
+        }
+        const user=await TrederUsers.findById(req.userId)
+        if(!user){
+
+            const error = new Error('user not found');
+            error.statusCode = 422 ;
+            return next(error) ; 
+
+
+        }
+        if(product.avilableNumber<=0){
+            const error = new Error('sorry product out of stock');
+            error.statusCode = 422 ;
+            return next(error) ; 
+        }
+        var foundAndseted=false
+        var deleteIndex;
+        var deleteItem=false
+        var editCart=user.cart.map((obj,index)=>{
+            if(obj.product._id.toString()==ProductId.toString()){
+                if(obj.numberNeeded>=2){
+                    obj.numberNeeded-=1;
+              
+                foundAndseted=true
+                return obj
+                }else{
+                    deleteItem=true;
+                    deleteIndex=index
+                    return obj
+                }
+                
+                
+            }
+            return obj
+        })
+         if(foundAndseted){
+             console.debug('it exist and its mm run')
+             user.cart=editCart
+             console.debug('user',user.cart)
+           await user.save();
+           foundAndseted=false
+            return res.status(200).json({state:1,msg:'the decresed from  cart'})
+            
+            
+
+        }
+
+            if(deleteItem){
+                user.cart.splice(deleteIndex,1)
+                deleteItem=false
+                await user.save()
+                return res.status(200).json({state:1,msg:'the item deleted'})
+
+            }
+        
+
+          
+
+          res.status(422).json({state:0,msg:'cant decrese this is item ,item not foun in your cart'})
+        
+           
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+const MakeOrder=async(req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        const {paymentMethod,cartPrice,usedPromoCode,finalPrice,descPerc,address}=req.body
+        const user =await TrederUsers.findById(req.userId)
+        .populate({ path: 'cart', populate: { path: 'product'}})
+
+        if(!user){
+            const error = new Error('user not found');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        if(user.cart.length<=0){
+            const error = new Error('cart is empty');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+        
+        if(paymentMethod=='cach'){
+            const NewPayMent=new Payment({
+                Tuser:user._id,
+                methodOfPay:'cach',
+                totalMoney:cartPrice,
+                finalPrice:finalPrice,
+                descPerc:descPerc
+            })
+            await NewPayMent.save()
+            const order=new Order({
+                cuser:req._id,
+                cart:user.cart,
+                payment:NewPayMent._id,
+                address:address,
+
+            })
+            await order.save()
+           // console.debug(user.cart)
+           
+            for(let elem of user.cart){
+            
+                const editProduct= await Product.findById(elem.product._id)
+               editProduct.avilableNumber-=elem.numberNeeded
+               editProduct.sold+=elem.numberNeeded
+                   await editProduct.save()
+            }
+            user.cart=[]
+            await user.save()
+
+            res.status(200).json({state:1,msg:'order created succesfuly'})
+
+        }else if(paymentMethod=='elec'){
+
+            const NewPayMent=new Payment({
+                cuser:user._id,
+                methodOfPay:'elec',
+                totalMoney:cartPrice,
+                finalPrice:finalPrice,
+                status:1,
+                descPerc:descPerc
+            })
+            await NewPayMent.save()
+            const order=new Order({
+                cuser:req._id,
+                cart:user.cart,
+                payment:NewPayMent._id,
+                address:address,
+
+            })
+            await order.save()
+           // console.debug(user.cart)
+           
+            for(let elem of user.cart){
+            
+                const editProduct= await Product.findById(elem.product._id)
+               editProduct.avilableNumber-=elem.numberNeeded
+               
+                   await editProduct.save()
+            }
+            user.cart=[]
+            await user.save()
+
+            res.status(200).json({state:1,msg:'order created succesfuly'})
+            
+        }else{
+            res.status(422).json({state:1,msg:'invalid payment method'})
+        }
+       
+
+
+       
+        }catch(err){
+            //console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
 
 module.exports={
 
@@ -857,6 +1147,10 @@ disAgree,
 getMyProfile,
 editMyProfile,
 getLatestReviews,
-contactSupport
+contactSupport,
+putItemToCart,
+getCartItems,
+decreseCartItem,
+MakeOrder
 
 }
