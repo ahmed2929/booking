@@ -269,11 +269,11 @@ const getMostView=async (req,res,next)=>{
 
         const  totalAds = await mostView.find({}).countDocuments();   
     const mostview=await mostView.find()
-    .skip((page - 1) * itemPerPage)
-    .limit(itemPerPage)
     .populate({path:'ad' ,select:'title price images city streetAdress _id '})
     .select('-_id -position')
     .sort('position')
+    .skip((page - 1) * itemPerPage)
+    .limit(itemPerPage)
    res.status(200).json({state:1,totalAds,mostview})
 }
    catch(err){
