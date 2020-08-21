@@ -292,12 +292,13 @@ const getAllads=async (req,res,next)=>{
     try{
       const  totalAds = await ADS.find({}).countDocuments();   
     const allAds=await ADS.find()
-    .skip((page - 1) * itemPerPage)
-    .limit(itemPerPage)
     .sort({'star':-1})
     .populate({path:'services.serviceType',select:'name image -_id '})
     .select('images title city streetAdress price services ')
     .select('-services.price')
+    .skip((page - 1) * itemPerPage)
+    .limit(itemPerPage)
+    
    res.status(200).json({state:1,totalAds,allAds})
 }
    catch(err){
