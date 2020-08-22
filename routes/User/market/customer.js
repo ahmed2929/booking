@@ -40,6 +40,7 @@ Router.put('/editMyProfile',uploadImage.array('image'),verfiyToken,conttroller.e
 Router.put('/MakeOrder',verfiyToken,conttroller.MakeOrder)
 Router.put('/contactSupport',verfiyToken,conttroller.contactSupport)
 Router.get('/getNotifications',verfiyToken,conttroller.getNotifications)
+Router.post('/DeleteCartItem',verfiyToken,conttroller.DeleteCartItem)
 
 
 

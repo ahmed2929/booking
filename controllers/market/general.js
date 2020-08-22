@@ -202,9 +202,9 @@ const getAdsFilter=async (req,res,next)=>{
         console.debug(req.query)
     const {city,rooms,type,priceFrom,priceTo,review,beds,beach}=req.query
      //review,beds,beach,
-     console.debug(beach)
         var AD
-    if(beach===undefined||beach===undefined){
+    
+    if(beach===undefined){
          AD=await ADS.find({
             price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
             city:city||{ $exists:true}  ,

@@ -19,8 +19,8 @@ var getAllProducts=async(req,res,next)=>{
     
     try{
     
-          const products=await Product.find({})
-          .select('images _id title price desc ')
+          const products=await Product.find({avilableNumber:{$gt:0}})
+          .select('images _id title price desc avilableNumber')
        
             res.status(200).json({state:1,products})
     

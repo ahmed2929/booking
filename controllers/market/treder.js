@@ -844,9 +844,16 @@ const contactSupport=async(req,res,next)=>{
 
 const putItemToCart=async(req,res,next)=>{
     try{
-        console.debug(req.userId)
+        //console.debug(req.userId)
         
-        const {ProductId}=req.body
+        var {ProductId,Needed}=req.body
+        Needed=Number(Needed)
+        if(!Needed){
+            const error = new Error('invaid number needed');
+            error.statusCode = 422 ;
+            return next(error) ; 
+        }
+        Needed=Math.abs(Needed)
         const product=await Product.findById(ProductId)
         if(!product){
             const error = new Error('product not found');
@@ -863,6 +870,9 @@ const putItemToCart=async(req,res,next)=>{
 
 
         }
+       //user.cart=[]
+//      await user.save()
+        
         if(product.avilableNumber<=0){
             const error = new Error('sorry product out of stock');
             error.statusCode = 422 ;
@@ -871,37 +881,50 @@ const putItemToCart=async(req,res,next)=>{
         var foundAndseted=false
         var editCart=user.cart.map(obj=>{
             if(obj.product._id.toString()==ProductId.toString()){
-                if(product.avilableNumber<obj.numberNeeded+1){
-                    const error = new Error('sorry you cant pay this amount right now');
-                    error.statusCode = 422 ;
-                    return next(error) ; 
+
+                if(product.avilableNumber<obj.numberNeeded+Needed){
+                     const error = new Error('sorry you cant pay this amount right now');
+                     error.statusCode = 422 ;
+                     throw next(error) ; 
+                    //return res.status(422).json({state:0,msg:'sorry you cant pay this amount right now'})
+
                 }
-                obj.numberNeeded+=1;
+                obj.numberNeeded+=Needed;
               
                 foundAndseted=true
                 return obj
             }
             return obj
         })
+       // console.debug(editCart)
          if(foundAndseted){
-             console.debug('it exist and its mm run')
+             //console.debug('it exist and its mm run')
              user.cart=editCart
-             console.debug('user',user.cart)
+            // console.debug('user',user.cart)
            await user.save();
-             res.status(200).json({state:1,msg:'the item added to the cart'})
-             foundAndseted=false
+           foundAndseted=false
             
+            return res.status(200).json({state:1,msg:'the item added to the cart'})
+           
 
         }
         else{
+            console.debug("else run")
+            if(Needed>product.avilableNumber){
+
+                return res.status(422).json({state:0,msg:'sorry you can not pay this amount'})
+
+            }
 
              user.cart.push({
+                numberNeeded:Needed,
                 product:ProductId,
          })
 
          await user.save()
+         return res.status(200).json({state:1,msg:'the item added to the cart'})
 
-          res.status(200).json({state:1,msg:'the item added to the cart'})
+      
         
          }
       
@@ -928,7 +951,7 @@ const getCartItems=async(req,res,next)=>{
 
         
 
-         res.status(200).json({state:1,Cart:usercart})
+         res.status(200).json({state:1,Cart:usercart.cart})
        
         }catch(err){
             console.debug(err)
@@ -1158,6 +1181,44 @@ const getNotifications=async(req,res,next)=>{
 }
 }
 
+const DeleteCartItem=async(req,res,next)=>{
+    try{
+        
+        const {CartItemId}=req.body
+        var user=await CustomerUser.findById(req.userId)
+        if(!user){
+
+            const error = new Error('user not found');
+            error.statusCode = 422 ;
+            return next(error) ; 
+
+
+        }
+       var delIndex=-1
+       user.cart.forEach((obj,index)=>{
+           if(obj._id.toString()===CartItemId.toString()){
+            delIndex=index
+           }
+       })
+       if(delIndex<0){
+        return res.status(200).json({state:1,msg:'item not found in your cart'})
+
+       }
+       user.cart.splice(delIndex, 1)
+          await user.save()
+          return res.status(200).json({state:1,msg:'item deleted from carts'})
+
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
 module.exports={
 
 CreateAppartment,
@@ -1178,6 +1239,7 @@ putItemToCart,
 getCartItems,
 decreseCartItem,
 MakeOrder,
-getNotifications
+getNotifications,
+DeleteCartItem
 
 }
