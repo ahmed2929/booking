@@ -38,7 +38,7 @@ var getAllProducts=async(req,res,next)=>{
 var getProductsByCatigory=async(req,res,next)=>{
     
     try{
-        const catigoryID=req.params.id
+        const catigoryID=req.params.id||req.query.id
     
         //   const products=await Product.find({
         //       Catigory:catigoryID
@@ -63,7 +63,7 @@ var getProductsByCatigory=async(req,res,next)=>{
 var getProductByID=async(req,res,next)=>{
     
     try{
-        const productId=req.params.id
+        const productId=req.params.id||req.query.id
     
           const product=await Product.findById(productId)
           .select('images _id title price desc avilableNumber')
