@@ -1301,19 +1301,23 @@ const getOrders=async(req,res,next)=>{
         const orderId=req.params.orderId
         if(orderId){
             const order =await Order.findById(orderId.toString())
-            .populate({path:'Cuser'})
-            .populate({path:'Tuser'})
-            .populate({path:'payment'})
+            .populate({path:'Cuser',select:'name email photo phone status'})
+            .populate({path:'Tuser',select:'name email photo phone status'})
+            .populate({path:'payment' ,select:'-Cuser -Tuser -updatedAt'})
+            .populate({path:'cart.product',select:'images title price desc'})
+            .select('-updatedAt')
+
             if(!order){
                return res.status(404).json({state:0,msg:'order not found'})
             }
-            return res.status(404).json({state:1,msg:order})
+            return res.status(200).json({state:1,order})
         }
         const orders =await Order.find()
-        .populate({path:'Cuser'})
-            .populate({path:'Tuser'})
-            .populate({path:'payment'})
-        res.status(201).json({state:1,orders})
+        .populate({path:'Cuser',select:'name email photo phone status'})
+            .populate({path:'Tuser',select:'name email photo phone status'})
+            //.populate({path:'payment'})
+            .select('-cart -payment')
+        res.status(200).json({state:1,orders})
 
     }catch(err){
         console.debug(err)
@@ -1330,23 +1334,35 @@ const getBookingOpertaions=async(req,res,next)=>{
     try{
         
         const status=req.params.status
-        const request = await Request.find({
-        })
-        .populate({path:'from',select:'name email mobile _id'})
-        .populate({path:'to' ,select:'name email mobile _id'})
-        .populate({path:'AD' ,select:'images star price _id'})
+        
         console.debug(status)
-        if(status){
-            console.debug('if run')
-            Frequest=request.filter(obj=>{
-               // console.debug(obj.RequestData.status==status)
-               return obj.RequestData.status==status
-            })
+          if(status){
+            const request = await Request.find({
+            
+                "RequestData.status": status
+              
+           })
+           .populate({path:'from',select:'name email mobile _id'})
+           .populate({path:'to' ,select:'name email mobile _id'})
+           .populate({path:'AD' ,select:'images star price _id'})
 
-           return res.status(200).json({state:1,request:Frequest})
+            return res.status(200).json({state:1,request:request})
 
-        }
-        res.status(200).json({state:1,request})
+          }else{
+
+            const request = await Request.find({
+              
+           })
+           .populate({path:'from',select:'name email mobile _id'})
+           .populate({path:'to' ,select:'name email mobile _id'})
+           .populate({path:'AD' ,select:'images star price _id'})
+
+            return res.status(200).json({state:1,request:request})
+
+            
+
+          }
+       
 
 
 

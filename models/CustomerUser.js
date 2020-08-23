@@ -92,14 +92,19 @@ const userSchema = new schema({
         default:'customer'
        },
     cart:[{
-        product:{type:schema.Types.ObjectId,
+        product:{
+        type:schema.Types.ObjectId,
         ref:'product'
         },
         numberNeeded:{
           type:Number,
           default:1,
         }
-    }]
+    }],
+    Orders:[{
+      type:schema.Types.ObjectId,
+      ref:'order'
+    }],
 });
 
 module.exports = mongoose.model('CustomerUser',userSchema);

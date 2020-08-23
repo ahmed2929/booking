@@ -44,11 +44,11 @@ var getProductsByCatigory=async(req,res,next)=>{
         //       Catigory:catigoryID
         //   })
           const cato=await shopcatigory.findById(catigoryID)
-          .populate({path:'products' , select:'images _id title price desc'})
+          .populate({path:'products' , select:'images _id title price desc avilableNumber'})
           .select('products')
           
        
-            res.status(200).json({state:1,products:cato})
+            res.status(200).json({state:1,products:cato.products})
     
         }catch(err){
             console.debug(err)
@@ -66,7 +66,7 @@ var getProductByID=async(req,res,next)=>{
         const productId=req.params.id
     
           const product=await Product.findById(productId)
-          .select('images _id title price desc')
+          .select('images _id title price desc avilableNumber')
           
        
             res.status(200).json({state:1,product})

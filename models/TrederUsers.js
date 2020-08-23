@@ -93,10 +93,16 @@ const userSchema = new schema({
         ref:'notification' 
       }
     ],
-    EmailActiveCode:String,
+    EmailActiveCode:{
+      type:String,
+      expires: 3600*60
+    },
     phoneActiveCode:String
     ,
-    forgetPasswordCode:String,
+    forgetPasswordCode:{
+      type:String,
+      expires: 3600*60
+    },
     codeExpireDate:Date,
     Adress:String,
     status:{
@@ -111,7 +117,11 @@ const userSchema = new schema({
         type:schema.Types.ObjectId,
         ref:'product'
 
-    }]
+    }],
+    Orders:[{
+      type:schema.Types.ObjectId,
+      ref:'order'
+    }],
 });
 
 module.exports = mongoose.model('TrederUser',userSchema);

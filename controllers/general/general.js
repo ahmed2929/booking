@@ -18,6 +18,7 @@ const paginate=require('../../helpers/general/helpingFunc').paginate
 const shopcatigory=require('../../models/shopcatigory');
 const Promo=require('../../models/promocode')
 const { connected } = require('process');
+const TrederUsers = require('../../models/TrederUsers');
 const Search = async (req, res, next) => {
     const search = req.query.search;
     const type = req.query.type    || "shop";
@@ -117,11 +118,63 @@ const Search = async (req, res, next) => {
 
 
 
+            }else if(type=='user'){
+           
+              
+                var  searchParams=[
+                      { name: new RegExp( search.trim() , 'i') },
+                      { email: new RegExp( search.trim() , 'i') },
+                    ];
+      
+              
+              totalItemsT = await TrederUsers.find({
+                  $or: searchParams,
+                  
+                }).countDocuments();
+              
+                    
+                  resultT = await TrederUsers.find({
+                    $or: searchParams,
+                 
+                  }).sort({ createdAt: -1 })
+                   // .populate({ path: "user", select: "name email mobile" })
+                    .select('name _id email photo status')
+                    .skip((page - 1) * itemPerPage)
+                    .limit(itemPerPage);
+
+                
+                  totalItemsC = await TrederUsers.find({
+                    $or: searchParams,
+                    
+                  }).countDocuments();
+                  resultC = await CustomerUser.find({
+                    $or: searchParams,
+                 
+                  }).sort({ createdAt: -1 })
+                   // .populate({ path: "user", select: "name email mobile" })
+                    .select('name _id email photo status')
+                    .skip((page - 1) * itemPerPage)
+                    .limit(itemPerPage);
+
+                
+
+
+
+                
+                 
+                  res.status(200).json({
+                      state: 1,
+                      totalItems:totalItemsT+totalItemsC,
+                      searchResult: resultT.concat(resultC),
+                    });
+
+
+               
             }else{
-                res.status(422).json({
-                    state: 0,
-                    msg: 'invalid type',
-                  });
+              res.status(422).json({
+                state: 0,
+                msg: 'invalid type',
+              });
             }
       
        

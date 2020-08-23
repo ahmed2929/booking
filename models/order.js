@@ -11,9 +11,13 @@ const orderSchema = new schema({
         type:schema.Types.ObjectId,
         ref:'TrederUser'
     },
-    cart:{
-        type:Object
-    },
+    cart:[{
+        product:{
+            type:schema.Types.ObjectId,
+        ref:'product'
+        },
+        numberNeeded:Number
+    }],
     payment:{
         type:schema.Types.ObjectId,
         ref:'payment'

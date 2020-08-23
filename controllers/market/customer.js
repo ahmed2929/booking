@@ -138,6 +138,7 @@ try{
     .populate('pendingRequestTo')
     .populate({ path: 'pendingRequestTo', populate: { path: 'to'}})
     .populate({ path: 'pendingRequestTo', populate: { path: 'AD'}})
+    .populate({ path: 'pendingRequestTo', populate: { path: 'RequestData.services.serviceType'}})
     var limitedResult=paginate(customer.pendingRequestTo,itemPerPage,page)
     
     var mapedLimitedResult=limitedResult.map(oldObj=>{ 
@@ -734,7 +735,7 @@ const MakeOrder=async(req,res,next)=>{
         
         if(paymentMethod=='cach'){
             const NewPayMent=new Payment({
-                cuser:user._id,
+                Cuser:user._id,
                 methodOfPay:'cach',
                 totalMoney:cartPrice,
                 finalPrice:finalPrice,
@@ -742,7 +743,7 @@ const MakeOrder=async(req,res,next)=>{
             })
             await NewPayMent.save()
             const order=new Order({
-                cuser:req._id,
+                Cuser:user._id,
                 cart:user.cart,
                 payment:NewPayMent._id,
                 address:address,
@@ -759,6 +760,7 @@ const MakeOrder=async(req,res,next)=>{
                    await editProduct.save()
             }
             user.cart=[]
+            user.Orders.push(order._id)
             await user.save()
 
             res.status(200).json({state:1,msg:'order created succesfuly'})
@@ -872,6 +874,46 @@ const getNotifications=async(req,res,next)=>{
 }
 }
 
+const getMyOreder=async(req,res,next)=>{
+    try{
+    
+        const page = req.query.page *1 || 1;
+        const itemPerPage = 10; 
+        const OrderID=req.query.OrderID
+        if(OrderID){
+            const order=await Order.findById(OrderID)
+          // .populate({ path: 'cart', populate: { path: 'cart.product' ,select:'price images title'}})
+            .populate({ path: 'payment', select:'methodOfPay finalPrice'})
+              .populate({path:'cart.product',select:'images title price desc'})
+            if(!order){
+               return res.status(404).json({state:0,msg:'order not found'})
+            }
+            return res.status(200).json({state:1,order})
+
+        }
+    const user=await CustomerUser.findById(req.userId)
+    .populate('Orders')
+    .populate({ path: 'Orders', populate: { path: 'payment' ,select:'methodOfPay finalPrice'}})
+    
+    var lmitedData=paginate(user.Orders,itemPerPage,page)
+    limetedData=lmitedData.sort((a,b)=>{
+        return b.createdAt-a.createdAt
+    })
+    var totalOrders=user.Orders.length
+   res.status(200).json({state:1,Orders:lmitedData,totalOrders})
+     
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
+
 module.exports={
 
     Book,
@@ -886,6 +928,7 @@ module.exports={
     MakeOrder,
     contactSupport,
     getNotifications,
-    DeleteCartItem
+    DeleteCartItem,
+    getMyOreder
 
 }

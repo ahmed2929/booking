@@ -338,8 +338,6 @@ var getAvilableCatigories=async (req,res,next)=>{
 
 }
 
-
-
 var getAvilableServices=async (req,res,next)=>{
 try{
     const Services=await AvilableServices.find({})
@@ -1083,7 +1081,7 @@ const MakeOrder=async(req,res,next)=>{
             })
             await NewPayMent.save()
             const order=new Order({
-                cuser:req._id,
+                Tuser:user._id,
                 cart:user.cart,
                 payment:NewPayMent._id,
                 address:address,
@@ -1100,9 +1098,10 @@ const MakeOrder=async(req,res,next)=>{
                    await editProduct.save()
             }
             user.cart=[]
+            user.Orders.push(order._id)
             await user.save()
 
-            res.status(200).json({state:1,msg:'order created succesfuly'})
+           return res.status(200).json({state:1,msg:'order created succesfuly'})
 
         }else if(paymentMethod=='elec'){
 
@@ -1218,6 +1217,46 @@ const DeleteCartItem=async(req,res,next)=>{
         
 }
 }
+const getMyOreder=async(req,res,next)=>{
+    try{
+    
+        const page = req.query.page *1 || 1;
+        const itemPerPage = 10; 
+        const OrderID=req.query.OrderID
+        if(OrderID){
+            const order=await Order.findById(OrderID)
+          // .populate({ path: 'cart', populate: { path: 'cart.product' ,select:'price images title'}})
+            .populate({ path: 'payment', select:'methodOfPay finalPrice'})
+              .populate({path:'cart.product',select:'images title price desc'})
+            if(!order){
+               return res.status(404).json({state:0,msg:'order not found'})
+            }
+            return res.status(200).json({state:1,order})
+
+        }
+    const user=await CustomerUser.findById(req.userId)
+    .populate('Orders')
+    .populate({ path: 'Orders', populate: { path: 'payment' ,select:'methodOfPay finalPrice'}})
+    
+    var lmitedData=paginate(user.Orders,itemPerPage,page)
+    limetedData=lmitedData.sort((a,b)=>{
+        return b.createdAt-a.createdAt
+    })
+    var totalOrders=user.Orders.length
+   res.status(200).json({state:1,Orders:lmitedData,totalOrders})
+     
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
+
 
 module.exports={
 
@@ -1240,6 +1279,7 @@ getCartItems,
 decreseCartItem,
 MakeOrder,
 getNotifications,
-DeleteCartItem
+DeleteCartItem,
+getMyOreder
 
 }

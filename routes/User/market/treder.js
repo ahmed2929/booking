@@ -73,6 +73,8 @@ Router.post('/putItemToCart',verfiyToken,conttroller.putItemToCart)
 Router.get('/getCartItems',verfiyToken,conttroller.getCartItems)
 Router.post('/decreseCartItem',verfiyToken,conttroller.decreseCartItem)
 Router.post('/DeleteCartItem',verfiyToken,conttroller.DeleteCartItem)
+Router.get('/getMyOreder',verfiyToken,conttroller.getMyOreder)
+
 
 
 module.exports=Router
