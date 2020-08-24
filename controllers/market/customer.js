@@ -17,7 +17,8 @@ const { use } = require('passport');
 const paginate=require('../../helpers/general/helpingFunc').paginate
 const Payment=require('../../models/payment')
 const Order=require('../../models/order')
-const Isuue=require('../../models/isuues')
+const Isuue=require('../../models/isuues');
+const payment = require('../../models/payment');
 const notificationSend=require('../../helpers/send-notfication').send
 function parseDate(str) {
     var mdy = str.split('-');
@@ -139,6 +140,7 @@ try{
     .populate({ path: 'pendingRequestTo', populate: { path: 'to'}})
     .populate({ path: 'pendingRequestTo', populate: { path: 'AD'}})
     .populate({ path: 'pendingRequestTo', populate: { path: 'RequestData.services.serviceType'}})
+    .populate({ path: 'pendingRequestTo', populate: { path: 'Payment',select:'status finalPrice methodOfPay'}})
     var limitedResult=paginate(customer.pendingRequestTo,itemPerPage,page)
     
     var mapedLimitedResult=limitedResult.map(oldObj=>{ 
@@ -161,7 +163,8 @@ try{
     var FinalservicePrice=oldObj.RequestData.FinalservicePrice
     var finalPrice=oldObj.RequestData.finalPrice
     var services=oldObj.RequestData.services  
-    
+    var payment=oldObj.Payment
+    console.debug('payment',oldObj.payment)
     const NumOfDays=datediff( Date.now(),StartDate)  
     //var InFuture=StartDate >Date.now() ?true:false
     //var InPast=EndDate <Date.now() ?true:false
@@ -171,6 +174,8 @@ try{
     var adId=oldObj.AD._id
     
     var CanReschedule=oldObj.RequestData.status==0&&NumOfDays>0?true:false
+    console.debug(oldObj.Payment==true)
+    var CanPay=(!oldObj.Payment&&oldObj.RequestData.status==1)?true:false
          FResult={
         StartDate,
         EndDate,
@@ -193,7 +198,10 @@ try{
         FinalservicePrice,
         finalPrice,
         children,
-        CanReschedule
+        CanReschedule,
+        CanPay,
+        payment
+
         
 
     }
@@ -393,7 +401,8 @@ const putItemToCart=async(req,res,next)=>{
         var {ProductId,Needed}=req.body
         Needed=Number(Needed)
         if(!Needed){
-            const error = new Error('invaid number needed');
+            console.debug(Needed)
+            const error = new Error('invaid number ');
             error.statusCode = 422 ;
             return next(error) ; 
         }
@@ -913,6 +922,106 @@ const getMyOreder=async(req,res,next)=>{
 }
 }
 
+const PayForAppartment=async(req,res,next)=>{
+
+    try{
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        const {paymentMethod,RequestId,finalPrice}=req.body
+       
+            const request=await Request.findById(RequestId)
+            if(!request){
+            const error = new Error('invalid request id');
+            error.statusCode = 422 ;
+            return next(error) ; 
+            }
+            if(request.RequestData.status!=1){
+                const error = new Error('sorry you can not pay now wait till your request is accespted');
+                error.statusCode = 422 ;
+                return next(error) ; 
+            }
+
+            if(request.RequestData.payment){
+                const error = new Error('you already payed for it');
+                error.statusCode = 422 ;
+                return next(error) ; 
+            }
+     
+        if(paymentMethod=='cach'){
+            const NewPayMent=new Payment({
+                Cuser:req.userId,
+                methodOfPay:'cach',
+                totalMoney:finalPrice,
+                finalPrice:finalPrice,
+                
+            })
+            await NewPayMent.save()
+          
+            
+            request.Payment=NewPayMent._id
+            await request.save()
+
+           
+
+            res.status(200).json({state:1,msg:'payment created succesfuly'})
+
+        }else if(paymentMethod=='elec'){
+
+            const NewPayMent=new Payment({
+                cuser:req.userId,
+                methodOfPay:'elec',
+                totalMoney:cartPrice,
+                finalPrice:finalPrice,
+                status:1,
+                descPerc:descPerc
+            })
+            await NewPayMent.save()
+            const order=new Order({
+                cuser:req.userId,
+                cart:user.cart,
+                payment:NewPayMent._id,
+                address:address,
+
+            })
+            await order.save()
+           // console.debug(user.cart)
+           
+            for(let elem of user.cart){
+            
+                const editProduct= await Product.findById(elem.product._id)
+               editProduct.avilableNumber-=elem.numberNeeded
+               
+                   await editProduct.save()
+            }
+            user.cart=[]
+            await user.save()
+
+            res.status(200).json({state:1,msg:'order created succesfuly'})
+            
+        }else{
+            res.status(422).json({state:1,msg:'invalid payment method'})
+        }
+       
+
+
+       
+        }catch(err){
+            //console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
 
 module.exports={
 
@@ -929,6 +1038,8 @@ module.exports={
     contactSupport,
     getNotifications,
     DeleteCartItem,
-    getMyOreder
+    getMyOreder,
+    PayForAppartment,
+
 
 }

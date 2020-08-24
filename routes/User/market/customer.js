@@ -42,6 +42,8 @@ Router.put('/contactSupport',verfiyToken,conttroller.contactSupport)
 Router.get('/getNotifications',verfiyToken,conttroller.getNotifications)
 Router.post('/DeleteCartItem',verfiyToken,conttroller.DeleteCartItem)
 Router.get('/getMyOreder',verfiyToken,conttroller.getMyOreder)
+Router.post('/PayForAppartment',verfiyToken,conttroller.PayForAppartment)
+
 
 
 

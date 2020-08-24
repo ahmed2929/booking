@@ -57,6 +57,10 @@ const RequestSchema = new schema({
     RateState:{
         status:Number,
         star:Number
+    },
+    Payment:{
+        type:schema.Types.ObjectId,
+        ref:'payment'
     }
 
     

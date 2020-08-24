@@ -199,7 +199,7 @@ const getCatigoriesAdById=async (req,res,next)=>{
 
 const getAdsFilter=async (req,res,next)=>{
     try{
-        console.debug(req.query)
+        console.debug('queries is ',req.query)
     const {city,rooms,type,priceFrom,priceTo,review,beds,beach}=req.query
      //review,beds,beach,
         var AD

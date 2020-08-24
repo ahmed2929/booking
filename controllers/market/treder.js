@@ -14,7 +14,7 @@ const TrederUsers=require('../../models/TrederUsers')
 const Isuue =require('../../models/isuues')
 const AvilableServices=require('../../models/AvilableServices')
 const Request=require('../../models/Request');
-
+const Product=require('../../models/shopProducts')
 const paginate=require('../../helpers/general/helpingFunc').paginate
 var CreateAppartment=async (req,res,next)=>{
     console.debug('controller runas')
@@ -361,38 +361,63 @@ try{
 
 var getMyADs=async (req,res,next)=>{
     try{
-        const user=await TrederUsers.findById(req.userId)
-        .lean()
-        .select('MyWonAds')
-        .populate('MyWonAds')
-        .populate({ path: 'MyWonAds', populate: { path: 'catigory'}})
-        .populate({ path: 'MyWonAds', populate: { path: 'services.serviceType'}})
+        // const user=await TrederUsers.findById(req.userId)
+        // .lean()
+        // .select('MyWonAds')
+        // .populate('MyWonAds')
+        // .populate({ path: 'MyWonAds', populate: { path: 'catigory'}})
+        // .populate({ path: 'MyWonAds', populate: { path: 'services.serviceType'}})
 
-        const fResult=user.MyWonAds.map(value=>{
-            return{
-                id:value._id,
-                images:value.images,
-                country:value.country,
-                city:value.city,
-                street:value.streetAdress,
-                catigoryName:value.catigory.name,
-                price:value.price,
-                services:value.services,
-                title:value.title,
-                GPS:value.GPS,
+        // const fResult=user.MyWonAds.map(value=>{
+        //     return{
+        //         id:value._id,
+        //         images:value.images,
+        //         country:value.country,
+        //         city:value.city,
+        //         street:value.streetAdress,
+        //         catigoryName:value.catigory.name,
+        //         price:value.price,
+        //         services:value.services,
+        //         title:value.title,
+        //         GPS:value.GPS,
               
                 
 
             
-            }
-        })
-        
-        
-        
-        
-       
+        //     }
+        // })
+        const page = req.query.page *1 || 1;
+         const itemPerPage = 1; 
+        console.debug((page - 1) * itemPerPage)
+        var AdsLen=await TrederUsers.findById(req.userId)
+        AdsLen=AdsLen.MyWonAds.length
+        const user=await TrederUsers.findById(req.userId)
+            .populate([
+            // here array is for our memory. 
+            // because may need to populate multiple things
+            {
+                path: 'MyWonAds',
+                select: 'images country city street price title GPS services',
+                
+                options: {
+                    sort:{'createdAt': -1},
+                    skip: (page - 1) * itemPerPage,
+                    limit : itemPerPage,
+                    lean: true
+                },
+                match:{
+                    // filter result in case of multiple result in populate
+                    // may not useful in this case
+                },
+                 populate: { path: 'services.serviceType'}
 
-        res.status(200).json({state:1,fResult});
+            },
+
+           
+
+        ])
+        .select('MyWonAds')
+        res.status(200).json({state:1,fResult:user.MyWonAds,AdsLen});
     }catch(err){
     
         console.debug(err)
@@ -409,68 +434,71 @@ var getMyADs=async (req,res,next)=>{
 var getAllRequests=async(req,res,next)=>{
     console.debug('controller')
     try{
+        console.debug(req.userId)
         const page = req.query.page *1 || 1;
         const status=req.query.status
-        const itemPerPage = 10;
-        const Treder=await TrederUsers.findById(req.userId)
-        .select('RecivedRequest')
-        .populate('RecivedRequest')
-        .populate({ path: 'RecivedRequest', populate: { path: 'from'}})
-        .populate({ path: 'RecivedRequest', populate: { path: 'AD'}})
-    .populate({ path: 'RecivedRequest', populate: { path: 'RequestData.services.serviceType'}})
-        //console.debug(Treder.RecivedRequest[0].RequestData.services[0].serviceType)
-        //console.debug(Treder.RecivedRequest)
-        if(!Treder.RecivedRequest){
-            res.status(404).json({state:1,msg:'no requests are resived',Result:[]})
-        }
-        var limitedResult=paginate(Treder.RecivedRequest,itemPerPage,page)
-        var totalNumOfRequests=Treder.RecivedRequest.length
-        var mapedLimitedResult=limitedResult.map(oldObj=>{ 
-            var FResult={}
-            if(!oldObj.AD){
-                
-                return 
-            }
-           // console.debug(Treder.RecivedRequest[1])
-            var customerName=oldObj.from.name
-        var image=oldObj.AD.images[0]
-        var city=oldObj.AD.city
-        var streetAdress=oldObj.AD.streetAdress
-        var price=oldObj.AD.price
-        var services=oldObj.RequestData.services    
-        var status=  oldObj.RequestData.status 
-        var arrivalTime=  oldObj.RequestData.ArivalTime 
+        const itemPerPage = 1;
+        const request=await Request.find({
+            to:req.userId,
+             "RequestData.status": status|| {$exists:true},  
+        })
+        .populate({ path: 'from',select:'name as customerName'})
+         .populate({path: 'AD', select:'images city streetAdress price'})
+         .populate('RequestData.services.serviceType')
+         .skip((page - 1) * itemPerPage)
+         .limit(itemPerPage)
 
-         var FResult={
-            customerName,
-            image,
-            city,
+    //     const Treder=await TrederUsers.findById(req.userId)
+    //     .select('RecivedRequest')
+    //     .populate('RecivedRequest')
+    //     .populate({ path: 'RecivedRequest', populate: { path: 'from'}})
+    //     .populate({ path: 'RecivedRequest', populate: { path: 'AD'}})
+    // .populate({ path: 'RecivedRequest', populate: { path: 'RequestData.services.serviceType'}})
+    //     //console.debug(Treder.RecivedRequest[0].RequestData.services[0].serviceType)
+    //     //console.debug(Treder.RecivedRequest)
+         if(!request){
+             res.status(404).json({state:1,msg:'no requests are recived',Result:[]})
+         }
+    //     var limitedResult=paginate(Treder.RecivedRequest,itemPerPage,page)
+    //     var totalNumOfRequests=Treder.RecivedRequest.length
+        var mapedLimitedResult=request.map(oldObj=>{ 
+            var FResult={}
+             if(!oldObj.AD){
+                
+                 return 
+             }
+    //        // console.debug(Treder.RecivedRequest[1])
+             var customerName=oldObj.from.name
+         var image=oldObj.AD.images[0]
+         var city=oldObj.AD.city
+         var streetAdress=oldObj.AD.streetAdress
+         var price=oldObj.AD.price
+         var services=oldObj.RequestData.services    
+         var status=  oldObj.RequestData.status 
+         var arrivalTime=  oldObj.RequestData.ArivalTime 
+
+          var FResult={
+             customerName,
+             image,
+        city,
             streetAdress,
-            price,
-            services,
-            RequestID:oldObj._id,
-            status,
-            arrivalTime
+             price,
+             services,
+             RequestID:oldObj._id,
+             status,
+             arrivalTime
     
         }
            
         
     
-            return FResult
+             return FResult
     
     
     
          })
     
-         mapedLimitedResult = mapedLimitedResult.filter(function (el) {
-            if(status){
-                console.debug(el.status===status)
-                return el != null &&el.status==status
-             }else{
-                return el != null
-             }
-           
-          });
+          
     
     //totalNumOfRequests:totalNumOfRequests,hasNextPage:itemPerPage*page<totalNumOfRequests,hasPerivousPage:page>1,nextPage:page+1,previousPage:page-1
         res.status(200).json({state:1,Result:mapedLimitedResult})
