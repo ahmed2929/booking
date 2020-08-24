@@ -134,16 +134,29 @@ try{
     const page = req.query.page *1 || 1;
     const status=req.query.status
     const itemPerPage = 10;
-    const customer=await CustomerUser.findById(req.userId)
-    .select('pendingRequestTo')
-    .populate('pendingRequestTo')
-    .populate({ path: 'pendingRequestTo', populate: { path: 'to'}})
-    .populate({ path: 'pendingRequestTo', populate: { path: 'AD'}})
-    .populate({ path: 'pendingRequestTo', populate: { path: 'RequestData.services.serviceType'}})
-    .populate({ path: 'pendingRequestTo', populate: { path: 'Payment',select:'status finalPrice methodOfPay'}})
-    var limitedResult=paginate(customer.pendingRequestTo,itemPerPage,page)
+    // const customer=await CustomerUser.findById(req.userId)
+    // .select('pendingRequestTo')
+    // .populate('pendingRequestTo')
+    // .populate({ path: 'pendingRequestTo', populate: { path: 'to'}})
+    // .populate({ path: 'pendingRequestTo', populate: { path: 'AD'}})
+    // .populate({ path: 'pendingRequestTo', populate: { path: 'RequestData.services.serviceType'}})
+    // .populate({ path: 'pendingRequestTo', populate: { path: 'Payment',select:'status finalPrice methodOfPay'}})
+    const TotalNumOfRequests=await Request.find({
+        from:req.userId,
+         "RequestData.status": status|| {$exists:true},  
+    }).countDocuments()
+    const request=await Request.find({
+        from:req.userId,
+         "RequestData.status": status|| {$exists:true},  
+    })
+    .populate({ path: 'to',select:'name mobile '})
+     .populate({path: 'AD'})
+     .populate('RequestData.services.serviceType')
+     .populate({path:'Payment',select:'status finalPrice methodOfPay'})
+     .skip((page - 1) * itemPerPage)
+     .limit(itemPerPage)
     
-    var mapedLimitedResult=limitedResult.map(oldObj=>{ 
+    var mapedLimitedResult=request.map(oldObj=>{ 
         var FResult={}
         if(!oldObj.AD){
             
@@ -212,20 +225,10 @@ try{
 
      })
 
-     mapedLimitedResult = mapedLimitedResult.filter(function (el) {
-         console.debug(status,el.status)
-         if(status){
-            console.debug(el.status===status)
-            return el != null &&el.status==status
-         }else{
-            return el != null
-         }
-       
-      });
+    
       
-    res.status(200).json({state:1,Result:mapedLimitedResult})
-    //if(Date.now()<cus)
-
+    res.status(200).json({state:1,Result:mapedLimitedResult,TotalNumOfRequests})
+    
 
 
 
@@ -401,7 +404,7 @@ const putItemToCart=async(req,res,next)=>{
         var {ProductId,Needed}=req.body
         Needed=Number(Needed)
         if(!Needed){
-            console.debug(Needed)
+           // console.debug(Needed)
             const error = new Error('invaid number ');
             error.statusCode = 422 ;
             return next(error) ; 
@@ -436,6 +439,7 @@ const putItemToCart=async(req,res,next)=>{
             if(obj.product._id.toString()==ProductId.toString()){
 
                 if(product.avilableNumber<obj.numberNeeded+Needed){
+                    console.debug(product.avilableNumber,obj.numberNeeded+Needed)
                      const error = new Error('sorry you cant pay this amount right now');
                      error.statusCode = 422 ;
                      throw next(error) ; 

@@ -645,30 +645,37 @@ var CreateProduct=async (req,res,next)=>{
     }
 
     var getAllUsers=async(req,res,next)=>{
-
-    
         try{
-        
-        const errors = validationResult(req);
-        console.debug(errors)
-        if(!errors.isEmpty()){
-            const error = new Error('validation faild');
-            error.statusCode = 422 ;
-            error.data = errors.array();
-            return next(error) ; 
-        }
-        const status=req.params.status;
+            const page = req.query.page *1 || 1;
+            const itemPerPage = 10;
+            var TotalNumOfUsers
+     
+       
+        var status=req.params.status;
         console.debug(status)
         var user 
        if(status=='customer'){
-         user = await customer.find();
+        TotalNumOfUsers = await customer.find().countDocuments()
+         user = await customer.find()
+         .skip((page - 1) * itemPerPage)
+         .limit(itemPerPage)
        }else if(status=='treder') {
-         user = await treder.find();
+        TotalNumOfUsers = await treder.find().countDocuments()
+         user = await treder.find()
+         .skip((page - 1) * itemPerPage)
+         .limit(itemPerPage)
        }
 
        else{
-        var user = await customer.find();
-        var tuser = await treder.find();
+        TotalNumOfUsers = await customer.find().countDocuments()
+        TotalNumOfUsers += await treder.find().countDocuments()
+        status='all'
+        var user = await customer.find()
+        .skip((page - 1) * itemPerPage)
+        .limit(itemPerPage)
+        var tuser = await treder.find()
+        .skip((page - 1) * itemPerPage)
+        .limit(itemPerPage)
         user.concat(tuser)
        }
         
@@ -685,7 +692,7 @@ var CreateProduct=async (req,res,next)=>{
             }
         })
         
-            res.status(200).json({state:1,status:status,fUser})
+            res.status(200).json({state:1,status:status,fUser,TotalNumOfUsers})
     
         }catch(err){
             console.debug(err)
@@ -908,7 +915,7 @@ var CreateProduct=async (req,res,next)=>{
         .limit(productPerPage)
         .sort({'price':sortVal})
     }else if(filter=='outOfStock'){
-        totalProducts= await Product.find().countDocuments();
+        totalProducts= await Product.find({avilableNumber: {$lte: 0}}).countDocuments();
         var sortVal=1
         products = await Product.find({avilableNumber: {$lte: 0}})
         .populate({path:'catigory' ,select:'name'})
@@ -1276,12 +1283,15 @@ const getAllPromo=async(req,res,next)=>{
 
     
     try{
-    
+        const page = req.query.page || 1;
+        const productPerPage = 10;
    
-    
+        const TotalNum =await PromoCode.find().countDocuments()
         const promos =await PromoCode.find()
+        .skip((page - 1) * productPerPage)
+        .limit(productPerPage)
 
-        res.status(201).json({state:1,promos})
+        res.status(200).json({state:1,promos,TotalNum})
 
     }catch(err){
         console.debug(err)
@@ -1312,11 +1322,15 @@ const getOrders=async(req,res,next)=>{
             }
             return res.status(200).json({state:1,order})
         }
+        const totalProducts= await Product.find().countDocuments()
         const orders =await Order.find()
+
         .populate({path:'Cuser',select:'name email photo phone status'})
             .populate({path:'Tuser',select:'name email photo phone status'})
             //.populate({path:'payment'})
             .select('-cart -payment')
+            .skip((page - 1) * productPerPage)
+        .limit(productPerPage)
         res.status(200).json({state:1,orders})
 
     }catch(err){
@@ -1379,8 +1393,8 @@ const getBookingOpertaions=async(req,res,next)=>{
 
 const getSupportMessagesFromUsers=async(req,res,next)=>{
     try{
-        
-       const {status,id}=req.query
+        const itemPerPage=10
+       const {status,id,page}=req.query
        if(id){
            
         const isuue=await Isuues.findById(id)
@@ -1391,20 +1405,27 @@ const getSupportMessagesFromUsers=async(req,res,next)=>{
         }
         return res.status(200).json({state:1,isuue})
     }else if(status){
+        const isuuesNum=await Isuues.find({
+            status:status
+        }).countDocuments()
         const isuues=await Isuues.find({
             status:status
         })
         .populate({path:'Cuser',select:'name email _id photo blocked emailVerfied'})
         .populate({path:'Tuser',select:'name email _id photo blocked emailVerfied'})
-        
-           return res.status(200).json({state:1,support:isuues})
+        .skip((page - 1) * itemPerPage)
+        .limit(itemPerPage)   
+           return res.status(200).json({state:1,support:isuues,isuuesNum})
         
     }else{
+        const isuuesNum=await Isuues.find({
+        }).countDocuments()
         const isuues=await Isuues.find()
         .populate({path:'Cuser',select:'name email _id photo blocked emailVerfied'})
         .populate({path:'Tuser',select:'name email _id photo blocked emailVerfied'})
-        
-           return res.status(200).json({state:1,support:isuues})
+        .skip((page - 1) * itemPerPage)
+        .limit(itemPerPage)
+           return res.status(200).json({state:1,support:isuues,isuuesNum})
 
     }
 
@@ -1543,15 +1564,20 @@ const deleteFQ=async(req,res,next)=>{
 }
 const getFQ=async(req,res,next)=>{
     try{
-
+        const page=req.query.page
+        const itemPerPage=10
      const {id}=req.params
 
         if(id){
            const fq= await FQ.findById(id)
           return res.status(200).json({state:1,fq})
         }    
+        const TotalNumfqs= await FQ.find().countDocuments()
         const fqs= await FQ.find()
-        return res.status(200).json({state:1,fqs})
+        .skip((page - 1) * itemPerPage)
+        .limit(itemPerPage)
+
+        return res.status(200).json({state:1,fqs,TotalNumfqs})
 
 
     }catch(err){

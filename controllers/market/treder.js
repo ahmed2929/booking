@@ -16,6 +16,8 @@ const AvilableServices=require('../../models/AvilableServices')
 const Request=require('../../models/Request');
 const Product=require('../../models/shopProducts')
 const paginate=require('../../helpers/general/helpingFunc').paginate
+const Order=require('../../models/order')
+const Payment=require('../../models/payment')
 var CreateAppartment=async (req,res,next)=>{
     console.debug('controller runas')
     try{
@@ -387,7 +389,7 @@ var getMyADs=async (req,res,next)=>{
         //     }
         // })
         const page = req.query.page *1 || 1;
-         const itemPerPage = 1; 
+         const itemPerPage = 5; 
         console.debug((page - 1) * itemPerPage)
         var AdsLen=await TrederUsers.findById(req.userId)
         AdsLen=AdsLen.MyWonAds.length
@@ -437,12 +439,12 @@ var getAllRequests=async(req,res,next)=>{
         console.debug(req.userId)
         const page = req.query.page *1 || 1;
         const status=req.query.status
-        const itemPerPage = 1;
+        const itemPerPage = 5;
         const request=await Request.find({
             to:req.userId,
              "RequestData.status": status|| {$exists:true},  
         })
-        .populate({ path: 'from',select:'name as customerName'})
+        .populate({ path: 'to',select:'name as customerName'})
          .populate({path: 'AD', select:'images city streetAdress price'})
          .populate('RequestData.services.serviceType')
          .skip((page - 1) * itemPerPage)
@@ -771,7 +773,8 @@ const editMyProfile=async(req,res,next)=>{
 
 const getLatestReviews=async(req,res,next)=>{
     try{
-        
+        const page = req.query.page *1 || 1;
+         const itemPerPage = 10; 
         var user=await TrederUsers.findById(req.userId)
         .populate({ path: 'MyWonAds', populate: { path: 'Rate'},select:'Rate'})
         .populate({ path: 'MyWonAds', populate: { path: 'Rate.user'},select:'user.name'})
@@ -822,8 +825,11 @@ const getLatestReviews=async(req,res,next)=>{
             // to get a value that is either negative, positive, or zero.
             return new Date(b.date) - new Date(a.date);
           });
+          var TotalReviws=arrayOfAllObj.length
+          var Limited=paginate(arrayOfAllObj,itemPerPage,page)
 
-          res.status(200).json({state:1,user:arrayOfAllObj})
+
+          res.status(200).json({state:1,user:Limited,TotalReviws})
         
            
        
@@ -1187,13 +1193,37 @@ const getNotifications=async(req,res,next)=>{
     try{
         const page = req.query.page *1 || 1;
         const status=req.query.status
-        const itemPerPage = 10;
+        const itemPerPage = 1;
         
         const user=await TrederUsers.findById(req.userId)
-        .populate({path: 'notfications', options: { sort:'desc' } ,select:'notification action data createdAt'})
-        .select('notfications')
-        .skip((page - 1) * itemPerPage)
-        .limit(itemPerPage)
+        // .populate({path: 'notfications', options: { sort:'desc' } ,select:'notification action data createdAt'})
+        // .select('notfications')
+        // .skip((page - 1) * itemPerPage)
+        // .limit(itemPerPage)
+        .populate([
+            // here array is for our memory. 
+            // because may need to populate multiple things
+            {
+                path: 'notfications',
+                select: 'notification action data createdAt',
+                
+                options: {
+                    sort:{'createdAt': -1},
+                    skip: (page - 1) * itemPerPage,
+                    limit : itemPerPage,
+                    lean: true
+                },
+                match:{
+                    // filter result in case of multiple result in populate
+                    // may not useful in this case
+                },
+                 //populate: { path: 'services.serviceType'}
+
+            },
+
+           
+
+        ]).select('notfications')
         
         console.log(user)
           res.status(200).json({state:1,notfications:user.notfications})
@@ -1264,15 +1294,15 @@ const getMyOreder=async(req,res,next)=>{
             return res.status(200).json({state:1,order})
 
         }
-    const user=await CustomerUser.findById(req.userId)
+    const user=await TrederUsers.findById(req.userId)
     .populate('Orders')
     .populate({ path: 'Orders', populate: { path: 'payment' ,select:'methodOfPay finalPrice'}})
-    
     var lmitedData=paginate(user.Orders,itemPerPage,page)
     limetedData=lmitedData.sort((a,b)=>{
         return b.createdAt-a.createdAt
     })
     var totalOrders=user.Orders.length
+    console.debug(user._id)
    res.status(200).json({state:1,Orders:lmitedData,totalOrders})
      
        

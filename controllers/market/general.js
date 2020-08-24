@@ -199,12 +199,24 @@ const getCatigoriesAdById=async (req,res,next)=>{
 
 const getAdsFilter=async (req,res,next)=>{
     try{
-        console.debug('queries is ',req.query)
+        const page = req.query.page *1 || 1;
+        const itemPerPage = 10;
     const {city,rooms,type,priceFrom,priceTo,review,beds,beach}=req.query
      //review,beds,beach,
         var AD
-    
+        var TotalNumOfAds
     if(beach===undefined){
+
+        TotalNumOfAds=await ADS.find({
+            price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
+            city:city||{ $exists:true}  ,
+            star:{$gte :review||-1},
+            NumOfRooms:rooms||{ $exists:true},
+            beds:beds||{ $exists:true},
+        }).countDocuments()
+
+
+
          AD=await ADS.find({
             price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
             city:city||{ $exists:true}  ,
@@ -219,9 +231,19 @@ const getAdsFilter=async (req,res,next)=>{
         .populate({
             path: 'services.serviceType',
             select: 'name',
-        })
+        }).select('images title city streetAdress price services')
+        .skip((page - 1) * itemPerPage)
+    .limit(itemPerPage)
+    
     }else{
-
+        TotalNumOfAds=await ADS.find({
+            price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
+            city:city||{ $exists:true}  ,
+            star:{$gte :review||-1},
+            NumOfRooms:rooms||{ $exists:true},
+            beds:beds||{ $exists:true},
+            beach:beach
+        }).countDocuments()
      AD=await ADS.find({
             price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
             city:city||{ $exists:true}  ,
@@ -236,7 +258,10 @@ const getAdsFilter=async (req,res,next)=>{
         })
         .populate({
             path: 'services.serviceType',
-        })
+        }).select('images title city streetAdress price services')
+        .skip((page - 1) * itemPerPage)
+    .limit(itemPerPage)
+    
 
     }
 
@@ -248,7 +273,7 @@ const getAdsFilter=async (req,res,next)=>{
     })
   }
     
-   res.status(200).json({state:1,finalRes})
+   res.status(200).json({state:1,finalRes,TotalNumOfAds})
 }
    catch(err){
     console.debug(err)

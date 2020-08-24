@@ -18,11 +18,20 @@ const shopcatigory = require('../../models/shopcatigory');
 var getAllProducts=async(req,res,next)=>{
     
     try{
-    
-          const products=await Product.find({avilableNumber:{$gt:0}})
+      
+      const page = req.query.page *1 || 1;
+      const status=req.query.status
+      const itemPerPage =10
+      const productsNum=await Product.find({avilableNumber:{$gt:0}}).countDocuments()
+      const products=await Product.find({avilableNumber:{$gt:0}})
+
           .select('images _id title price desc avilableNumber')
+          .sort({'sold': -1})
+          .skip ((page - 1) * itemPerPage)
+          .limit (itemPerPage)
+          .lean( true) 
        
-            res.status(200).json({state:1,products})
+           res.status(200).json({state:1,products,productsNum})
     
         }catch(err){
             console.debug(err)
@@ -43,12 +52,42 @@ var getProductsByCatigory=async(req,res,next)=>{
         //   const products=await Product.find({
         //       Catigory:catigoryID
         //   })
+
+        const page = req.query.page *1 || 1;
+        const status=req.query.status
+        const itemPerPage =10
+
+        const cat=await shopcatigory.findById(catigoryID)
+        const lenth=cat.products.length;
           const cato=await shopcatigory.findById(catigoryID)
-          .populate({path:'products' , select:'images _id title price desc avilableNumber'})
-          .select('products')
-          
+          // .populate({path:'products' , select:'images _id title price desc avilableNumber'})
+          // .select('products')
+          .populate([
+            // here array is for our memory. 
+            // because may need to populate multiple things
+            {
+                path: 'products',
+                select: 'images _id title price desc avilableNumber',
+                
+                options: {
+                    sort:{'createdAt': -1},
+                    skip: (page - 1) * itemPerPage,
+                    limit : itemPerPage,
+                    lean: true
+                },
+                match:{
+                    // filter result in case of multiple result in populate
+                    // may not useful in this case
+                },
+                 //populate: { path: 'services.serviceType'}
+
+            },
+
+           
+
+        ]).select('products')
        
-            res.status(200).json({state:1,products:cato.products})
+            res.status(200).json({state:1,products:cato.products,TotalNumOfProducts:lenth})
     
         }catch(err){
             console.debug(err)
