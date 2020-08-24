@@ -114,10 +114,15 @@ const userSchema = new schema({
         default:0
     },
     cart:[{
-        type:schema.Types.ObjectId,
-        ref:'product'
-
-    }],
+      product:{
+      type:schema.Types.ObjectId,
+      ref:'product'
+      },
+      numberNeeded:{
+        type:Number,
+        default:1,
+      }
+  }],
     Orders:[{
       type:schema.Types.ObjectId,
       ref:'order'

@@ -875,7 +875,8 @@ const putItemToCart=async(req,res,next)=>{
         var {ProductId,Needed}=req.body
         Needed=Number(Needed)
         if(!Needed){
-            const error = new Error('invaid number needed');
+            console.debug(Needed)
+            const error = new Error('invaid number ');
             error.statusCode = 422 ;
             return next(error) ; 
         }
@@ -967,13 +968,14 @@ const putItemToCart=async(req,res,next)=>{
 }
 }
 
+
 const getCartItems=async(req,res,next)=>{
     try{
         
             const usercart=await TrederUsers.findById(req.userId)
-            .populate('cart')
-            .populate('cart.product')
-            .select('cart')
+            .populate({path:'cart'})
+            .populate({path:'cart.product',select:'images price title avilableNumber'})
+            .select('cart')            
 
         
 
@@ -1212,7 +1214,7 @@ const DeleteCartItem=async(req,res,next)=>{
     try{
         
         const {CartItemId}=req.body
-        var user=await CustomerUser.findById(req.userId)
+        var user=await TrederUsers.findById(req.userId)
         if(!user){
 
             const error = new Error('user not found');
