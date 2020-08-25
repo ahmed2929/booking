@@ -6,6 +6,7 @@ const {validationResult} = require('express-validator');
 const CustomerUser = require('../../../models/CustomerUser');
 const validatePhoneNumber = require('validate-phone-number-node-js');
 const nodemailerMailgun=require('../../../helpers/sendEmail');
+const sendEmail=require('../../../helpers/sendEmail').sendEmail
 var register=async (req,res,next)=>{
 
     const errors = validationResult(req);
@@ -214,10 +215,15 @@ const ForgetPassword=async (req,res,next)=>{
         //     <br><h3>${buf}</h3>
         //     `
         //   });
+        const Emailresult=await sendEmail(email,'ResetPassword',`
+             <h1>Reset password</h1>
+             <br><h4>that's your code to reset your password</h4>
+             <br><h3>${buf}</h3>
+         `)
 
+          console.debug('Emailresult',Emailresult)
           
-          
-          res.status(200).json({state:1,message:'the code has been sent succefuly',buf});
+          res.status(200).json({state:1,message:'the code has been sent succefuly',email});
     }catch(err){
         if(!err.statusCode){
             err.statusCode = 500;
@@ -327,18 +333,14 @@ const SendactivateEmail=async (req,res,next)=>{
     user.codeExpireDate =  Date.now()  + 3600000 ;
     await user.save();
 
-      // await nodemailerMailgun.sendMail({
-        //     to:email,
-        //     from:'support test',
-        //     subject:'Reset password',
-        //     html:`
-        //     <h1>Reset password</h1>
-        //     <br><h4>that's your code to reset your password</h4>
-        //     <br><h3>${buf}</h3>
-        //     `
-        //   });
+    const Emailresult=await sendEmail(user.local.email,'ActivateEmail',`
+    <h1>ActivateEmail</h1>
+    <br><h4>that's your Activation code </h4>
+    <br><h3>${buf}</h3>
+`)
 
-        res.status(200).json({state:1,message:'the code has been sent succefuly',buf});
+
+        res.status(200).json({state:1,message:'the code has been sent succefuly'});
     }catch(err){
         if(!err.statusCode){
             err.statusCode = 500;

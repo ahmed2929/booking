@@ -1,16 +1,33 @@
-var nodemailer = require('nodemailer');
-var mg = require('nodemailer-mailgun-transport');
+const nodemailer = require('nodemailer'); 
 
-// This is your API key that you retrieve from www.mailgun.com/cp (free up to 10K monthly emails)
-var auth = {
-  auth: {
-    api_key: 'key-1234123412341234',
-    domain: 'sandbox3249234.mailgun.org'
-  }
+
+let mailTransporter = nodemailer.createTransport({ 
+	service: 'gmail', 
+	auth: { 
+		user: 'ak8911938@gmail.com', 
+		pass: 'BOOKINGTEST123'
+	} 
+});
+
+const sendEmail=async (to,subject,html )=>{
+
+  let mailDetails = { 
+    from: 'ak8911938@gmail.com', 
+    to, 
+    subject , 
+    html
+  }; 
+  
+ const result =await mailTransporter.sendMail(mailDetails)
+ return result
+    
+  
+
+
 }
 
-var nodemailerMailgun = nodemailer.createTransport(mg(auth));
+
 
 module.exports={
-    nodemailerMailgun
+  sendEmail
 }
