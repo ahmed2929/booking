@@ -6,7 +6,7 @@ const verfiyToken=require('../../../helpers/Auth/TrederAuth')
 const uploadImage=require('../../../helpers/uploadImage');
 const bodyParser = require('body-parser');
 const conttroller=require('../../../controllers/market/treder')
-const CheckActivation=require('../../../helpers/Auth/checkActivation')
+const CheckActivation=require('../../../helpers/Auth/checkactivation')
 Router.put('/createApartment',verfiyToken,CheckActivation,uploadImage.array('image'),[
     body('city')
     .not()

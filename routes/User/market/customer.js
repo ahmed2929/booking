@@ -6,7 +6,7 @@ const verfiyToken=require('../../../helpers/Auth/CustomerAuth')
 const uploadImage=require('../../../helpers/uploadImage');
 const bodyParser = require('body-parser');
 const conttroller=require('../../../controllers/market/customer')
-const CheckActivation=require('../../../helpers/Auth/checkActivation')
+const CheckActivation=require('../../../helpers/Auth/checkactivation')
 Router.put('/createRequest',verfiyToken,[
    
     body('AdId')
