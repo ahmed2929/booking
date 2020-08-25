@@ -10,13 +10,13 @@ module.exports = async (req,res,next)=>{
         return next(error);
     }
     const token =req.get('Authorization').split(' ')[1];
-    console.debug('token is',token)
+ //   console.debug('token is',token)
     let decodedToken;
     try{
-        console.debug(process.env.JWT_PRIVATE_KEY)
+   //     console.debug(process.env.JWT_PRIVATE_KEY)
 
         decodedToken = await jwt.verify(token,process.env.JWT_PRIVATE_KEY);
-        console.debug('decoded token',decodedToken)
+    //    console.debug('decoded token',decodedToken)
         if(!decodedToken){
             const error = new Error('not Authorized!!');
             error.statusCode = 401;
@@ -24,7 +24,7 @@ module.exports = async (req,res,next)=>{
         }
 
         const user   = await User.findById(decodedToken.userId) ;
-        console.debug('user',user)
+     //   console.debug('user',user)
 
         if(!user){
             const error = new Error('user not found');
@@ -40,12 +40,12 @@ module.exports = async (req,res,next)=>{
         }
             
         req.userId = user._id;
-        console.debug(req.userId)
+     //   console.debug(req.userId)
        
         next();
 
     } catch(err){
-        console.debug(err)
+      //  console.debug(err)
         if(!err.statusCode){
             err.statusCode = 500;
         }

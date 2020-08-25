@@ -413,6 +413,7 @@ const putItemToCart=async(req,res,next)=>{
         }
         Needed=Math.abs(Needed)
         const product=await Product.findById(ProductId)
+        console.debug(product)
         if(!product){
             const error = new Error('product not found');
             error.statusCode = 422 ;
