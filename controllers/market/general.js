@@ -139,7 +139,7 @@ const getADSWithCatigrories=async(req,res,next)=>{
 const getAdDetailsById=async(req,res,next)=>{
 
     try{
-        const AdId=req.params.AdId
+        const AdId=req.params.AdId||req.query.id
         const AD= await ADS.findById(AdId)
         .select('-catigory')
         .select('-createdAt')

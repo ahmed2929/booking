@@ -879,6 +879,7 @@ const putItemToCart=async(req,res,next)=>{
         //console.debug(req.userId)
         
         var {ProductId,Needed}=req.body
+        console.debug(req.body)
         Needed=Number(Needed)
         if(!Needed){
             console.debug(Needed)

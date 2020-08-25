@@ -402,6 +402,8 @@ const putItemToCart=async(req,res,next)=>{
         //console.debug(req.userId)
         
         var {ProductId,Needed}=req.body
+        console.debug('body data is',req.body)
+        console.debug('user id is ',req.userId)
         Needed=Number(Needed)
         if(!Needed){
            // console.debug(Needed)
@@ -489,7 +491,7 @@ const putItemToCart=async(req,res,next)=>{
            
        
         }catch(err){
-            //console.debug(err)
+            console.debug(err)
             if(!err.statusCode){
                 err.statusCode = 500;
             }
