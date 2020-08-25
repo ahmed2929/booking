@@ -161,21 +161,40 @@ Router.post('/editPromo',[
 
 Router.post('/deletePromo',[
     
+    body('PromoId')
+    .not()
+    .isEmpty()
  
 ],verfiyToken,controller.deletePromo); 
 
 Router.post('/editFQ',[
     
+    body('question')
+    .not()
+    .isEmpty(),
+    body('answer')
+    .not()
+    .isEmpty(),
+    body('FQID')
+    .not()
+    .isEmpty()
     
                     
 ],verfiyToken,controller.editFQ); 
 Router.post('/createFQ',[
-    
+    body('question')
+    .not()
+    .isEmpty(),
+    body('answer')
+    .not()
+    .isEmpty(),
                     
 ],verfiyToken,controller.createFQ); 
 
 Router.post('/deleteFQ',[
-    
+    body('FQID')
+    .not()
+    .isEmpty()
   
                     
 ],verfiyToken,controller.deleteFQ); 
