@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../../models/TrederUsers');
 
 module.exports = async (req,res,next)=>{
+    console.debug('auth run')
     const authHeader = req.get('Authorization');
     if(!authHeader){
         const error = new Error('not Authorized!!');
@@ -16,7 +17,7 @@ module.exports = async (req,res,next)=>{
         //console.debug(process.env.JWT_PRIVATE_KEY)
 
         decodedToken = await jwt.verify(token,process.env.JWT_PRIVATE_KEY);
-       // console.debug('decoded token',decodedToken)
+       console.debug('decoded token',decodedToken)
         if(!decodedToken){
             const error = new Error('not Authorized!!');
             error.statusCode = 401;
@@ -24,9 +25,10 @@ module.exports = async (req,res,next)=>{
         }
 
         const user   = await User.findById(decodedToken.userId) ;
-       //console.debug('user',user)
+       console.debug('user',user)
 
         if(!user){
+            console.debug('user not found run')
             const error = new Error('user not found');
             error.statusCode = 404 ;
             return next(error) ;
@@ -40,6 +42,7 @@ module.exports = async (req,res,next)=>{
         }
             
         req.userId = user._id;
+        req.user=user
        // console.debug(req.userId)
        
         next();

@@ -6,7 +6,9 @@ const {validationResult} = require('express-validator');
 const TrederUsers = require('../../../models/TrederUsers');
 const CustomerUser=require('../../../models/CustomerUser')
 const validatePhoneNumber = require('validate-phone-number-node-js');
-const nodemailerMailgun=require('../../../helpers/sendEmail');
+//const nodemailerMailgun=require('../../../helpers/sendEmail');
+const sendEmail=require('../../../helpers/sendEmail').sendEmail
+
 var register=async (req,res,next)=>{
 
     const errors = validationResult(req);
@@ -218,10 +220,14 @@ const ForgetPassword=async (req,res,next)=>{
         //     <br><h3>${buf}</h3>
         //     `
         //   });
-
+        const Emailresult=await sendEmail(email,'ResetPassword',`
+        <h1>Reset password</h1>
+        <br><h4>that's your code to reset your password</h4>
+        <br><h3>${buf}</h3>
+    `)
           
           
-          res.status(200).json({state:1,message:'the code has been sent succefuly',buf});
+          res.status(200).json({state:1,message:'the code has been sent succefuly',email});
     }catch(err){
         if(!err.statusCode){
             err.statusCode = 500;
@@ -324,6 +330,7 @@ const PasswordRest = (req,res,next)=>{ //put
 
 const SendactivateEmail=async (req,res,next)=>{
     try{
+        console.debug('send run ')
     const user = await TrederUsers.findById(req.userId);
     const buf = crypto.randomBytes(2).toString('hex');
     const hashedCode = await bycript.hash(buf,12)
@@ -342,7 +349,15 @@ const SendactivateEmail=async (req,res,next)=>{
         //     `
         //   });
 
-        res.status(200).json({state:1,message:'the code has been sent succefuly',buf});
+        const Emailresult=await sendEmail(user.local.email,'ActivateEmail',`
+        <h1>ActivateEmail</h1>
+        <br><h4>that's your Activation code </h4>
+        <br><h3>${buf}</h3>
+    `)
+    
+          
+
+        res.status(200).json({state:1,message:'the code has been sent succefuly'});
     }catch(err){
         if(!err.statusCode){
             err.statusCode = 500;

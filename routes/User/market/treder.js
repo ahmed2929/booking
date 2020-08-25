@@ -6,7 +6,8 @@ const verfiyToken=require('../../../helpers/Auth/TrederAuth')
 const uploadImage=require('../../../helpers/uploadImage');
 const bodyParser = require('body-parser');
 const conttroller=require('../../../controllers/market/treder')
-Router.put('/createApartment',verfiyToken,uploadImage.array('image'),[
+const CheckActivation=require('../../../helpers/Auth/checkActivation')
+Router.put('/createApartment',verfiyToken,CheckActivation,uploadImage.array('image'),[
     body('city')
     .not()
     .isEmpty(),
@@ -31,7 +32,7 @@ Router.put('/createApartment',verfiyToken,uploadImage.array('image'),[
 
 
 
-Router.put('/editApartment',verfiyToken,uploadImage.array('image'),[
+Router.put('/editApartment',verfiyToken,CheckActivation,uploadImage.array('image'),[
    
    body('ADId')
    .not()
@@ -39,7 +40,7 @@ Router.put('/editApartment',verfiyToken,uploadImage.array('image'),[
 
 ],conttroller.editAdById);
 
-Router.delete('/deleteApartment',verfiyToken,uploadImage.array('image'),[
+Router.delete('/deleteApartment',verfiyToken,CheckActivation,uploadImage.array('image'),[
    
     body('ADId')
     .not()
@@ -50,8 +51,8 @@ Router.get('/getMyADs',verfiyToken,conttroller.getMyADs)
 Router.get('/getAllRequests',verfiyToken,conttroller.getAllRequests)
 Router.get('/getRequestbyId/:RequestId',verfiyToken,conttroller.getRequestbyId)
 Router.get('/getRequestbyId/',verfiyToken,conttroller.getRequestbyId)
-Router.post('/acceptRequest',verfiyToken,conttroller.acceptRequest)
-Router.post('/DisAgreeRequest',verfiyToken,conttroller.disAgree)
+Router.post('/acceptRequest',verfiyToken,CheckActivation,conttroller.acceptRequest)
+Router.post('/DisAgreeRequest',verfiyToken,CheckActivation,conttroller.disAgree)
 
 Router.get('/getMyProfile',verfiyToken,conttroller.getMyProfile)
 
@@ -68,7 +69,7 @@ Router.get('/getNotifications',verfiyToken,conttroller.getNotifications)
 
 
 Router.put('/contactSupport',verfiyToken,conttroller.contactSupport)
-Router.put('/MakeOrder',verfiyToken,conttroller.MakeOrder)
+Router.put('/MakeOrder',verfiyToken,CheckActivation,conttroller.MakeOrder)
 Router.post('/putItemToCart',verfiyToken,conttroller.putItemToCart)
 Router.get('/getCartItems',verfiyToken,conttroller.getCartItems)
 Router.post('/decreseCartItem',verfiyToken,conttroller.decreseCartItem)
