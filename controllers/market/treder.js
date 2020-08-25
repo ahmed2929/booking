@@ -181,7 +181,7 @@ var editAdById= async (req,res,next)=>{
 
         AD.images=[]
         imageUrl.forEach(image=>{
-            images.push(image.path);
+            images.push(image.filename);
         })
             
     });   
