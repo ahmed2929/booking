@@ -65,7 +65,7 @@ var register=async (req,res,next)=>{
             },
             process.env.JWT_PRIVATE_KEY
         );
-       return res.status(201).json({state:1,message:'user created',userId:user._id,token});
+       return res.status(201).json({state:1,message:'user created',userId:user._id});
     })
     .catch(err=>{
         if(!err.statusCode){
