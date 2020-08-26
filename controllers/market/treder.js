@@ -24,7 +24,7 @@ const notificationSend=require('../../helpers/send-notfication').send
 var CreateAppartment=async (req,res,next)=>{
     console.debug('controller runas')
     try{
-       // console.debug(req.body.services)
+        console.debug('req.body.services',req.body.services)
         if(req.body.services){
             req.body.services=JSON.parse( req.body.services)
         }else{
@@ -42,6 +42,7 @@ var CreateAppartment=async (req,res,next)=>{
         return next(error) ; 
     }
     const {country,city,streetAdress,catigory,price,services,NumOfRooms,details,title,beds,beach,N,E}=req.body;
+    console.debug('reqBody',req.body)
 
     if(!Number(price)){
         const error = new Error('invalid price');
