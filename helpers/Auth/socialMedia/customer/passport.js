@@ -46,9 +46,9 @@ passport.use('googleToken', new GooglePlusTokenStrategy({
         await existingUserfacbook.save()
         return done(null, existingUserfacbook);
       }
-
+      
       const newUser = new customerUser({
-        methods: ['google'],
+        methods: 'google',
         google: {
           id: profile.id,
           email: profile.emails[0].value,    
@@ -107,7 +107,7 @@ passport.use('googleToken', new GooglePlusTokenStrategy({
        }
 
        const newUser = new customerUser({
-         methods: ['facebook'],
+         methods: 'facebook',
          facebook: {
            id: profile.id,
            email: profile.emails[0].value,

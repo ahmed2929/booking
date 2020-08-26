@@ -6,7 +6,7 @@ module.exports = async (req,res,next)=>{
     try{
       
         if(req.user.emailVerfied==false){
-            const error = new Error('you need to activ your email first');
+            const error = new Error('you need to active your email first');
             error.statusCode = 403 ;
             return next(error) ;
 

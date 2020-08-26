@@ -48,7 +48,7 @@ passport.use('googleToken', new GooglePlusTokenStrategy({
       }
 
       const newUser = new TrederUser({
-        methods: ['google'],
+        methods: 'google',
         google: {
           id: profile.id,
           email: profile.emails[0].value,    
@@ -107,7 +107,7 @@ passport.use('googleToken', new GooglePlusTokenStrategy({
        }
 
        const newUser = new TrederUser({
-         methods: ['facebook'],
+         methods: 'facebook',
          facebook: {
            id: profile.id,
            email: profile.emails[0].value,
