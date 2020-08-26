@@ -20,6 +20,7 @@ const Order=require('../../models/order')
 const Isuue=require('../../models/isuues');
 const payment = require('../../models/payment');
 const notificationSend=require('../../helpers/send-notfication').send
+const sendEmail=require('../../helpers/sendEmail').sendEmail
 function parseDate(str) {
     var mdy = str.split('-');
     return new Date(mdy[2], mdy[0]-1, mdy[1]);
@@ -71,7 +72,17 @@ const Book=async (req,res,next)=>{
 
 
        }
+       const reque=await Request.findOne({
+           from:req.userId,
+           AD:AdId
+       })
+       if(reque){
+           
+        const error = new Error('you alreay requested this ad');
+        error.statusCode = 422 ;
+        return next(error) ; 
 
+       }
 
 
        const ad=await ADS.findById(AdId)
@@ -102,11 +113,9 @@ const Book=async (req,res,next)=>{
        })
        await newRequest.save()
        var editCustomer=await CustomerUser.findById(req.userId)
-       editCustomer.pendingRequestTo.push(newRequest._id)
-       await editCustomer.save()
+
        var editTreder=await trederUser.findById(ad.Creator)
-       editTreder.RecivedRequest.push(newRequest._id)
-       await editTreder.save()
+       
        const data={
            RequestId:newRequest._id,
        }
@@ -114,9 +123,18 @@ const Book=async (req,res,next)=>{
            title:'you have recived a new request',
            body:`${editCustomer.name} wants to rent ${ad.title}`
        }
-      const result=await notificationSend("RequestRecived",data,notification,ad.Creator,1)
-       res.status(200).json({state:1,msg:'request sent'})
 
+      // var month = statrt. getMonth() + 1; // Since getMonth() returns month from 0-11 not 1-12.
+     //var year = d. getFullYear();
+     //var dateStr = date + "/" + month + "/" + year;
+       res.status(200).json({state:1,msg:'request sent'})
+      await notificationSend("RequestRecived",data,notification,ad.Creator,1)
+       await sendEmail(editTreder.email,'New Request',`
+        <h4>${editCustomer.name} wants to rent ${ad.title} 
+        check your account
+        </h4>
+       
+       `)
 
 
 }catch(err){
@@ -298,6 +316,12 @@ const reschedule=async (req,res,next)=>{
             return next( error) ;
 
        }
+
+       if(request.RequestData.status==1){
+        const error = new Error('your request is aready accepted you can not reschedule');
+        error.statusCode = 404 ;
+        return next( error) ;
+       }
        //console.debug('start date',StartDate)
        //console.debug('end date',EndDate)
        
@@ -310,7 +334,7 @@ const reschedule=async (req,res,next)=>{
             FinalservicePrice,
             finalPrice,
             ArivalTime,
-            status:2
+            status:0
            }
 
        
@@ -374,6 +398,7 @@ const Rate=async(req,res,next)=>{
      }
 
     const rateAd=await ADS.findById(request.AD)
+    .populate('Creator')
     rateAd.Rate.addToSet({user:req.userId,userRate:star,date:Date.now()})
     var sumOfRates=0
     rateAd.Rate.forEach(element => {
@@ -387,6 +412,28 @@ const Rate=async(req,res,next)=>{
     request.RateState.star=star
     await request.save()
     res.status(200).json({state:1,msg:'you rated is success'})
+
+    const data={
+     
+    }
+    const notification={
+        title:'new user rated your AD',
+        body:`${req.user.name} rated ${rateAd.title} with  ${star} stars`
+    }
+
+
+
+     await notificationSend("NewRate",data,notification,rateAd.Creator,1)
+     await sendEmail(rateAd.Creator.email,'NewRate',`
+      <h4>${req.user.name}  rated ${rateAd.title} with  ${star} stars 
+      
+      </h4>
+     
+     `)
+
+
+
+
     }catch(err){
         console.debug(err)
         if(!err.statusCode){

@@ -5,7 +5,7 @@ const schema   = mongoose.Schema;
 const ADSchema = new schema({
     Creator:{
         type:schema.Types.ObjectId,
-        ref:'user'
+        ref:'TrederUser'
     },
     country:{
        type:String,

@@ -18,7 +18,9 @@ const Product=require('../../models/shopProducts')
 const paginate=require('../../helpers/general/helpingFunc').paginate
 const Order=require('../../models/order')
 const Payment=require('../../models/payment')
-
+const TopView=require('../../models/topView')
+sendEmail=require('../../helpers/sendEmail').sendEmail
+const notificationSend=require('../../helpers/send-notfication').send
 var CreateAppartment=async (req,res,next)=>{
     console.debug('controller runas')
     try{
@@ -276,39 +278,73 @@ var deleteById=async (req,res,next)=>{
         }
         
        // console.debug(AD)
+        const request =await Request.findOne({
+           "RequestData.status":1,
+            "RequestData.EndDate":{ $gt: Date.now() }
+        })
 
-      const user=await TrederUsers.findById(req.userId)
-     const userIndex=user.MyWonAds.indexOf(AdId.toString())
-        if (userIndex > -1) {
-            user.MyWonAds.splice(userIndex, 1);
-          }
-          console.debug(AD.catigory)
-    const catigory=await Catigory.findById(AD.catigory)
-    console.debug(catigory)
-    const catigoryIndex=await catigory.ads.indexOf(AdId.toString())
-    if (catigoryIndex > -1) {
-        console.debug(catigoryIndex)
-        catigory.ads.splice(catigoryIndex, 1);
-      }
-      console.debug( 'catigory array',catigory.ads)
-      await catigory.save()
-      await user.save()
+        if(request){
+            const error = new Error('you alreay accepted request for this ad wait till your requests expire');
+            error.statusCode = 422 ;
+            return next(error) ; 
+        }
 
-     await ADS.findByIdAndDelete(AdId);
+       const user=await TrederUsers.findById(req.userId)
+      const userIndex=user.MyWonAds.indexOf(AdId.toString())
+         if (userIndex > -1) {
+             user.MyWonAds.splice(userIndex, 1);
+           }
+           console.debug(AD.catigory)
+     const catigory=await Catigory.findById(AD.catigory)
+     console.debug(catigory)
+     const catigoryIndex=await catigory.ads.indexOf(AdId.toString())
+     if (catigoryIndex > -1) {
+         console.debug(catigoryIndex)
+         catigory.ads.splice(catigoryIndex, 1);
+       }
+       console.debug( 'catigory array',catigory.ads)
+       await catigory.save()
+       await user.save()
+
+      await ADS.findByIdAndDelete(AdId);
+       await TopView.deleteOne({
+          ad:AdId
+       })
+
+      var MailingList=await Request.find({
+        AD:AdId,
+
+      }).populate({path:'from',select:'email'})
+      .select('from')
+      MailingList=MailingList.map(obj=>{
+          return obj.from.email
+      })
+     
 
 
-      AD.images.forEach((i) => {
-         console.debug(i)
-       fs.unlink(path.join(i),(err)=>{
+     const deleted= await Request.deleteMany({
+         AD:AdId
+       })
+
+      console.debug('deleted',deleted)
+    
+       AD.images.forEach((i) => {
+          console.debug(i)
+        fs.unlink(path.join(i),(err)=>{
         console.debug(err)
-       });
+        });
   
-  });
+   });
 
 
      res.status(200).json({state:1,message:'apparment deleted Sucessfully'});
-
-
+     if(MailingList){
+   await sendEmail(MailingList,'News',`
+       your request to rent ${AD.title} has been removed because the owner removed
+       the AD form the market try to see other appartments o the market
+      
+      `)
+     }
 
 
     }catch(err){
@@ -400,7 +436,7 @@ var getMyADs=async (req,res,next)=>{
             // because may need to populate multiple things
             {
                 path: 'MyWonAds',
-                select: 'images country city street price title GPS services',
+                select: 'images country city street price title GPS services NotAvilable',
                 
                 options: {
                     sort:{'createdAt': -1},
@@ -412,13 +448,15 @@ var getMyADs=async (req,res,next)=>{
                     // filter result in case of multiple result in populate
                     // may not useful in this case
                 },
-                 populate: { path: 'services.serviceType'}
+                 populate: { path: 'services.serviceType'},
+                 lean:true
 
             },
 
            
 
         ])
+        .lean()
         .select('MyWonAds')
         res.status(200).json({state:1,fResult:user.MyWonAds,AdsLen});
     }catch(err){
@@ -588,6 +626,7 @@ var acceptRequest =async (req,res,next)=>{
         const {RequestId}=req.body
 
         const request=await Request.findById(RequestId)
+        .populate({path:'from',select:'email'})
     
         if(!request){
             const error = new Error('request not found !!');
@@ -606,17 +645,7 @@ var acceptRequest =async (req,res,next)=>{
        
         const ad=await ADS.findById(request.AD)
         console.debug(request)
-        if(request.RequestData.status==2){
-            ad.NotAvilable.forEach(obj=>{
-                if(obj.requestId.toString()==request._id.toString()){
-                    obj.startDate=request.RequestData.StartDate
-                    obj.EndDate=request.RequestData.EndDate
-                }
-               
-            })
-            console.debug(ad.NotAvilable)
-            await ad.save()
-        }else if(request.RequestData.status==0){
+       if(request.RequestData.status==0){
             console.debug('add it for the first time')
             ad.NotAvilable.push({
                 startDate:request.RequestData.StartDate,
@@ -636,7 +665,29 @@ var acceptRequest =async (req,res,next)=>{
       
         request.RequestData.status=1;
         await request.save();
+
         res.status(200).json({state:1,msg:'request accepted'})
+
+         const data={
+           RequestId:request._id,
+       }
+       const notification={
+           title:'your request is accepted',
+           body:`${req.user.name} accepted your request to rent ${ad.title}`
+       }
+
+
+        
+       console.debug(request.from.email)
+
+        await notificationSend("RequestAccepted",data,notification,request.from._id,0)
+        await sendEmail(request.from.email,'Request accepted',`
+         <h4>${req.user.name} accepted your request  to rent ${ad.title} 
+         check your account
+         </h4>
+        
+        `)
+ 
     }catch(err){
         console.debug(err)
         if(!err.statusCode){
@@ -660,6 +711,8 @@ var disAgree=async (req,res,next)=>{
         const {RequestId,message}=req.body
 
         const request=await Request.findById(RequestId)
+        .populate({path:'AD',select:'title'})
+        .populate({path:'from',select:'email'})
     
         if(!request){
             const error = new Error('request not found !!');
@@ -675,13 +728,40 @@ var disAgree=async (req,res,next)=>{
             return next( error) ;
 
         }
+
+        if(request.RequestData.status!=0){
+            const error = new Error('you can not refuse this request ');
+            error.statusCode = 422 ;
+            return next( error) ;
+
+        }
+
         request.RequestData.status=-1;
         request.refuseMassage=message
        await request.save();
 
-
-
         res.status(200).json({state:1,msg:'request disagreed'})
+
+        const data={
+            RequestId:request._id,
+            message:message
+        }
+        const notification={
+            title:'your request is refused',
+            body:`${req.user.name} refused your request to rent ${request.from.title}`
+        }
+ 
+ 
+ 
+         await notificationSend("RequestRefused",data,notification,request.from._id,0)
+         await sendEmail(request.from.email,'Request refused',`
+          <h4>${req.user.name} refused your request  to rent ${request.AD.title} 
+          TrederMassge:${message}
+          </h4>
+         
+         `)
+
+
     }catch(err){
         console.debug(err)
         if(!err.statusCode){
@@ -1267,7 +1347,7 @@ const DeleteCartItem=async(req,res,next)=>{
        }
        user.cart.splice(delIndex, 1)
           await user.save()
-          return res.status(200).json({state:1,msg:'item deleted from carts'})
+          return res.status(200).json({state:1,msg:'item deleted from cart'})
 
        
         }catch(err){
