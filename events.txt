@@ -1,0 +1,4 @@
+RequestAccepted
+RequestRecived
+RequestRefused
+NewRate
