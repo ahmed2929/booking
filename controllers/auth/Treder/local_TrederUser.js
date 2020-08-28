@@ -409,7 +409,235 @@ try{
 }
 }
 
+const googleWithOuthData=async (req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+            const {id,email,fullName,photo,FCM}=req.body
+           // We're in the account creation process
+           let existingUser = await TrederUsers.findOne({ "google.id":id });
+           if (existingUser) {
+               console.debug("user found in google")
+            existingUser.FCMJwt.push(FCM)
+             console.debug('user aready exist')
+             const token  = jwt.sign(
+                {
+                    userId:existingUser._id.toString()
+                },
+                process.env.JWT_PRIVATE_KEY
+            );
+    
+    
+    
+            return res.status(200).json({state:1,token})
+    
+    
+            }
+     
+            // Check if we have someone with the same email
+            let existingUserLocal = await TrederUsers.findOne({ "local.email":email })
+            if (existingUserLocal) {
+                console.debug("user found in local")
+              // We want to merge google's data with local auth
+              existingUserLocal.FCMJwt.push(FCM)
+              existingUserLocal.emailVerfied=true
+              await existingUserLocal.save()
+              const token  = jwt.sign(
+                {
+                    userId:existingUserLocal._id.toString()
+                },
+                process.env.JWT_PRIVATE_KEY
+            );
+    
+    
+    
+            return res.status(200).json({state:1,token})
+    
+    
+            }
+     
+            let existingUserfacebook = await TrederUsers.findOne({ "facebook.email": email })
+            if (existingUserfacebook) {
+                console.debug("user found in facebook")
+    
+                    // const error = new Error('you already singed up with facebook acount with the same email try to login with it');
+                    // error.statusCode = 403 ;
+                    // return next(error) ;
+                    existingUserfacebook.FCMJwt.push(FCM)
+                    const token  = jwt.sign(
+                        {
+                            userId:existingUserfacebook._id.toString()
+                        },
+                        process.env.JWT_PRIVATE_KEY
+                    );
+            
+            
+            
+                    return res.status(200).json({state:1,token})
+            
+              
+            }
+     
+            const newUser = new TrederUsers({
+                methods: 'google',
+                google: {
+                  id,
+                  email    
+                },
+                email,
+                  name:fullName,
+                   photo,
+                emailVerfied:true,
         
+              });
+              newUser.FCMJwt.push(FCM)
+    
+              await newUser.save();
+            
+         const token  = jwt.sign(
+                {
+                    userId:newUser._id.toString()
+                },
+                process.env.JWT_PRIVATE_KEY
+            );
+    
+            console.debug("new google user is created")
+    
+    
+            return res.status(200).json({state:1,token})
+    
+    
+       
+        
+    }catch(err){
+        if(!err.statusCode){
+            err.statusCode = 500;
+        }
+        return next(err);
+    }
+    }
+          
+    const facebookWithOuthData=async (req,res,next)=>{
+        try{
+            const errors = validationResult(req);
+            if(!errors.isEmpty()){
+                const error = new Error('validation faild');
+                error.statusCode = 422 ;
+                error.data = errors.array();
+                return next(error) ; 
+            }
+                const {id,email,fullName,photo,FCM}=req.body
+               // We're in the account creation process
+               let existingUser = await TrederUsers.findOne({ "facebook.id":id });
+               if (existingUser) {
+                   console.debug('user found in facebook')
+                 existingUser.FCMJwt.push(FCM)
+                 console.debug('user aready exist')
+                 const token  = jwt.sign(
+                    {
+                        userId:existingUser._id.toString()
+                    },
+                    process.env.JWT_PRIVATE_KEY
+                );
+        
+        
+        
+                return res.status(200).json({state:1,token})
+        
+        
+                }
+         
+                // Check if we have someone with the same email
+                let existingUserLocal = await TrederUsers.findOne({ "local.email":email })
+                if (existingUserLocal) {
+                    console.debug('user found in local')
+    
+                  // We want to merge google's data with local auth
+                  existingUserLocal.FCMJwt.push(FCM)
+                  existingUserLocal.emailVerfied=true
+                  await existingUserLocal.save()
+                  const token  = jwt.sign(
+                    {
+                        userId:existingUserLocal._id.toString()
+                    },
+                    process.env.JWT_PRIVATE_KEY
+                );
+        
+        
+        
+                return res.status(200).json({state:1,token})
+        
+        
+                }
+         
+                let existingUserfacebook = await TrederUsers.findOne({ "google.email": email })
+                if (existingUserfacebook) {
+                    console.debug('user found in google')
+    
+                        // const error = new Error('you already singed up with facebook acount with the same email try to login with it');
+                        // error.statusCode = 403 ;
+                        // return next(error) ;
+                        existingUserfacebook.FCMJwt.push(FCM)
+                        const token  = jwt.sign(
+                            {
+                                userId:existingUserfacebook._id.toString()
+                            },
+                            process.env.JWT_PRIVATE_KEY
+                        );
+                
+                
+                
+                        return res.status(200).json({state:1,token})
+                
+                  
+                }
+         
+                const newUser = new TrederUsers({
+                    methods: 'facebook',
+                    facebook: {
+                      id,
+                      email,
+                      
+                    },
+                     email,
+                     name:fullName,
+                      photo
+           
+                  });
+                  newUser.emailVerfied=true,
+                  await newUser.save();
+                  newUser.FCMJwt.push(FCM)
+    
+        
+                  await newUser.save();
+                
+             const token  = jwt.sign(
+                    {
+                        userId:newUser._id.toString()
+                    },
+                    process.env.JWT_PRIVATE_KEY
+                );
+        
+                console.debug('new user created facebook')
+    
+        
+                return res.status(200).json({state:1,token})
+        
+        
+           
+            
+        }catch(err){
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        }
+        }
 
 module.exports={
 
@@ -420,7 +648,9 @@ VerfyCode,
 ForgetPassword,
 Logout,
 SendactivateEmail,
-VerfyActiveEmailCode
+VerfyActiveEmailCode,
+facebookWithOuthData,
+googleWithOuthData
 
 
 }

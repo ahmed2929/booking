@@ -8,6 +8,10 @@ const catigorytchema = new schema({
      type:String,
      required:true,
  },
+ arb_name:{
+    type:String,
+    required:true,
+ },
  products:[{
     type:schema.Types.ObjectId,
     ref:'product'

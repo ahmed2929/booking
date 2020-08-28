@@ -26,7 +26,7 @@ var getAvilableCatigories=async (req,res,next)=>{
         if(!catigories){
            return res.status(404).json({state:1,msg:'catigoryNotFound'});
         }
-     return res.status(200).json({state:1,catigoryNae:catigories.name});
+     return res.status(200).json({state:1,catigoryNae:catigories.name,arb_name:catigories.arb_name,id:catigories._id});
 
 
         }
@@ -35,7 +35,7 @@ var getAvilableCatigories=async (req,res,next)=>{
     const catigories=await Catigory.find({})
     console.debug(catigories)
     const resCatigory=catigories.map(cat=>{
-        return {id:cat._id,name:cat.name}
+        return {id:cat._id,name:cat.name,arb_name:cat.arb_name}
     })
     res.status(200).json({state:1,resCatigory});
 }catch(err){
@@ -69,7 +69,7 @@ try{
     const Services=await AvilableServices.find({})
     console.debug(Services)
     const resServices=Services.map(ser=>{
-        return {id:ser._id,name:ser.name,iconUrl:ser.image}
+        return {id:ser._id,name:ser.name,iconUrl:ser.image,arb_name:ser.arb_name}
     })
     res.status(200).json({state:1,resServices});
 }catch(err){
@@ -144,7 +144,7 @@ const getAdDetailsById=async(req,res,next)=>{
         .select('-catigory')
         .select('-createdAt')
         .select('-updatedAt')
-        .select('-Creator')
+        .select('-Creator -Rate')
         .populate('services.serviceType')
         
         
@@ -338,7 +338,7 @@ const getShopAvilablCatigory=async(req,res,next)=>{
     
     try{
           const cato=await shopcatigory.find()
-          .select('name _id')
+          .select('name arb_name')
           
        
             res.status(200).json({state:1,catigories:cato})

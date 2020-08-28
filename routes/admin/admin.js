@@ -32,6 +32,10 @@ Router.post('/createProductCatigory',[
      body('name')
         .not()
         .isEmpty(),
+        body('arb_name')
+        .not()
+        .isEmpty(),
+        
 ],verfiyToken,controller.createProductCatigory); 
 
 Router.post('/editProductCatigory',[
@@ -64,7 +68,7 @@ Router.post('/CreateProduct',uploadImage.array('image'),[
     body('price')
     .not()
     .isEmpty(),
-    body('CatigoryName')
+    body('CatigoryID')
     .not()
     .isEmpty(),
 
@@ -82,7 +86,7 @@ Router.post('/editProduct',uploadImage.array('image'),[
     body('price')
     .not()
     .isEmpty(),
-    body('CatigoryName')
+    body('CatigoryID')
     .not()
     .isEmpty(),
 
@@ -119,8 +123,27 @@ Router.post('/createApprtmentCatigory',[
     body('name')
     .not()
     .isEmpty(),
+    body('arb_name')
+    .not()
+    .isEmpty(),
                     
 ],verfiyToken,controller.createApprtmentCatigory); 
+
+Router.post('/EditApprtmentCatigory',[
+    
+    body('name')
+    .not()
+    .isEmpty(),
+    body('arb_name')
+    .not()
+    .isEmpty(),
+    body('CatId')
+    .not()
+    .isEmpty()
+                    
+],verfiyToken,controller.EditApprtmentCatigory); 
+
+
 
 Router.post('/blockUser',[
     
@@ -223,8 +246,27 @@ Router.post('/createService',uploadImage.array('image'),[
     body('name')
     .not()
     .isEmpty(),
+    body('arb_name')
+    .not()
+    .isEmpty(),
                     
 ],verfiyToken,controller.createService); 
+
+Router.post('/EditService',uploadImage.array('image'),[
+    
+    
+    body('name')
+    .not()
+    .isEmpty(),
+    body('arb_name')
+    .not()
+    .isEmpty(),
+    body('ServiceId')
+    .not()
+    .isEmpty()
+                    
+],verfiyToken,controller.EditService); 
+
 
 //llsl
 

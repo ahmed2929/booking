@@ -102,4 +102,51 @@ Router.post('/VerfyActiveEmailCode',[
     .isEmpty()
 ],verfiyToken,controller.VerfyActiveEmailCode)
 
+
+Router.put('/singInWithGoogle',
+[
+    body('id')
+    .not()
+    .isEmpty(),
+    body('email')
+    .not()
+    .isEmpty(),
+    body('fullName')
+    .not()
+    .isEmpty(),
+    body('photo')
+    .not()
+    .isEmpty(),
+    body('FCM')
+    .not()
+    .isEmpty()
+    
+]
+,controller.googleWithOuthData);
+
+Router.put('/singInWithFacebook',
+[
+    body('id')
+    .not()
+    .isEmpty(),
+    body('email')
+    .not()
+    .isEmpty(),
+    body('fullName')
+    .not()
+    .isEmpty(),
+    body('photo')
+    .not()
+    .isEmpty(),
+    body('FCM')
+    .not()
+    .isEmpty()
+]
+,controller.facebookWithOuthData);
+
+
+
+
+
+
 module.exports=Router

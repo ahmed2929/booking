@@ -25,6 +25,7 @@ const Request =require('../../models/Request')
 const Isuues=require('../../models/isuues')
 const FQ=require('../../models/f&q');
 const { request } = require('express');
+const catigory = require('../../models/catigory');
 var register=async (req,res,next)=>{
 
     const errors = validationResult(req);
@@ -147,9 +148,9 @@ var createProductCatigory=async(req,res,next)=>{
         error.data = errors.array();
         return next(error) ; 
     }
-    const {name}=req.body;
+    const {name,arb_name}=req.body;
     var newname=name.toLowerCase();
-    const catigo = await Catigory.findOne({name:newname});
+    const catigo = await Catigory.findOne({name:newname,arb_name:arb_name});
     if(catigo){
         const error = new Error('catigory already exist');
         error.statusCode = 404 ;
@@ -157,7 +158,8 @@ var createProductCatigory=async(req,res,next)=>{
     }
     
         const NewCat= new Catigory({
-           name:newname
+           name:newname,
+           arb_name
         })
         await NewCat.save(); 
         res.status(201).json({state:1,msg:'catigory created '})
@@ -254,7 +256,7 @@ var CreateProduct=async (req,res,next)=>{
         error.data = errors.array();
         return next(error) ; 
     }
-    const {title,details,price,CatigoryName,avilableNum}=req.body;
+    const {title,details,price,CatigoryID,avilableNum}=req.body;
 
     if(!Number(price)){
         const error = new Error('invalid price');
@@ -264,11 +266,15 @@ var CreateProduct=async (req,res,next)=>{
 
 
     const imageUrl = req.files;
-    const catigo = await Catigory.findOne({name:CatigoryName.toLowerCase()});
+    var catigo ;
+    catigo= await Catigory.findById(CatigoryID);
+    
     if(!catigo){
-        const error = new Error('catigory not Found');
-        error.statusCode = 404 ;
-        return next( error) ;
+            const error = new Error('catigory not Found');
+            error.statusCode = 404 ;
+            return next( error) ;
+        
+     
     }
     let images = [];
 
@@ -336,7 +342,7 @@ var CreateProduct=async (req,res,next)=>{
             error.data = errors.array();
             return next(error) ; 
         }
-        const {title,details,price,CatigoryName,avilableNum}=req.body;
+        const {title,details,price,CatigoryID,avilableNum}=req.body;
         
         if(!Number(price)){
             const error = new Error('invalid price');
@@ -346,12 +352,15 @@ var CreateProduct=async (req,res,next)=>{
     
     
         const imageUrl = req.files;
-        const catigo = await Catigory.findOne({name:CatigoryName});
+        var catigo 
+        catigo= await Catigory.findById(CatigoryID)
         console.debug(catigo)
         if(!catigo){
             const error = new Error('catigory not found');
             error.statusCode = 404 ;
             return next( error) ;
+            
+            
         }
         let images = [];
     
@@ -375,15 +384,15 @@ var CreateProduct=async (req,res,next)=>{
     
     
         if(product.catigory.toString()!=catigo._id.toString()){
+            
+            var oldCat=await Catigory.findById(product.catigory.toString())
+            var oldArrayIndex=oldCat.products.indexOf(AdId)
+            if(oldArrayIndex>-1){
+                oldCat.products.splice(oldArrayIndex,1)
+            }
+            await oldCat.save()
     
-            const cato=await Catigory.findById(product.catigory)
-            const catIndexinArray=cato.products.indexOf(catigo._id.toString())
-               if (catIndexinArray > -1) {
-                   cato.products.splice(catIndexinArray, 1);
-                 }
-               await cato.save()
-    
-               const catonew=await Catigory.findById(catigory.catigo._id)
+               var catonew=await Catigory.findById(CatigoryID)
                catonew.products.push(product._id)
                   await catonew.save()
     
@@ -442,7 +451,7 @@ var CreateProduct=async (req,res,next)=>{
         
             
            // console.debug(AD)
-    
+            console.debug(product)
         const catigory=await Catigory.findById(product.catigory)
         console.debug(catigory)
         const catigoryIndex=await catigory.products.indexOf(productID.toString())
@@ -565,9 +574,7 @@ var CreateProduct=async (req,res,next)=>{
      }
     var createApprtmentCatigory=async(req,res,next)=>{
 
-    
         try{
-        
         const errors = validationResult(req);
         console.debug(errors)
         if(!errors.isEmpty()){
@@ -576,20 +583,61 @@ var CreateProduct=async (req,res,next)=>{
             error.data = errors.array();
             return next(error) ; 
         }
-        const {name}=req.body;
+        const {name,arb_name}=req.body;
         var newname=name.toLowerCase();
-        const catigo = await MarketCatigory.findOne({name:newname});
+        var catigo 
+        catigo= await MarketCatigory.findOne({name:newname,arb_name});
         if(catigo){
             const error = new Error('catigory already exist');
             error.statusCode = 404 ;
             return next( error) ;
         }
-        
+    
             const NewCat= new MarketCatigory({
-               name:newname
+               name:newname,
+               arb_name
             })
             await NewCat.save(); 
             res.status(201).json({state:1,msg:'catigory created '})
+    
+        }catch(err){
+            console.debug(err)
+                if(!err.statusCode){
+                    err.statusCode = 500; 
+                }
+                return next(err);
+        }
+        
+    
+    }
+
+    var EditApprtmentCatigory=async(req,res,next)=>{
+
+        try{
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+        const {name,arb_name,CatId}=req.body;
+        var newname=name.toLowerCase();
+        var catigo 
+        catigo= await MarketCatigory.findById(CatId);
+        if(!catigo){
+            const error = new Error('catigory not found');
+            error.statusCode = 404 ;
+            return next( error) ;
+        }
+    
+           
+        catigo.name=newname||catigo.name
+        catigo.arb_name=arb_name|| catigo.arb_name
+          
+            await catigo.save(); 
+            res.status(200).json({state:1,msg:'catigory updated '})
     
         }catch(err){
             console.debug(err)
@@ -717,14 +765,13 @@ var CreateProduct=async (req,res,next)=>{
             error.data = errors.array();
             return next(error) ; 
         }
-        var {name}=req.body;
+        var {name,arb_name}=req.body;
         name=name.toLowerCase();
         const imageUrl = req.files;
         console.debug(name)
-        const service = await AvilableService.findOne({name:name});
+        const service = await AvilableService.findOne({name:name,arb_name:arb_name});
        
         if(service){
-            
             const error = new Error('service already exist');
             error.statusCode = 404 ;
             return next( error) ;
@@ -745,7 +792,8 @@ var CreateProduct=async (req,res,next)=>{
         
             const Newservice= new AvilableService({
                 name:name,
-                image:images[0]||''
+                image:images[0]||'',
+                arb_name
         
             })
             await Newservice.save();
@@ -766,6 +814,61 @@ var CreateProduct=async (req,res,next)=>{
     
     
         }
+
+        var EditService=async (req,res,next)=>{
+        
+            try{
+                console.debug('controller runas')
+            const errors = validationResult(req);
+            console.debug(errors)
+            if(!errors.isEmpty()){
+                const error = new Error('validation faild');
+                error.statusCode = 422 ;
+                error.data = errors.array();
+                return next(error) ; 
+            }
+            var {name,arb_name,ServiceId}=req.body;
+            name=name.toLowerCase();
+            const imageUrl = req.files;
+            console.debug(name)
+            const service = await AvilableService.findById(ServiceId);
+           
+            if(!service){
+                const error = new Error('service not found');
+                error.statusCode = 404 ;
+                return next( error) ;
+            }
+            let images = [];
+        
+        
+            imageUrl.forEach(image=>{
+                
+                    images.push(image.filename);
+                
+            });
+            
+                service.name=name||service.name
+                service.image=images[0]||service.image
+                service.arb_name=arb_name||service.arb_name
+                await service.save();
+                    
+                    res.status(200).json({state:1,message:'service updated Sucessfully'});
+                
+                
+        
+            }catch(err){
+                
+                console.debug(err)
+                    if(!err.statusCode){
+                        err.statusCode = 500; 
+                    }
+                    return next(err);
+            }
+            
+        
+        
+            }
+        
 
         var getTotalNumOfUsers=async(req,res,next)=>{
 
@@ -1622,7 +1725,9 @@ module.exports={
     deleteFQ,
     getFQ,
     getSupportMessagesFromUsers,
-    AnswerSupport
+    AnswerSupport,
+    EditApprtmentCatigory,
+    EditService
     
 
 

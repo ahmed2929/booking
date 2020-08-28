@@ -362,6 +362,7 @@ const Rate=async(req,res,next)=>{
     try{
         
     const {star,RequestId}=req.body
+    
     var request=await Request.findById(RequestId)
     if(!request){
 
@@ -701,6 +702,7 @@ const getMyProfile=async(req,res,next)=>{
         .select('status')
         .select('method')
         .select('emailVerfied')
+        .select('lang')
         
         console.log(user)
           res.status(200).json({state:1,user:user})
@@ -726,7 +728,7 @@ const editMyProfile=async(req,res,next)=>{
             error.data = errors.array();
             return next(error) ; 
         }
-        const {name,email}=req.body
+        const {name,email,lang}=req.body
 
        var imageUrl 
        if( req.files[0]){
@@ -747,6 +749,7 @@ const editMyProfile=async(req,res,next)=>{
         user.name=name||user.name
         user.email=email||user.email
         user.photo=imageUrl||user.photo
+        user.lang=lang||user.lang
         if(email){
             user.emailVerfied=false
         }
@@ -755,7 +758,7 @@ const editMyProfile=async(req,res,next)=>{
         
         
 
-          res.status(200).json({state:1,msg:"user info updated"})
+          res.status(200).json({state:1,msg:"user info updated",msg_arb:"لقد تم تعديل البينات بنجاح"})
         
            
        

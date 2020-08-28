@@ -120,6 +120,8 @@ passport.use('googleToken', new GooglePlusTokenStrategy({
        });
        newUser.emailVerfied=true,
       req.user=newUser
+      newUser.FCMJwt.push(req.body.FCM)
+
        await newUser.save();
        done(null, newUser);
      

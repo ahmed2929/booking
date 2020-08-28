@@ -109,10 +109,10 @@ const userSchema = new schema({
         type:String,
         default:'treder'
        },
-    lang:{
+       lang:{
         type:Number,
-        default:0
-    },
+        default:1
+      },
     cart:[{
       product:{
       type:schema.Types.ObjectId,

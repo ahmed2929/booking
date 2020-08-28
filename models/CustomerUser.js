@@ -86,7 +86,10 @@ const userSchema = new schema({
     forgetPasswordCode:String,
     codeExpireDate:Date,
     Adress:String,
-    lang:String,
+    lang:{
+      type:Number,
+      default:1
+    },
     status:{
         type:String,
         default:'customer'
