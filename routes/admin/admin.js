@@ -267,6 +267,28 @@ Router.post('/EditService',uploadImage.array('image'),[
                     
 ],verfiyToken,controller.EditService); 
 
+Router.post('/AddCity',[
+    
+    
+    body('name')
+    .not()
+    .isEmpty(),
+    body('arb_name')
+    .not()
+    .isEmpty(),
+                    
+],verfiyToken,controller.AddCity); 
+
+Router.post('/deleteCity',[
+    
+    
+    body('cityId')
+    .not()
+    .isEmpty(),
+  
+                    
+],verfiyToken,controller.deleteCity); 
+
 
 //llsl
 

@@ -14,7 +14,7 @@ const mostView=require('../../models/topView');
 const { all } = require('../../routes/admin/admin');
 const { any } = require('../../helpers/uploadImage');
 const shopcatigory =require('../../models/shopcatigory')
-
+const City=require('./../../models/cities')
 var getAvilableCatigories=async (req,res,next)=>{
 
     try{
@@ -166,8 +166,11 @@ const getAdDetailsById=async(req,res,next)=>{
 
 }
 
-const getAvilabecites=(req,res,next)=>{
-    res.status(200).json({state:1,cities:["Abu Dhabi","Ajman","Dubai","Fujairah","Ras Al Khaimah","Sharjah","Umm Al Quwain"]})
+const getAvilabecites=async (req,res,next)=>{
+    const cities=await City.find()
+    .select('name arb_name')
+    //["Abu Dhabi","Ajman","Dubai","Fujairah","Ras Al Khaimah","Sharjah","Umm Al Quwain"],arb_cities:["دبي","أبوظبي","الشارقة","العين","رأس الخيمة","عجمان"]
+    res.status(200).json({state:1,cities})
 }
 
 const getCatigoriesAdById=async (req,res,next)=>{

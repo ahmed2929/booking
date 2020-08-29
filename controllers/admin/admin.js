@@ -26,6 +26,7 @@ const Isuues=require('../../models/isuues')
 const FQ=require('../../models/f&q');
 const { request } = require('express');
 const catigory = require('../../models/catigory');
+const City=require('../../models/cities')
 var register=async (req,res,next)=>{
 
     const errors = validationResult(req);
@@ -1693,6 +1694,69 @@ const getFQ=async(req,res,next)=>{
     
 
 }
+const AddCity=async(req,res,next)=>{
+    try{
+
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        const {name,arb_name}=req.body
+        const newcity=new City({
+            name,
+            arb_name
+        })
+       await newcity.save()
+        
+        res.status(200).json({state:1,msg:"newcity created"})
+
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+const deleteCity=async(req,res,next)=>{
+    try{
+
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        const {cityId}=req.body
+       await City.findByIdAndDelete(cityId)
+     
+        
+        res.status(200).json({state:1,msg:"city delted"})
+
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
 
 module.exports={
     register,
@@ -1727,7 +1791,9 @@ module.exports={
     getSupportMessagesFromUsers,
     AnswerSupport,
     EditApprtmentCatigory,
-    EditService
+    EditService,
+    deleteCity,
+    AddCity
     
 
 
