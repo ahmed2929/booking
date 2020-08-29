@@ -20,7 +20,7 @@ var cors = require('cors')
 const socket=require('../controllers/HandleSocketConnection/handleEvents')
 module.exports=(app)=>{ 
    // meddlewares
-  // app.use(cors())
+   app.use(cors())
    app.use(bodyParser.json());
    app.use(bodyParser.urlencoded({extended:true}));
    require('dotenv').config();
