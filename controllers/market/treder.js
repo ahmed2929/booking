@@ -484,7 +484,8 @@ var getAllRequests=async(req,res,next)=>{
             to:req.userId,
              "RequestData.status": status|| {$exists:true},  
         })
-        .populate({ path: 'to',select:'name as customerName'})
+        .populate({ path: 'to',select:'name'})
+        .populate({ path: 'from',select:'name'})
          .populate({path: 'AD', select:'images city streetAdress price'})
          .populate('RequestData.services.serviceType')
          .skip((page - 1) * itemPerPage)
@@ -528,7 +529,7 @@ var getAllRequests=async(req,res,next)=>{
              services,
              RequestID:oldObj._id,
              status,
-             arrivalTime
+             arrivalTime,
     
         }
            
@@ -1087,6 +1088,7 @@ const decreseCartItem=async(req,res,next)=>{
     try{
         
         const {ProductId}=req.body
+        console.debug('req.body',req.body)
         const product=await Product.findById(ProductId)
         if(!product){
             const error = new Error('product not found');
@@ -1134,6 +1136,7 @@ const decreseCartItem=async(req,res,next)=>{
              console.debug('user',user.cart)
            await user.save();
            foundAndseted=false
+           
             return res.status(200).json({state:1,msg:'the decresed from  cart'})
             
             

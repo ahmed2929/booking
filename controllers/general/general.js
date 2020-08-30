@@ -27,7 +27,11 @@ const Search = async (req, res, next) => {
     let totalItems;
     try {
         if(type=='shop'){
-        const cato=await shopcatigory.findOne({name:new RegExp( search.trim() , 'i')})
+        const cato=await shopcatigory.findOne({
+            
+          $or:[{name:new RegExp( search.trim() , 'i')},{arb_name:new RegExp( search.trim() , 'i')}]
+        
+        })
         console.debug(cato)
         var searchParams=[]
         if(cato){
@@ -69,8 +73,13 @@ const Search = async (req, res, next) => {
               });
             }else if(type=="market"){
 
-                const cato=await MarketCatigory.findOne({name:new RegExp( search.trim() , 'i')})
-                console.debug(cato)
+                const cato=await MarketCatigory.findOne({
+                  $or:[{name:new RegExp( search.trim() , 'i')},{arb_name:new RegExp( search.trim() , 'i')}]
+
+                
+                })
+              //  .populate({path:'ads'})
+                //console.debug(cato)
                 var searchParams=[]
                 if(cato){
                     
@@ -110,6 +119,17 @@ const Search = async (req, res, next) => {
                     .populate({ path: "catigory", select: "name" })
                     .skip((page - 1) * itemPerPage)
                     .limit(itemPerPage);
+                    console.debug(cato)
+                    // if(!result&&cato){
+                     
+                    //   return res.status(200).json({
+                    //     state: 1,
+                    //     totalItems:totalItems,
+                    //     searchResult: cato.ads,
+                    //   });
+
+                    //}
+
                     res.status(200).json({
                         state: 1,
                         totalItems:totalItems,

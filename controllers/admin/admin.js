@@ -27,6 +27,7 @@ const FQ=require('../../models/f&q');
 const { request } = require('express');
 const catigory = require('../../models/catigory');
 const City=require('../../models/cities')
+const pagenation=require('../../helpers/general/helpingFunc').paginate
 var register=async (req,res,next)=>{
 
     const errors = validationResult(req);
@@ -719,13 +720,15 @@ var CreateProduct=async (req,res,next)=>{
         TotalNumOfUsers = await customer.find().countDocuments()
         TotalNumOfUsers += await treder.find().countDocuments()
         status='all'
-        var user = await customer.find()
+         user = await customer.find()
         .skip((page - 1) * itemPerPage)
         .limit(itemPerPage)
         var tuser = await treder.find()
         .skip((page - 1) * itemPerPage)
         .limit(itemPerPage)
-        user.concat(tuser)
+        user=user.concat(tuser)
+       // user=pagenation(user,itemPerPage,page)
+        //console.debug(user,page,itemPerPage)
        }
         
         if(!user){
