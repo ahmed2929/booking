@@ -173,6 +173,7 @@ try{
      .populate({path:'Payment',select:'status finalPrice methodOfPay'})
      .skip((page - 1) * itemPerPage)
      .limit(itemPerPage)
+     .lean()
     
     var mapedLimitedResult=request.map(oldObj=>{ 
         var FResult={}
@@ -182,6 +183,8 @@ try{
         }
     var StartDate=oldObj.RequestData.StartDate
     var EndDate=oldObj.RequestData.EndDate
+    var StartDateMS= Date.parse(StartDate)
+    var EndDateMS= Date.parse(EndDate)
     var renterPhone=oldObj.to.mobile
     var renterName=oldObj.to.name
     var title=oldObj.AD.title
@@ -231,7 +234,9 @@ try{
         children,
         CanReschedule,
         CanPay,
-        payment
+        payment,
+        StartDateMS,
+        EndDateMS
 
         
 
@@ -921,10 +926,20 @@ const getNotifications=async(req,res,next)=>{
         const user=await CustomerUser.findById(req.userId)
         .populate({path: 'notfications', options: { sort:'desc' } ,select:'notification action data createdAt'})
         .select('notfications')
+        .lean()
         .skip((page - 1) * itemPerPage)
         .limit(itemPerPage)
-        
-        console.log(user)
+       // Object.assign(user.notfications.createdAt,Date.parse(user.notfications.createdAt))
+       // user.notfications.createdAt=Date.parse(user.notfications.createdAt)
+       // console.debug(Date.parse(user.notfications.createdAt))
+      await user.notfications.forEach(async obj=>{
+           var ms= await Date.parse(obj.createdAt)
+            obj.createdAtMS=ms
+        })
+
+        //console.debug(user.notfications[0].createdAtMS)
+          
+
           res.status(200).json({state:1,notfications:user.notfications})
         
            
