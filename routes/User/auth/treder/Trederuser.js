@@ -40,7 +40,8 @@ Router.put('/register',
         }
         return true ;
     }),
-    body('name').not().isEmpty().trim(),
+    body('name').not().isEmpty().trim()
+    .isLength({ min: 4 ,max:25}),
     body('mobile')
     .not().isEmpty()
     .custom((value,{req,res,next})=>{

@@ -142,9 +142,10 @@ var login=async(req,res,next)=>{
                     mobile:user.mobile,
                     emailVerfied:user.emailVerfied,
                     mobileVerfied:user.mobileVerfied,
-                    notfications:user.notfications,
-                    pendingRequestTo:user.pendingRequestTo,
-                    RecivedRequest:user.RecivedRequest,
+                    userId:user._id,
+                   // notfications:user.notfications,
+                  //  pendingRequestTo:user.pendingRequestTo,
+                   // RecivedRequest:user.RecivedRequest,
                     status:user.status
                     
 
@@ -417,7 +418,7 @@ try{
 
 
 
-        return res.status(200).json({state:1,token})
+        return res.status(200).json({state:1,token,userId:existingUser._id})
 
 
         }
@@ -439,7 +440,7 @@ try{
 
 
 
-        return res.status(200).json({state:1,token})
+        return res.status(200).json({state:1,token,userId:existingUserLocal._id})
 
 
         }
@@ -461,7 +462,7 @@ try{
         
         
         
-                return res.status(200).json({state:1,token})
+                return res.status(200).json({state:1,token,userId:existingUserfacebook._id})
         
           
         }
@@ -492,7 +493,7 @@ try{
         console.debug("new google user is created")
 
 
-        return res.status(200).json({state:1,token})
+        return res.status(200).json({state:1,token, userId:newUser._id})
 
 
    
@@ -530,7 +531,7 @@ const facebookWithOuthData=async (req,res,next)=>{
     
     
     
-            return res.status(200).json({state:1,token})
+            return res.status(200).json({state:1,token, userId:existingUser._id})
     
     
             }
@@ -553,7 +554,7 @@ const facebookWithOuthData=async (req,res,next)=>{
     
     
     
-            return res.status(200).json({state:1,token})
+            return res.status(200).json({state:1,token,userId:existingUserLocal._id})
     
     
             }
@@ -575,7 +576,7 @@ const facebookWithOuthData=async (req,res,next)=>{
             
             
             
-                    return res.status(200).json({state:1,token})
+                    return res.status(200).json({state:1,token,userId:existingUserfacebook._id})
             
               
             }
@@ -609,7 +610,7 @@ const facebookWithOuthData=async (req,res,next)=>{
             console.debug('new user created facebook')
 
     
-            return res.status(200).json({state:1,token})
+            return res.status(200).json({state:1,token,userId:newUser._id})
     
     
        

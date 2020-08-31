@@ -148,10 +148,11 @@ var login=async(req,res,next)=>{
                     mobile:user.mobile,
                     emailVerfied:user.emailVerfied,
                     mobileVerfied:user.mobileVerfied,
-                    notfications:user.notfications,
-                    pendingRequestTo:user.pendingRequestTo,
-                    RecivedRequest:user.RecivedRequest,
-                    userADS:user.MyWonAds
+                  //  notfications:user.notfications,
+                   // pendingRequestTo:user.pendingRequestTo,
+                   // RecivedRequest:user.RecivedRequest,
+                   // userADS:user.MyWonAds
+                   userId:user._id
 
                 });
         }catch(err){
@@ -434,7 +435,7 @@ const googleWithOuthData=async (req,res,next)=>{
     
     
     
-            return res.status(200).json({state:1,token})
+            return res.status(200).json({state:1,token,userId:existingUser._id})
     
     
             }
@@ -456,7 +457,7 @@ const googleWithOuthData=async (req,res,next)=>{
     
     
     
-            return res.status(200).json({state:1,token})
+            return res.status(200).json({state:1,token,userId:existingUserLocal._id})
     
     
             }
@@ -478,7 +479,7 @@ const googleWithOuthData=async (req,res,next)=>{
             
             
             
-                    return res.status(200).json({state:1,token})
+                    return res.status(200).json({state:1,token,userId:existingUserfacebook._id})
             
               
             }
@@ -509,7 +510,7 @@ const googleWithOuthData=async (req,res,next)=>{
             console.debug("new google user is created")
     
     
-            return res.status(200).json({state:1,token})
+            return res.status(200).json({state:1,token, userId:newUser._id})
     
     
        
@@ -547,7 +548,7 @@ const googleWithOuthData=async (req,res,next)=>{
         
         
         
-                return res.status(200).json({state:1,token})
+                return res.status(200).json({state:1,token,userId:existingUser._id})
         
         
                 }
@@ -570,7 +571,7 @@ const googleWithOuthData=async (req,res,next)=>{
         
         
         
-                return res.status(200).json({state:1,token})
+                return res.status(200).json({state:1,token,userId:existingUserLocal._id})
         
         
                 }
@@ -592,7 +593,7 @@ const googleWithOuthData=async (req,res,next)=>{
                 
                 
                 
-                        return res.status(200).json({state:1,token})
+                        return res.status(200).json({state:1,token,userId:existingUserfacebook._id})
                 
                   
                 }
@@ -626,7 +627,7 @@ const googleWithOuthData=async (req,res,next)=>{
                 console.debug('new user created facebook')
     
         
-                return res.status(200).json({state:1,token})
+                return res.status(200).json({state:1,token,userId:newUser._id})
         
         
            
