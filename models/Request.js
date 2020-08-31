@@ -17,10 +17,10 @@ const RequestSchema = new schema({
     },
     RequestData:{
         StartDate:{
-            type:Date
+            type:String
         },
         EndDate:{
-            type:Date
+            type:String
         },
         Adult:{
             type:Number
@@ -45,7 +45,7 @@ const RequestSchema = new schema({
         ],
 
         finalPrice:Number,
-        ArivalTime:String,
+      //  ArivalTime:String,
         status:{
             type:Number,
             default:0

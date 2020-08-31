@@ -46,10 +46,10 @@ const Book=async (req,res,next)=>{
         }
 
        var {AdId,StartDate,EndDate,Adult,children,services,finalPrice,ArivalTime,gender}=req.body
-            StartDate =new Date(StartDate)
-            EndDate =new Date(EndDate)
+            StartDateD =new Date(Number(StartDate))
+            EndDateD =new Date(Number(EndDate))
         
-       if(StartDate.toString() ==='Invalid Date'||EndDate.toString()==='Invalid Date'){
+       if(StartDateD.toString() ==='Invalid Date'||EndDateD.toString()==='Invalid Date'){
         
         const error = new Error('invalid date');
             error.statusCode = 422 ;
@@ -57,14 +57,14 @@ const Book=async (req,res,next)=>{
 
        }
 
-       if(StartDate<= Date.now()){
+       if(StartDateD<= Date.now()){
         const error = new Error('start date cannot be in the past');
         error.statusCode = 422 ;
         return next(error) ; 
 
        }
        
-       if(StartDate>=EndDate){
+       if(StartDateD>=EndDateD){
 
         const error = new Error('end date cannot be equal or less than start date');
             error.statusCode = 422 ;
@@ -106,7 +106,7 @@ const Book=async (req,res,next)=>{
             children:children,
             services:services,
             finalPrice,
-            ArivalTime,
+           // ArivalTime,
             gender
            }
            
@@ -159,7 +159,7 @@ try{
     // .populate({ path: 'pendingRequestTo', populate: { path: 'AD'}})
     // .populate({ path: 'pendingRequestTo', populate: { path: 'RequestData.services.serviceType'}})
     // .populate({ path: 'pendingRequestTo', populate: { path: 'Payment',select:'status finalPrice methodOfPay'}})
-    const TotalNumOfRequests=await Request.find({
+    const TotaNum=await Request.find({
         from:req.userId,
          "RequestData.status": status|| {$exists:true},  
     }).countDocuments()
@@ -183,8 +183,8 @@ try{
         }
     var StartDate=oldObj.RequestData.StartDate
     var EndDate=oldObj.RequestData.EndDate
-    var StartDateMS= Date.parse(StartDate)
-    var EndDateMS= Date.parse(EndDate)
+   // var StartDateMS= Date.parse(StartDate)
+   // var EndDateMS= Date.parse(EndDate)
     var renterPhone=oldObj.to.mobile
     var renterName=oldObj.to.name
     var title=oldObj.AD.title
@@ -250,7 +250,7 @@ try{
 
     
       
-    res.status(200).json({state:1,Result:mapedLimitedResult,TotalNumOfRequests})
+    res.status(200).json({state:1,Result:mapedLimitedResult,TotaNum})
     
 
 
@@ -922,7 +922,8 @@ const getNotifications=async(req,res,next)=>{
         const page = req.query.page *1 || 1;
         const status=req.query.status
         const itemPerPage = 10;
-        
+        const userCount=await TrederUsers.findById(req.userId)
+        const TotaNum=userCount.notfications.length
         const user=await CustomerUser.findById(req.userId)
         .populate({path: 'notfications', options: { sort:'desc' } ,select:'notification action data createdAt'})
         .select('notfications')
@@ -940,7 +941,7 @@ const getNotifications=async(req,res,next)=>{
         //console.debug(user.notfications[0].createdAtMS)
           
 
-          res.status(200).json({state:1,notfications:user.notfications})
+          res.status(200).json({state:1,notfications:user.notfications,TotaNum})
         
            
         
@@ -982,7 +983,7 @@ const getMyOreder=async(req,res,next)=>{
         return b.createdAt-a.createdAt
     })
     var totalOrders=user.Orders.length
-   res.status(200).json({state:1,Orders:lmitedData,totalOrders})
+   res.status(200).json({state:1,Orders:lmitedData,TotaNum:totalOrders})
      
        
         }catch(err){

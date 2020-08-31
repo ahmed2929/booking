@@ -90,13 +90,13 @@ var login=async(req,res,next)=>{
         }
         const {email,password,FCM}=req.body
         
-        const usergoogle = await CustomerUser.findOne({'google.email':email}) 
+        const usergoogle = await TrederUsers.findOne({'google.email':email}) 
         if(usergoogle){
             const error = new Error('please try to login with your google acount');
             error.statusCode = 401 ;
             return next(error) ;
         }
-        const userfacebook = await CustomerUser.findOne({'facebook.email':email}) 
+        const userfacebook = await TrederUsers.findOne({'facebook.email':email}) 
 
         if(userfacebook){
             const error = new Error('please try to login with your facebook acount');

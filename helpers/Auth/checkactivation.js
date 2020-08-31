@@ -1,7 +1,3 @@
-const jwt = require('jsonwebtoken');
-
-const User = require('../../models/TrederUsers');
-
 module.exports = async (req,res,next)=>{
     try{
       

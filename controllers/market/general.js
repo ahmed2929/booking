@@ -186,7 +186,7 @@ const getCatigoriesAdById=async (req,res,next)=>{
         .skip((page - 1) * itemPerPage)
         .limit(itemPerPage)
         .populate('services.serviceType')
-        res.status(200).json({totalNumOfAds:totalAds,hasNextPage:itemPerPage*page<totalAds,hasPerivousPage:page>1,nextPage:page+1,previousPage:page-1,result:Ads})
+        res.status(200).json({TotaNum:totalAds,hasNextPage:itemPerPage*page<totalAds,hasPerivousPage:page>1,nextPage:page+1,previousPage:page-1,result:Ads})
     }catch(err){
         console.debug(err)
         if(!err.statusCode){
@@ -276,7 +276,7 @@ const getAdsFilter=async (req,res,next)=>{
     })
   }
     
-   res.status(200).json({state:1,finalRes,TotalNumOfAds})
+   res.status(200).json({state:1,finalRes,TotaNum:TotalNumOfAds})
 }
    catch(err){
     console.debug(err)
@@ -302,7 +302,7 @@ const getMostView=async (req,res,next)=>{
     .sort('position')
     .skip((page - 1) * itemPerPage)
     .limit(itemPerPage)
-   res.status(200).json({state:1,totalAds,mostview})
+   res.status(200).json({state:1,TotaNum:totalAds,mostview})
 }
    catch(err){
     console.debug(err)
@@ -326,7 +326,7 @@ const getAllads=async (req,res,next)=>{
     .skip((page - 1) * itemPerPage)
     .limit(itemPerPage)
     
-   res.status(200).json({state:1,totalAds,allAds})
+   res.status(200).json({state:1,TotaNum:totalAds,allAds})
 }
    catch(err){
     console.debug(err)

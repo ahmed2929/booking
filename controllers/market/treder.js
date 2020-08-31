@@ -427,7 +427,7 @@ var getMyADs=async (req,res,next)=>{
         //     }
         // })
         const page = req.query.page *1 || 1;
-         const itemPerPage = 5; 
+         const itemPerPage = 10; 
         console.debug((page - 1) * itemPerPage)
         var AdsLen=await TrederUsers.findById(req.userId)
         AdsLen=AdsLen.MyWonAds.length
@@ -459,7 +459,7 @@ var getMyADs=async (req,res,next)=>{
         ])
         .lean()
         .select('MyWonAds')
-        res.status(200).json({state:1,fResult:user.MyWonAds,AdsLen});
+        res.status(200).json({state:1,fResult:user.MyWonAds,TotaNum:AdsLen});
     }catch(err){
     
         console.debug(err)
@@ -479,7 +479,14 @@ var getAllRequests=async(req,res,next)=>{
         console.debug(req.userId)
         const page = req.query.page *1 || 1;
         const status=req.query.status
-        const itemPerPage = 5;
+        const itemPerPage = 10;
+
+        const TotaNum=await Request.find({
+            to:req.userId,
+             "RequestData.status": status|| {$exists:true},  
+        }).countDocuments()
+
+
         const request=await Request.find({
             to:req.userId,
              "RequestData.status": status|| {$exists:true},  
@@ -519,7 +526,8 @@ var getAllRequests=async(req,res,next)=>{
          var services=oldObj.RequestData.services    
          var status=  oldObj.RequestData.status 
          var arrivalTime=  oldObj.RequestData.ArivalTime 
-
+        var StartDate=oldObj.RequestData.StartDate
+        var EndDate=oldObj.RequestData.EndDate
           var FResult={
              customerName,
              image,
@@ -529,8 +537,8 @@ var getAllRequests=async(req,res,next)=>{
              services,
              RequestID:oldObj._id,
              status,
-             arrivalTime,
-    
+             StartDate,
+             EndDate
         }
            
         
@@ -544,7 +552,7 @@ var getAllRequests=async(req,res,next)=>{
           
     
     //totalNumOfRequests:totalNumOfRequests,hasNextPage:itemPerPage*page<totalNumOfRequests,hasPerivousPage:page>1,nextPage:page+1,previousPage:page-1
-        res.status(200).json({state:1,Result:mapedLimitedResult})
+        res.status(200).json({state:1,Result:mapedLimitedResult,TotaNum})
         //if(Date.now()<cus)
     
     
@@ -889,6 +897,8 @@ const getLatestReviews=async(req,res,next)=>{
                 date:elem.date,
                 dateMs:Date.parse(elem.date)
 
+
+                
             }
             return obj
 
@@ -917,7 +927,7 @@ const getLatestReviews=async(req,res,next)=>{
           var Limited=paginate(arrayOfAllObj,itemPerPage,page)
 
 
-          res.status(200).json({state:1,user:Limited,TotalReviws})
+          res.status(200).json({state:1,user:Limited,TotaNum:TotalReviws})
         
            
        
@@ -1286,6 +1296,10 @@ const getNotifications=async(req,res,next)=>{
         const status=req.query.status
         const itemPerPage = 10;
         
+        const userCount=await TrederUsers.findById(req.userId)
+        const TotaNum=userCount.notfications.length
+
+
         const user=await TrederUsers.findById(req.userId)
         // .populate({path: 'notfications', options: { sort:'desc' } ,select:'notification action data createdAt'})
         // .select('notfications')
@@ -1320,7 +1334,7 @@ const getNotifications=async(req,res,next)=>{
             var ms= await Date.parse(obj.createdAt)
              obj.createdAtMS=ms
          })
-          res.status(200).json({state:1,notfications:user.notfications})
+          res.status(200).json({state:1,notfications:user.notfications,TotaNum})
         
            
        
@@ -1397,7 +1411,7 @@ const getMyOreder=async(req,res,next)=>{
     })
     var totalOrders=user.Orders.length
     console.debug(user._id)
-   res.status(200).json({state:1,Orders:lmitedData,totalOrders})
+   res.status(200).json({state:1,Orders:lmitedData,TotaNum:totalOrders})
      
        
         }catch(err){

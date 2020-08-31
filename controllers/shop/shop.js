@@ -31,7 +31,7 @@ var getAllProducts=async(req,res,next)=>{
           .limit (itemPerPage)
           .lean( true) 
        
-           res.status(200).json({state:1,products,productsNum})
+           res.status(200).json({state:1,products,TotaNum:productsNum})
     
         }catch(err){
             console.debug(err)
@@ -87,7 +87,7 @@ var getProductsByCatigory=async(req,res,next)=>{
 
         ]).select('products')
        
-            res.status(200).json({state:1,products:cato.products,TotalNumOfProducts:lenth})
+            res.status(200).json({state:1,products:cato.products,TotaNum:lenth})
     
         }catch(err){
             console.debug(err)

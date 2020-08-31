@@ -744,7 +744,7 @@ var CreateProduct=async (req,res,next)=>{
             }
         })
         
-            res.status(200).json({state:1,status:status,fUser,TotalNumOfUsers})
+            res.status(200).json({state:1,status:status,fUser,TotaNum:TotalNumOfUsers})
     
         }catch(err){
             console.debug(err)
@@ -903,7 +903,7 @@ var CreateProduct=async (req,res,next)=>{
     
            }
             
-                res.status(200).json({state:1,TotalNumOfUsers})
+                res.status(200).json({state:1,TotaNum:TotalNumOfUsers})
         
             }catch(err){
                 console.debug(err)
@@ -1043,7 +1043,7 @@ var CreateProduct=async (req,res,next)=>{
 
        return res.status(200).json({
             state: 1,
-            NumOfProducts: totalProducts,
+            TotaNum: totalProducts,
             products: products,
           });
     }
@@ -1280,7 +1280,7 @@ const getItemsByCatigory=async(req,res,next)=>{
        }
        res.status(200).json({
          state: 1,
-         NumOfItems: totalItems,
+         TotaNum: totalItems,
          items: Items,
        });
                 
@@ -1398,7 +1398,7 @@ const getAllPromo=async(req,res,next)=>{
         .skip((page - 1) * productPerPage)
         .limit(productPerPage)
 
-        res.status(200).json({state:1,promos,TotalNum})
+        res.status(200).json({state:1,promos,TotaNum:TotalNum})
 
     }catch(err){
         console.debug(err)
@@ -1532,7 +1532,7 @@ const getSupportMessagesFromUsers=async(req,res,next)=>{
         .populate({path:'Tuser',select:'name email _id photo blocked emailVerfied'})
         .skip((page - 1) * itemPerPage)
         .limit(itemPerPage)
-           return res.status(200).json({state:1,support:isuues,isuuesNum})
+           return res.status(200).json({state:1,support:isuues,TotaNum:isuuesNum})
 
     }
 
@@ -1684,7 +1684,7 @@ const getFQ=async(req,res,next)=>{
         .skip((page - 1) * itemPerPage)
         .limit(itemPerPage)
 
-        return res.status(200).json({state:1,fqs,TotalNumfqs})
+        return res.status(200).json({state:1,fqs,TotaNum:TotalNumfqs})
 
 
     }catch(err){
