@@ -32,21 +32,21 @@ Router.put('/createApartment',verfiyToken,uploadImage.array('image'),[
 
 
 
-Router.put('/editApartment',verfiyToken,CheckActivation,uploadImage.array('image'),[
+Router.put('/editApartment',verfiyToken,uploadImage.array('image'),[
    
    body('ADId')
    .not()
    .isEmpty()
 
-],conttroller.editAdById);
+],CheckActivation,conttroller.editAdById);
 
-Router.delete('/deleteApartment',verfiyToken,CheckActivation,uploadImage.array('image'),[
+Router.delete('/deleteApartment',verfiyToken,uploadImage.array('image'),[
    
     body('ADId')
     .not()
     .isEmpty()
  
- ],conttroller.deleteById); 
+ ],CheckActivation,conttroller.deleteById); 
 Router.get('/getMyADs',verfiyToken,conttroller.getMyADs)
 Router.get('/getAllRequests',verfiyToken,conttroller.getAllRequests)
 Router.get('/getRequestbyId/:RequestId',verfiyToken,conttroller.getRequestbyId)

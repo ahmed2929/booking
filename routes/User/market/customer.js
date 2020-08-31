@@ -26,12 +26,12 @@ Router.put('/createRequest',verfiyToken,[
   
   
 
-],conttroller.Book);
+],CheckActivation,conttroller.Book);
 
-Router.get('/getMyRequests',verfiyToken,CheckActivation,conttroller.getMyRequests)
-Router.get('/getMyRequests',verfiyToken,CheckActivation,conttroller.getMyRequests)
-Router.put('/reschedule',verfiyToken,CheckActivation,conttroller.reschedule)
-Router.post('/Rate',verfiyToken,CheckActivation,conttroller.Rate)
+Router.get('/getMyRequests',verfiyToken,conttroller.getMyRequests)
+//Router.get('/getMyRequests',verfiyToken,CheckActivation,conttroller.getMyRequests)
+Router.put('/reschedule',verfiyToken,conttroller.reschedule)
+Router.post('/Rate',verfiyToken,conttroller.Rate)
 Router.post('/putItemToCart',verfiyToken,conttroller.putItemToCart)
 Router.get('/getCartItems',verfiyToken,conttroller.getCartItems)
 Router.post('/decreseCartItem',verfiyToken,conttroller.decreseCartItem)
