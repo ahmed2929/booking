@@ -56,7 +56,10 @@ var getProductsByCatigory=async(req,res,next)=>{
         const page = req.query.page *1 || 1;
         const status=req.query.status
         const itemPerPage =10
-
+         
+        if(!catigoryID){
+            return res.status(422).json({state:0,message:"in valid catigory id"})
+         }
         const cat=await shopcatigory.findById(catigoryID)
         const lenth=cat.products.length;
           const cato=await shopcatigory.findById(catigoryID)
@@ -86,7 +89,11 @@ var getProductsByCatigory=async(req,res,next)=>{
            
 
         ]).select('products')
-       
+        
+        if(!cato.products){
+           return res.status(422).json({state:0,message:"in valid catigory id"})
+        }
+
             res.status(200).json({state:1,products:cato.products,TotaNum:lenth})
     
         }catch(err){

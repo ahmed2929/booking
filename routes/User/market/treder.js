@@ -7,6 +7,7 @@ const uploadImage=require('../../../helpers/uploadImage');
 const bodyParser = require('body-parser');
 const conttroller=require('../../../controllers/market/treder')
 const CheckActivation=require('../../../helpers/Auth/checkactivation')
+const TrederUser=require('../../../models/TrederUsers')
 Router.put('/createApartment',verfiyToken,uploadImage.array('image'),[
     body('city')
     .not()
@@ -57,10 +58,34 @@ Router.post('/DisAgreeRequest',verfiyToken,CheckActivation,conttroller.disAgree)
 Router.get('/getMyProfile',verfiyToken,conttroller.getMyProfile)
 
 Router.put('/editMyProfile',verfiyToken,uploadImage.array('image'),[
-    body('name')
-    .not()
-    .isEmpty()
-
+    body('email')
+    .isEmail()
+    .withMessage('please enter a valid email.')
+    .normalizeEmail()
+    .custom((value,{req,res,next})=>{
+        const userId=req.userId
+        console.debug('will search email')
+        return TrederUser.findOne({
+        email:value,
+        _id:{$ne:userId}
+    
+    })
+        .then(result=>{
+            console.debug(result)
+            if(result){
+                return Promise.reject('it is another customer email');
+            }
+        }).catch(err=>{
+            
+            
+           throw err
+        
+        
+        })
+    }),
+    
+    body('name').not().isEmpty().trim()
+    .isLength({ min: 4 ,max:25}),
 
 ],conttroller.editMyProfile);
 
