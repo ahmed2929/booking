@@ -7,7 +7,7 @@ const uploadImage=require('../../../helpers/uploadImage');
 const bodyParser = require('body-parser');
 const conttroller=require('../../../controllers/market/treder')
 const CheckActivation=require('../../../helpers/Auth/checkactivation')
-Router.put('/createApartment',verfiyToken,CheckActivation,uploadImage.array('image'),[
+Router.put('/createApartment',verfiyToken,uploadImage.array('image'),[
     body('city')
     .not()
     .isEmpty(),
@@ -28,7 +28,7 @@ Router.put('/createApartment',verfiyToken,CheckActivation,uploadImage.array('ima
     .isEmpty(),
 
 
-],conttroller.CreateAppartment);
+],CheckActivation,conttroller.CreateAppartment);
 
 
 

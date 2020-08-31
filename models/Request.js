@@ -45,7 +45,7 @@ const RequestSchema = new schema({
         ],
 
         finalPrice:Number,
-      //  ArivalTime:String,
+        ArivalTime:String,
         status:{
             type:Number,
             default:0
