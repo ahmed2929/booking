@@ -235,8 +235,8 @@ try{
         CanReschedule,
         CanPay,
         payment,
-        StartDateMS,
-        EndDateMS
+     //   StartDateMS,
+        //EndDateMS
 
         
 
@@ -935,7 +935,7 @@ const getNotifications=async(req,res,next)=>{
        // console.debug(Date.parse(user.notfications.createdAt))
       await user.notfications.forEach(async obj=>{
            var ms= await Date.parse(obj.createdAt)
-            obj.createdAtMS=ms
+            obj.createdAtMS=`${ms}`
         })
 
         //console.debug(user.notfications[0].createdAtMS)

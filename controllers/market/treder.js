@@ -896,7 +896,7 @@ const getLatestReviews=async(req,res,next)=>{
                 star:elem.userRate,
                 adid:data._id,
                 date:elem.date,
-                dateMs:Date.parse(elem.date)
+                dateMs:`${Date.parse(elem.date)}`
 
 
                 
@@ -1333,7 +1333,7 @@ const getNotifications=async(req,res,next)=>{
         
         await user.notfications.forEach(async obj=>{
             var ms= await Date.parse(obj.createdAt)
-             obj.createdAtMS=ms
+             obj.createdAtMS=`${ms}`
          })
           res.status(200).json({state:1,notfications:user.notfications,TotaNum})
         
