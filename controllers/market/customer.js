@@ -753,6 +753,7 @@ const editMyProfile=async(req,res,next)=>{
         }
         user.name=name||user.name
         user.email=email||user.email
+        user.local.email=email||user.email
         user.photo=imageUrl||user.photo
         user.lang=lang||user.lang
         if(email){

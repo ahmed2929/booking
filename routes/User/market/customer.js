@@ -48,9 +48,10 @@ Router.put('/editMyProfile',uploadImage.array('image'),verfiyToken,[
         console.debug('will search email')
         return CustomerUser.findOne({
         email:value,
-        _id:{$ne:userId}
+        _id:{$ne:userId.toString()}
     
     })
+
         .then(result=>{
             console.debug(result)
             if(result){

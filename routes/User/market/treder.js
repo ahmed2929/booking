@@ -67,7 +67,7 @@ Router.put('/editMyProfile',verfiyToken,uploadImage.array('image'),[
         console.debug('will search email')
         return TrederUser.findOne({
         email:value,
-        _id:{$ne:userId}
+        _id:{$ne:userId.toString()}
     
     })
         .then(result=>{
