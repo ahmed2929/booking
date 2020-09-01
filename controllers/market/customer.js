@@ -284,10 +284,10 @@ const reschedule=async (req,res,next)=>{
         }
 
        var {RequestId,StartDate,EndDate,Adult,children,services,FinalservicePrice,finalPrice,ArivalTime}=req.body
-            StartDate =new Date(StartDate)
-            EndDate =new Date(EndDate)
+       StartDateD =new Date(Number(StartDate))
+       EndDateD =new Date(Number(EndDate))
         
-       if(StartDate.toString() ==='Invalid Date'||EndDate.toString()==='Invalid Date'){
+       if(StartDateD.toString() ==='Invalid Date'||EndDateD.toString()==='Invalid Date'){
         
         const error = new Error('invalid date');
             error.statusCode = 422 ;
@@ -295,14 +295,14 @@ const reschedule=async (req,res,next)=>{
 
        }
 
-       if(StartDate<= Date.now()){
+       if(StartDateD<= Date.now()){
         const error = new Error('start date cannot be in the past');
         error.statusCode = 422 ;
         return next(error) ; 
 
        }
        
-       if(StartDate>=EndDate){
+       if(StartDateD>=EndDateD){
 
         const error = new Error('end date cannot be equal or less than start date');
             error.statusCode = 422 ;
