@@ -922,7 +922,7 @@ const getNotifications=async(req,res,next)=>{
         const page = req.query.page *1 || 1;
         const status=req.query.status
         const itemPerPage = 10;
-        const userCount=await TrederUsers.findById(req.userId)
+        const userCount=await CustomerUser.findById(req.userId)
         const TotaNum=userCount.notfications.length
         const user=await CustomerUser.findById(req.userId)
         .populate({path: 'notfications', options: { sort:'desc' } ,select:'notification action data createdAt'})
