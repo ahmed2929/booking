@@ -48,7 +48,7 @@ const Book=async (req,res,next)=>{
        var {AdId,StartDate,EndDate,Adult,children,services,finalPrice,ArivalTime,gender}=req.body
             StartDateD =new Date(Number(StartDate))
             EndDateD =new Date(Number(EndDate))
-        
+
        if(StartDateD.toString() ==='Invalid Date'||EndDateD.toString()==='Invalid Date'){
         
         const error = new Error('invalid date');
@@ -106,7 +106,7 @@ const Book=async (req,res,next)=>{
             children:children,
             services:services,
             finalPrice,
-           // ArivalTime,
+            ArivalTime,
             gender
            }
            

@@ -531,14 +531,15 @@ var getAllRequests=async(req,res,next)=>{
           var FResult={
              customerName,
              image,
-        city,
+            city,
             streetAdress,
              price,
              services,
              RequestID:oldObj._id,
              status,
              StartDate,
-             EndDate
+             EndDate,
+             arrivalTime
         }
            
         
