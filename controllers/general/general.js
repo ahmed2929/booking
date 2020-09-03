@@ -129,11 +129,22 @@ const Search = async (req, res, next) => {
                     //   });
 
                     //}
+                    var fResult=result.map(obj=>{
+                      return{
+                        images:obj.images,
+                        _id:obj._id,
+                        city:obj.city,
+                        streetAdress:obj.streetAdress,
+                        price:obj.price,
+                        services:obj.services,
+                        title:obj.title
+                      }
+                    })
 
                     res.status(200).json({
                         state: 1,
                         totalItems:totalItems,
-                        searchResult: result,
+                        searchResult: fResult,
                       });
 
 
