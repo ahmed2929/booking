@@ -125,7 +125,8 @@ const Search = async (req, res, next) => {
                  
                   }).sort({ createdAt: -1 })
                    // .populate({ path: "user", select: "name email mobile" })
-                    .populate({ path: "catigory", select: "name" })
+                   // .populate({ path: "catigory", select: "name" })
+                    .populate({ path:'services.serviceType' })
                     .skip((page - 1) * itemPerPage)
                     .limit(itemPerPage);
                     console.debug(cato)
