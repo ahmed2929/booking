@@ -26,6 +26,14 @@ const Search = async (req, res, next) => {
     const itemPerPage = 10 ;
     let totalItems;
     try {
+
+      if(!search){
+        const error = new Error('search key is empty');
+        error.statusCode = 422 ;
+        return next( error) ;
+      }
+
+
         if(type=='shop'){
         const cato=await shopcatigory.findOne({
             
