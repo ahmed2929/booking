@@ -100,6 +100,7 @@ Router.get('/getCartItems',verfiyToken,conttroller.getCartItems)
 Router.post('/decreseCartItem',verfiyToken,conttroller.decreseCartItem)
 Router.post('/DeleteCartItem',verfiyToken,conttroller.DeleteCartItem)
 Router.get('/getMyOreder',verfiyToken,conttroller.getMyOreder)
+Router.post('/suggest',verfiyToken,conttroller.suggest)
 
 
 

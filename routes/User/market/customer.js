@@ -76,6 +76,7 @@ Router.get('/getNotifications',verfiyToken,conttroller.getNotifications)
 Router.post('/DeleteCartItem',verfiyToken,conttroller.DeleteCartItem)
 Router.get('/getMyOreder',verfiyToken,conttroller.getMyOreder)
 Router.post('/PayForAppartment',verfiyToken,CheckActivation,conttroller.PayForAppartment)
+Router.post('/suggest',verfiyToken,conttroller.suggest)
 
 
 

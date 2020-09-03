@@ -78,83 +78,146 @@ var register=async (req,res,next)=>{
 
     }
 
-var login=async(req,res,next)=>{
+    var login=async(req,res,next)=>{
 
-    try{
+        try{
+            const errors = validationResult(req);
+            if(!errors.isEmpty()){
+                const error = new Error('validation faild');
+                error.statusCode = 422 ;
+                error.data = errors.array();
+                return next(error) ; 
+            }
+            const {email,password,FCM}=req.body
+            
+            const usergoogle = await TrederUsers.findOne({'google.email':email}) 
+            if(usergoogle){
+                var message='please try to login with your google acount'
+                if(usergoogle.lang==1){
+                    message='من فضلك حاول التسجيل باستخدام حساب جوجل'
+                }
+                const error = new Error(message);
+                error.statusCode = 401 ;
+                return next(error) ;
+            }
+            const userfacebook = await TrederUsers.findOne({'facebook.email':email}) 
+    
+            if(userfacebook){
+                var message='please try to login with your facebook acount'
+                if(userfacebook.lang==1){
+                    message='من فضلك حاول التسجيل باستخدام حساب فيسبوك'
+                }
+                const error = new Error(message);
+                error.statusCode = 401 ;
+                return next(error) ;
+            }
+    
+    
+                 const user = await TrederUsers.findOne({'local.email':email}) 
+                
+                    if(!user){
+                        const error = new Error('user not found');
+                        error.statusCode = 404 ;
+                        return next(error) ;
+                    }    
+                    const isEqual = await bycript.compare(password,user.local.password);
+                    if(!isEqual){
+                        var message='incorrect password'
+                  if(user.lang==1){
+                    message='كلمة مرور غير صحيحة'
+                   }
+    
+                        const error = new Error(message);
+                        error.statusCode = 401 ;
+                        return next(error) ;
+                    }
+                    if(user.blocked==true){
+                        var message='you are blocked from using the app'
+                        if(user.lang==1){
+                          message='لقد تم حظرك من استخدام التطبيق'
+                         }
+    
+    
+                        const error = new Error(message);
+                        error.statusCode = 403 ;
+                        return next(error) ;
+                    }
+                    const index =  user.FCMJwt.indexOf(FCM);
+                    if(index==-1){
+                        user.FCMJwt.push(FCM);
+                        await user.save();
+                    }
+                    
+                    
+                    const token  = jwt.sign(
+                        {
+                            userId:user._id.toString()
+                        },
+                        process.env.JWT_PRIVATE_KEY
+                    );
+        
+                   
+        
+                    res.status(200).json({
+                        state:1,
+                        token:token,
+                        name:user.name,
+                        email:user.email,
+                        mobile:user.mobile,
+                        emailVerfied:user.emailVerfied,
+                        mobileVerfied:user.mobileVerfied,
+                        userId:user._id,
+                       // notfications:user.notfications,
+                      //  pendingRequestTo:user.pendingRequestTo,
+                       // RecivedRequest:user.RecivedRequest,
+                        status:user.status
+                        
+    
+                    });
+            }catch(err){
+                if(!err.statusCode){
+                    err.statusCode = 500;
+                }
+                return next(err);
+            }
+            
+    
+    
+    }
+    
+    const Logout = async (req,res,next)=>{
+        //console.debug('logut run')
+        const FCM = req.body.FCM ;
+        try{
         const errors = validationResult(req);
         if(!errors.isEmpty()){
-            const error = new Error('validation faild');
+    
+            var message='validation faild'
+            if(req.user.lang==1){
+              message='بينات غير صحيحة'
+             }
+    
+    
+            const error = new Error(message);
             error.statusCode = 422 ;
             error.data = errors.array();
             return next(error) ; 
         }
-        const {email,password,FCM}=req.body
-        
-        const usergoogle = await TrederUsers.findOne({'google.email':email}) 
-        if(usergoogle){
-            const error = new Error('please try to login with your google acount');
-            error.statusCode = 401 ;
-            return next(error) ;
+        const user = await TrederUsers.findById(req.userId);
+        console.debug(req.token)
+        const index = user.FCMJwt.indexOf(FCM);
+        if(index>-1){
+            user.FCMJwt.splice(index, 1);
         }
-        const userfacebook = await TrederUsers.findOne({'facebook.email':email}) 
-
-        if(userfacebook){
-            const error = new Error('please try to login with your facebook acount');
-            error.statusCode = 401 ;
-            return next(error) ;
-        }
-
-
-           
-             const user = await TrederUsers.findOne({'local.email':email}) 
-            
-                if(!user){
-                    const error = new Error('user not found');
-                    error.statusCode = 404 ;
-                    return next(error) ;
-                }    
-                const isEqual = await bycript.compare(password,user.local.password);
-                if(!isEqual){
-                    const error = new Error('incorrect password');
-                    error.statusCode = 401 ;
-                    return next(error) ;
-                }
-                if(user.blocked==true){
-                    const error = new Error('you are blocked from using the app');
-                    error.statusCode = 403 ;
-                    return next(error) ;
-                }
-                const index =  user.FCMJwt.indexOf(FCM);
-                if(index==-1){
-                    user.FCMJwt.push(FCM);
-                    await user.save();
-                }
-                
-                
-                const token  = jwt.sign(
-                    {
-                        userId:user._id.toString()
-                    },
-                    process.env.JWT_PRIVATE_KEY
-                );
+        await user.save();
     
-               
+        var message='logedOut successfuly '
+            if(req.user.lang==1){
+              message='تم تسجيل الخروج بنجاح'
+             }
     
-                res.status(200).json({
-                    state:1,
-                    token:token,
-                    name:user.name,
-                    email:user.email,
-                    mobile:user.mobile,
-                    emailVerfied:user.emailVerfied,
-                    mobileVerfied:user.mobileVerfied,
-                  //  notfications:user.notfications,
-                   // pendingRequestTo:user.pendingRequestTo,
-                   // RecivedRequest:user.RecivedRequest,
-                   // userADS:user.MyWonAds
-                   userId:user._id
-
-                });
+    
+        res.status(201).json({state:1,message:message});
         }catch(err){
             if(!err.statusCode){
                 err.statusCode = 500;
@@ -162,203 +225,129 @@ var login=async(req,res,next)=>{
             return next(err);
         }
         
-
-
-}
-
-const Logout = async (req,res,next)=>{
-    console.debug('logut run')
-    const FCM = req.body.FCM ;
-    try{
-    const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        const error = new Error('validation faild');
-        error.statusCode = 422 ;
-        error.data = errors.array();
-        return next(error) ; 
-    }
-    const user = await TrederUsers.findById(req.userId);
-    console.debug(req.token)
-    const index = user.FCMJwt.indexOf(FCM);
-    if(index>-1){
-        user.FCMJwt.splice(index, 1);
-    }
-    await user.save();
-    res.status(201).json({state:1,message:'FCM deleted'});
-    }catch(err){
-        if(!err.statusCode){
-            err.statusCode = 500;
+        
+    };
+    
+    const ForgetPassword=async (req,res,next)=>{
+        const email = req.body.email;
+        try{
+            const errors = validationResult(req);
+            if(!errors.isEmpty()){
+                var message='validation faild'
+                // if(req.user.lang==1){
+                //   message='بينات غير صحيحة'
+                //  }
+    
+                const error = new Error(message);
+                error.statusCode = 422 ;
+                error.data = errors.array();
+                return next(error); 
+            }
+            const user = await TrederUsers.findOne({email:email});
+            const buf = crypto.randomBytes(2).toString('hex');
+            const hashedCode = await bycript.hash(buf,12)
+            user.forgetPasswordCode = hashedCode;
+            user.codeExpireDate =  Date.now()  + 3600000 ;
+            await user.save();
+            // await nodemailerMailgun.sendMail({
+            //     to:email,
+            //     from:'support test',
+            //     subject:'Reset password',
+            //     html:`
+            //     <h1>Reset password</h1>
+            //     <br><h4>that's your code to reset your password</h4>
+            //     <br><h3>${buf}</h3>
+            //     `
+            //   });
+            var Emessage=`
+            <h1>Reset password</h1>
+            <br><h4>that's your code to reset your password</h4>
+            <br><h3>${buf}</h3>
+            `
+            // if(req.user.lang==1){
+            //   Emessage=`
+            //   <h1>تعين كلة المرور</h1>
+            // <br><h4>رمز تعين كلمة المرور</h4>
+            // <br><h3>${buf}</h3>`
+            //  }
+    
+            const Emailresult=await sendEmail(email,'ResetPassword',Emessage)
+    
+              console.debug('Emailresult',Emailresult)
+              
+              res.status(200).json({state:1,message:'the code has been sent succefuly',email});
+        }catch(err){
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
         }
-        return next(err);
+        
+    
+    
     }
     
-    
-};
-
-const ForgetPassword=async (req,res,next)=>{
-    const email = req.body.email;
+    const VerfyCode = async (req,res,next)=>{
+        const code  = req.body.code;
+        const email=req.body.email
     try{
         const errors = validationResult(req);
         if(!errors.isEmpty()){
-            const error = new Error('validation faild');
+            var message='validation faild'
+            // if(req.user.lang==1){
+            //   message='بينات غير صحيحة'
+            //  }
+            const error = new Error(message);
             error.statusCode = 422 ;
             error.data = errors.array();
-            return next(error); 
+            return next(error) ; 
         }
         const user = await TrederUsers.findOne({email:email});
-        const buf = crypto.randomBytes(2).toString('hex');
-        const hashedCode = await bycript.hash(buf,12)
-        user.forgetPasswordCode = hashedCode;
-        user.codeExpireDate =  Date.now()  + 3600000 ;
-        await user.save();
-        // await nodemailerMailgun.sendMail({
-        //     to:email,
-        //     from:'support test',
-        //     subject:'Reset password',
-        //     html:`
-        //     <h1>Reset password</h1>
-        //     <br><h4>that's your code to reset your password</h4>
-        //     <br><h3>${buf}</h3>
-        //     `
-        //   });
-        const Emailresult=await sendEmail(email,'ResetPassword',`
-        <h1>Reset password</h1>
-        <br><h4>that's your code to reset your password</h4>
-        <br><h3>${buf}</h3>
-    `)
-          
-          
-          res.status(200).json({state:1,message:'the code has been sent succefuly',email});
-    }catch(err){
-        if(!err.statusCode){
-            err.statusCode = 500;
-        }
-        return next(err);
-    }
-    
-
-
-}
-
-const VerfyCode = async (req,res,next)=>{
-    const code  = req.body.code;
-    const email=req.body.email
-try{
-    const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        const error = new Error('validation faild');
-        error.statusCode = 422 ;
-        error.data = errors.array();
-        return next(error) ; 
-    }
-    const user = await TrederUsers.findOne({email:email});
-    if(!user){
-        const error = new Error('User not Found');
-        error.statusCode = 404 ;
-        return next(error) ;
-    }  
-    const match = await bycript.compare(code,user.forgetPasswordCode)
-    if(!match){
-        const error = new Error('wrong code!!');
-        error.statusCode = 401 ;
-        return next(error) ;
-    }
-    if(user.codeExpireDate<=Date.now()){
-        const error = new Error('your code is expired');
-        error.statusCode = 401 ;
-        return next(error) ;
-    }
-
-    const token  = jwt.sign(
-        {
-            userId:user._id.toString()
-        },
-        process.env.JWT_PRIVATE_KEY,
-        {expiresIn:'1h'}
-     );
-
-
-    res.status(200).json({state:1,message:'correct code',token})
-    
-}catch(err){
-    if(!err.statusCode){
-        err.statusCode = 500;
-    }
-    return next(err);
-}
-
-};    
-
-const PasswordRest = (req,res,next)=>{ //put
-    const password  = req.body.password;
-
-    const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        const error = new Error('validation faild');
-        error.statusCode = 422 ;
-        error.data = errors.array();
-        return next(error) ; 
-    }
-
-
-    TrederUsers.findById(req.userId).then(user=>{
         if(!user){
             const error = new Error('User not Found');
             error.statusCode = 404 ;
             return next(error) ;
+        }  
+        const match = await bycript.compare(code,user.forgetPasswordCode)
+        if(!match){
+    
+            var message='wrong code'
+            // if(req.user.lang==1){
+            //   message='كود غير صحيح'
+            //  }
+    
+    
+    
+            const error = new Error(message);
+            error.statusCode = 401 ;
+            return next(error) ;
+        }
+        if(user.codeExpireDate<=Date.now()){
+    
+            var message='your code is expired'
+            // if(req.user.lang==1){
+            //   message='لقد تم انتهاء صلاحية الكود'
+            //  }
+    
+            const error = new Error(message);
+            error.statusCode = 401 ;
+            return next(error) ;
         }
     
-        bycript.hash(password,12).then(hashed=>{
-            console.log(hashed);
-            
-            user.local.password = hashed ;
-            return user.save();
-        });
-        
-        
-    }).then(u=>{
-        
+        const token  = jwt.sign(
+            {
+                userId:user._id.toString()
+            },
+            process.env.JWT_PRIVATE_KEY,
+            {expiresIn:'1h'}
+         );
+         var message='correct code'
+        //  if(req.user.lang==1){
+        //    message='كود صحيح'
+        //   }
     
-        res.status(201).json({state:1,message:"password updated"});
-    })
-    .catch(err=>{
-        if(!err.statusCode){
-            err.statusCode = 500;
-        }
-        return next(err);
-    });
-};
-
-const SendactivateEmail=async (req,res,next)=>{
-    try{
-        console.debug('send run ')
-    const user = await TrederUsers.findById(req.userId);
-    const buf = crypto.randomBytes(2).toString('hex');
-    const hashedCode = await bycript.hash(buf,12)
-    user.EmailActiveCode = hashedCode;
-    user.codeExpireDate =  Date.now()  + 3600000 ;
-    await user.save();
-
-      // await nodemailerMailgun.sendMail({
-        //     to:email,
-        //     from:'support test',
-        //     subject:'Reset password',
-        //     html:`
-        //     <h1>Reset password</h1>
-        //     <br><h4>that's your code to reset your password</h4>
-        //     <br><h3>${buf}</h3>
-        //     `
-        //   });
-
-        const Emailresult=await sendEmail(user.local.email,'ActivateEmail',`
-        <h1>ActivateEmail</h1>
-        <br><h4>that's your Activation code </h4>
-        <br><h3>${buf}</h3>
-    `)
-    
-          
-
-        res.status(200).json({state:1,message:'the code has been sent succefuly'});
+        res.status(200).json({state:1,message:message,token})
+        
     }catch(err){
         if(!err.statusCode){
             err.statusCode = 500;
@@ -366,49 +355,160 @@ const SendactivateEmail=async (req,res,next)=>{
         return next(err);
     }
     
-    }
-const VerfyActiveEmailCode=async (req,res,next)=>{
-    const code  = req.body.code;
-try{
-    const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        const error = new Error('validation faild');
-        error.statusCode = 422 ;
-        error.data = errors.array();
-        return next(error) ; 
-    }
-    const user = await TrederUsers.findById(req.userId);
-    if(!user){
-        const error = new Error('User not Found');
-        error.statusCode = 404 ;
-        return next(error) ;
-    }  
-    const match = await bycript.compare(code,user.EmailActiveCode)
-    if(!match){
-        const error = new Error('wrong code!!');
-        error.statusCode = 401 ;
-        return next(error) ;
-    }
-    if(user.codeExpireDate<=Date.now()){
-        const error = new Error('your code is expired');
-        error.statusCode = 401 ;
-        return next(error) ;
-    }
-
-    user.emailVerfied=true;
-    await user.save()
-    console.debug(user.emailVerfied)
+    };    
     
-
-    res.status(200).json({state:1,message:'your email is verfied'})
+    const PasswordRest = (req,res,next)=>{ //put
+        const password  = req.body.password;
     
-}catch(err){
-    if(!err.statusCode){
-        err.statusCode = 500;
+        const errors = validationResult(req);
+        if(!errors.isEmpty()){
+            var message='validation faild'
+            if(req.user.lang==1){
+              message='بينات غير صحيحة'
+             }
+            const error = new Error(message);
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+    
+    
+        TrederUsers.findById(req.userId).then(user=>{
+            if(!user){
+                const error = new Error('User not Found');
+                error.statusCode = 404 ;
+                return next(error) ;
+            }
+        
+            bycript.hash(password,12).then(hashed=>{
+               // console.log(hashed);
+                
+                user.password = hashed ;
+                return user.save();
+            });
+            
+            
+        }).then(u=>{
+            
+            var message='password updated'
+            if(req.user.lang==1){
+              message='تم تعديل كلمة المرور'
+             }
+        
+            res.status(201).json({state:1,message:message});
+        })
+        .catch(err=>{
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        });
+    };
+    
+    const SendactivateEmail=async (req,res,next)=>{
+        try{
+        const user = await TrederUsers.findById(req.userId);
+        const buf = crypto.randomBytes(2).toString('hex');
+        const hashedCode = await bycript.hash(buf,12)
+        user.EmailActiveCode = hashedCode;
+        user.codeExpireDate =  Date.now()  + 3600000 ;
+        await user.save();
+        var Emessage=`
+        <h1>ActivateEmail</h1>
+        <br><h4>that's your Activation code </h4>
+        <br><h3>${buf}</h3>
+    `
+        if(req.user.lang==1){
+          Emessage=`
+          <h1>تاكيد البريد الالكتروني</h1>
+          <br><h4>كود التفعيل </h4>
+          <br><h3>${buf}</h3>
+      `
+         }
+        const Emailresult=await sendEmail(user.local.email,'ActivateEmail',Emessage)
+    
+        var message='the code has been sent succefuly '
+        if(req.user.lang==1){
+          message=' تم ارسال الكود بنجاح '
+         }
+    
+            res.status(200).json({state:1,message:message});
+        }catch(err){
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        }
+        
+        }
+    
+    const VerfyActiveEmailCode=async (req,res,next)=>{
+        const code  = req.body.code;
+    try{
+        
+        const errors = validationResult(req);
+        if(!errors.isEmpty()){
+    
+            var message='validation faild'
+            if(req.user.lang==1){
+              message='بينات غير صحيحة'
+             }
+    
+    
+            const error = new Error(message);
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+        const user = await TrederUsers.findById(req.userId);
+        if(!user){
+            const error = new Error('User not Found');
+            error.statusCode = 404 ;
+            return next(error) ;
+        }  
+        const match = await bycript.compare(code,user.EmailActiveCode)
+        if(!match){
+    
+            
+            var message='incorrect code'
+            if(req.user.lang==1){
+              message='كود غير صحيح'
+             }
+    
+            const error = new Error(message);
+            error.statusCode = 401 ;
+            return next(error) ;
+        }
+        if(user.codeExpireDate<=Date.now()){
+    
+            var message='your code is expired'
+            if(req.user.lang==1){
+              message='لقد انتهة صلاحية الكود'
+             }
+    
+            const error = new Error(message);
+            error.statusCode = 401 ;
+            return next(error) ;
+        }
+    
+        user.emailVerfied=true;
+        await user.save()
+       // console.debug(user.emailVerfied)
+        
+       var message='your email is verfied'
+       if(req.user.lang==1){
+         message='لقد تم تفعيل الايميل '
+        }
+    
+        res.status(200).json({state:1,message:message})
+        
+    }catch(err){
+        if(!err.statusCode){
+            err.statusCode = 500;
+        }
+        return next(err);
     }
-    return next(err);
-}
-}
+    }
 
 const googleWithOuthData=async (req,res,next)=>{
     try{

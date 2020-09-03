@@ -289,6 +289,8 @@ Router.post('/deleteCity',[
                     
 ],verfiyToken,controller.deleteCity); 
 
+Router.get('/suggests/:id',verfiyToken,controller.suggest)
+Router.get('/suggests',verfiyToken,controller.suggest)
 
 //llsl
 

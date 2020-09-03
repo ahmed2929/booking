@@ -87,14 +87,22 @@ var login=async(req,res,next)=>{
         
         const usergoogle = await CustomerUser.findOne({'google.email':email}) 
         if(usergoogle){
-            const error = new Error('please try to login with your google acount');
+            var message='please try to login with your google acount'
+            if(usergoogle.lang==1){
+                message='من فضلك حاول التسجيل باستخدام حساب جوجل'
+            }
+            const error = new Error(message);
             error.statusCode = 401 ;
             return next(error) ;
         }
         const userfacebook = await CustomerUser.findOne({'facebook.email':email}) 
 
         if(userfacebook){
-            const error = new Error('please try to login with your facebook acount');
+            var message='please try to login with your facebook acount'
+            if(userfacebook.lang==1){
+                message='من فضلك حاول التسجيل باستخدام حساب فيسبوك'
+            }
+            const error = new Error(message);
             error.statusCode = 401 ;
             return next(error) ;
         }
@@ -109,12 +117,23 @@ var login=async(req,res,next)=>{
                 }    
                 const isEqual = await bycript.compare(password,user.local.password);
                 if(!isEqual){
-                    const error = new Error('incorrect password');
+                    var message='incorrect password'
+              if(user.lang==1){
+                message='كلمة مرور غير صحيحة'
+               }
+
+                    const error = new Error(message);
                     error.statusCode = 401 ;
                     return next(error) ;
                 }
                 if(user.blocked==true){
-                    const error = new Error('you are blocked from using the app');
+                    var message='you are blocked from using the app'
+                    if(user.lang==1){
+                      message='لقد تم حظرك من استخدام التطبيق'
+                     }
+
+
+                    const error = new Error(message);
                     error.statusCode = 403 ;
                     return next(error) ;
                 }
@@ -167,7 +186,14 @@ const Logout = async (req,res,next)=>{
     try{
     const errors = validationResult(req);
     if(!errors.isEmpty()){
-        const error = new Error('validation faild');
+
+        var message='validation faild'
+        if(req.user.lang==1){
+          message='بينات غير صحيحة'
+         }
+
+
+        const error = new Error(message);
         error.statusCode = 422 ;
         error.data = errors.array();
         return next(error) ; 
@@ -179,7 +205,14 @@ const Logout = async (req,res,next)=>{
         user.FCMJwt.splice(index, 1);
     }
     await user.save();
-    res.status(201).json({state:1,message:'FCM deleted'});
+
+    var message='logedOut successfuly '
+        if(req.user.lang==1){
+          message='تم تسجيل الخروج بنجاح'
+         }
+
+
+    res.status(201).json({state:1,message:message});
     }catch(err){
         if(!err.statusCode){
             err.statusCode = 500;
@@ -195,7 +228,12 @@ const ForgetPassword=async (req,res,next)=>{
     try{
         const errors = validationResult(req);
         if(!errors.isEmpty()){
-            const error = new Error('validation faild');
+            var message='validation faild'
+            // if(req.user.lang==1){
+            //   message='بينات غير صحيحة'
+            //  }
+
+            const error = new Error(message);
             error.statusCode = 422 ;
             error.data = errors.array();
             return next(error); 
@@ -216,11 +254,19 @@ const ForgetPassword=async (req,res,next)=>{
         //     <br><h3>${buf}</h3>
         //     `
         //   });
-        const Emailresult=await sendEmail(email,'ResetPassword',`
-             <h1>Reset password</h1>
-             <br><h4>that's your code to reset your password</h4>
-             <br><h3>${buf}</h3>
-         `)
+        var Emessage=`
+        <h1>Reset password</h1>
+        <br><h4>that's your code to reset your password</h4>
+        <br><h3>${buf}</h3>
+        `
+        // if(req.user.lang==1){
+        //   Emessage=`
+        //   <h1>تعين كلة المرور</h1>
+        // <br><h4>رمز تعين كلمة المرور</h4>
+        // <br><h3>${buf}</h3>`
+        //  }
+
+        const Emailresult=await sendEmail(email,'ResetPassword',Emessage)
 
           console.debug('Emailresult',Emailresult)
           
@@ -242,7 +288,11 @@ const VerfyCode = async (req,res,next)=>{
 try{
     const errors = validationResult(req);
     if(!errors.isEmpty()){
-        const error = new Error('validation faild');
+        var message='validation faild'
+        // if(req.user.lang==1){
+        //   message='بينات غير صحيحة'
+        //  }
+        const error = new Error(message);
         error.statusCode = 422 ;
         error.data = errors.array();
         return next(error) ; 
@@ -255,12 +305,26 @@ try{
     }  
     const match = await bycript.compare(code,user.forgetPasswordCode)
     if(!match){
-        const error = new Error('wrong code!!');
+
+        var message='wrong code'
+        // if(req.user.lang==1){
+        //   message='كود غير صحيح'
+        //  }
+
+
+
+        const error = new Error(message);
         error.statusCode = 401 ;
         return next(error) ;
     }
     if(user.codeExpireDate<=Date.now()){
-        const error = new Error('your code is expired');
+
+        var message='your code is expired'
+        // if(req.user.lang==1){
+        //   message='لقد تم انتهاء صلاحية الكود'
+        //  }
+
+        const error = new Error(message);
         error.statusCode = 401 ;
         return next(error) ;
     }
@@ -272,9 +336,12 @@ try{
         process.env.JWT_PRIVATE_KEY,
         {expiresIn:'1h'}
      );
+     var message='correct code'
+    //  if(req.user.lang==1){
+    //    message='كود صحيح'
+    //   }
 
-
-    res.status(200).json({state:1,message:'correct code',token})
+    res.status(200).json({state:1,message:message,token})
     
 }catch(err){
     if(!err.statusCode){
@@ -290,7 +357,11 @@ const PasswordRest = (req,res,next)=>{ //put
 
     const errors = validationResult(req);
     if(!errors.isEmpty()){
-        const error = new Error('validation faild');
+        var message='validation faild'
+        if(req.user.lang==1){
+          message='بينات غير صحيحة'
+         }
+        const error = new Error(message);
         error.statusCode = 422 ;
         error.data = errors.array();
         return next(error) ; 
@@ -314,8 +385,12 @@ const PasswordRest = (req,res,next)=>{ //put
         
     }).then(u=>{
         
+        var message='password updated'
+        if(req.user.lang==1){
+          message='تم تعديل كلمة المرور'
+         }
     
-        res.status(201).json({state:1,message:"password updated"});
+        res.status(201).json({state:1,message:message});
     })
     .catch(err=>{
         if(!err.statusCode){
@@ -333,15 +408,26 @@ const SendactivateEmail=async (req,res,next)=>{
     user.EmailActiveCode = hashedCode;
     user.codeExpireDate =  Date.now()  + 3600000 ;
     await user.save();
-
-    const Emailresult=await sendEmail(user.local.email,'ActivateEmail',`
+    var Emessage=`
     <h1>ActivateEmail</h1>
     <br><h4>that's your Activation code </h4>
     <br><h3>${buf}</h3>
-`)
+`
+    if(req.user.lang==1){
+      Emessage=`
+      <h1>تاكيد البريد الالكتروني</h1>
+      <br><h4>كود التفعيل </h4>
+      <br><h3>${buf}</h3>
+  `
+     }
+    const Emailresult=await sendEmail(user.local.email,'ActivateEmail',Emessage)
 
+    var message='the code has been sent succefuly '
+    if(req.user.lang==1){
+      message=' تم ارسال الكود بنجاح '
+     }
 
-        res.status(200).json({state:1,message:'the code has been sent succefuly'});
+        res.status(200).json({state:1,message:message});
     }catch(err){
         if(!err.statusCode){
             err.statusCode = 500;
@@ -350,12 +436,21 @@ const SendactivateEmail=async (req,res,next)=>{
     }
     
     }
+
 const VerfyActiveEmailCode=async (req,res,next)=>{
     const code  = req.body.code;
 try{
+    
     const errors = validationResult(req);
     if(!errors.isEmpty()){
-        const error = new Error('validation faild');
+
+        var message='validation faild'
+        if(req.user.lang==1){
+          message='بينات غير صحيحة'
+         }
+
+
+        const error = new Error(message);
         error.statusCode = 422 ;
         error.data = errors.array();
         return next(error) ; 
@@ -368,12 +463,25 @@ try{
     }  
     const match = await bycript.compare(code,user.EmailActiveCode)
     if(!match){
-        const error = new Error('wrong code!!');
+
+        
+        var message='incorrect code'
+        if(req.user.lang==1){
+          message='كود غير صحيح'
+         }
+
+        const error = new Error(message);
         error.statusCode = 401 ;
         return next(error) ;
     }
     if(user.codeExpireDate<=Date.now()){
-        const error = new Error('your code is expired');
+
+        var message='your code is expired'
+        if(req.user.lang==1){
+          message='لقد انتهة صلاحية الكود'
+         }
+
+        const error = new Error(message);
         error.statusCode = 401 ;
         return next(error) ;
     }
@@ -382,8 +490,12 @@ try{
     await user.save()
    // console.debug(user.emailVerfied)
     
+   var message='your email is verfied'
+   if(req.user.lang==1){
+     message='لقد تم تفعيل الايميل '
+    }
 
-    res.status(200).json({state:1,message:'your email is verfied'})
+    res.status(200).json({state:1,message:message})
     
 }catch(err){
     if(!err.statusCode){

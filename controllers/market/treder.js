@@ -19,6 +19,7 @@ const paginate=require('../../helpers/general/helpingFunc').paginate
 const Order=require('../../models/order')
 const Payment=require('../../models/payment')
 const TopView=require('../../models/topView')
+const Suggest =require('../../models/suggest')
 sendEmail=require('../../helpers/sendEmail').sendEmail
 const notificationSend=require('../../helpers/send-notfication').send
 var CreateAppartment=async (req,res,next)=>{
@@ -36,16 +37,25 @@ var CreateAppartment=async (req,res,next)=>{
     const errors = validationResult(req);
     console.debug(errors)
     if(!errors.isEmpty()){
-        const error = new Error('validation faild from vali');
+        var message='validation faild'
+        if(req.user.lang==1){
+            message='بينات خاطئة'
+        }
+        const error = new Error(message);
         error.statusCode = 422 ;
         error.data = errors.array();
         return next(error) ; 
     }
     const {country,city,streetAdress,catigory,price,services,NumOfRooms,details,title,beds,beach,N,E}=req.body;
     console.debug('reqBody',req.body)
+    console.debug('reqimage : ',req.files)
 
-    if(!Number(price)){
-        const error = new Error('invalid price');
+    if(!Number(price)||Number(price)<=0){
+        var message='invalid price'
+        if(req.user.lang==1){
+            message='سعر غير صحيح'
+        }
+        const error = new Error(message);
         error.statusCode = 404 ;
         return next( error) ;
     }
@@ -61,7 +71,11 @@ var CreateAppartment=async (req,res,next)=>{
     let images = [];
 
     if(imageUrl.length===0){
-        const error = new Error('u should provide image');
+        var message='you should provide image'
+        if(req.user.lang==1){
+            message='يجب ان ترفق صورة'
+        }
+        const error = new Error(message);
         error.statusCode = 422 ;
         return next(error) ;
     }
@@ -102,7 +116,12 @@ var CreateAppartment=async (req,res,next)=>{
 
             catigo.ads.push(NewAd._id)
             await catigo.save()
-            res.status(200).json({state:1,message:'apparment created Sucessfully'});
+            
+            var message='apparment created Sucessfully'
+        if(req.user.lang==1){
+            message='تم انشاء الاعلان بنجاح'
+        }
+            res.status(200).json({state:1,message:message});
         
         
 
@@ -158,7 +177,11 @@ var editAdById= async (req,res,next)=>{
     const {country,city,streetAdress,catigory,price,services,NumOfRooms,details,title,beds,beach,N,E}=req.body;
     console.debug(catigory)
     if(!Number(price)){
-        const error = new Error('invalid price');
+        var message='invalid price'
+        if(req.user.lang==1){
+            message='سعر غير صحيح'
+        }
+        const error = new Error(message);
         error.statusCode = 404 ;
         return next( error) ;
     }
@@ -234,7 +257,11 @@ var editAdById= async (req,res,next)=>{
     
         
         await AD.save();
-            res.status(200).json({state:1,message:'apparment uptated Sucessfully'});
+        var message='apparment created Sucessfully'
+        if(req.user.lang==1){
+            message='تم انشاء الاعلان بنجاح'
+        }
+            res.status(200).json({state:1,message:message});
         
         
 
@@ -257,7 +284,11 @@ var deleteById=async (req,res,next)=>{
         const errors = validationResult(req);
             console.debug(errors)
     if(!errors.isEmpty()){
-        const error = new Error('validation faild');
+        var message='validation faild'
+        if(req.user.lang==1){
+            message='بينات غير صحيحة'
+        }
+        const error = new Error(message);
         error.statusCode = 422 ;
         error.data = errors.array();
         return next(error) ; 
@@ -285,7 +316,11 @@ var deleteById=async (req,res,next)=>{
         })
 
         if(request){
-            const error = new Error('you alreay accepted request for this ad wait till your requests expire');
+            var message='you alreay accepted request for this ad wait till your requests expire'
+            if(req.user.lang==1){
+                message='لقد قمت بالمواقة علي طلب لهذا الاعلان لا يمكنك ان تقوم بمسحه'
+            }
+            const error = new Error(message);
             error.statusCode = 422 ;
             return next(error) ; 
         }
@@ -342,7 +377,7 @@ var deleteById=async (req,res,next)=>{
      if(MailingList){
    await sendEmail(MailingList,'News',`
        your request to rent ${AD.title} has been removed because the owner removed
-       the AD form the market try to see other appartments o the market
+       the AD form the market try to see other appartments in the market
       
       `)
      }
@@ -666,7 +701,11 @@ var acceptRequest =async (req,res,next)=>{
             })
             await ad.save()
         }else if(request.RequestData.status==1){
-            return res.status(200).json({state:0,msg:'request already accepted'})
+            var message='request already accepted'
+            if(req.user.lang==1){
+                message='لقد قمت بالموافقة علي هذا الطلب'
+            }
+            return res.status(200).json({state:0,msg:message})
         }else{
             return res.status(422).json({state:0,msg:'invalid request'})
         }
@@ -676,28 +715,47 @@ var acceptRequest =async (req,res,next)=>{
       
         request.RequestData.status=1;
         await request.save();
-
-        res.status(200).json({state:1,msg:'request accepted'})
+        var message='request accepted'
+            if(req.user.lang==1){
+                message='تم الموافقة علي الطلب'
+            }
+        res.status(200).json({state:1,msg:message})
 
          const data={
            RequestId:request._id,
        }
-       const notification={
+       var notification={
            title:'your request is accepted',
            body:`${req.user.name} accepted your request to rent ${ad.title}`
        }
 
+            if(request.from.lang==1){
+                notification={
+                    title:'تم الموافقة علي طلبك',
+                    body:`${ad.title} وافق علي طلب تاجير  ${req.user.name} `
+                }
+            }
 
         
        console.debug(request.from.email)
 
         await notificationSend("RequestAccepted",data,notification,request.from._id,0)
-        await sendEmail(request.from.email,'Request accepted',`
-         <h4>${req.user.name} accepted your request  to rent ${ad.title} 
-         check your account
-         </h4>
-        
-        `)
+
+        var Emessage=`<h4>${req.user.name} accepted your request  to rent ${ad.title} 
+        check your account
+        </h4>`
+
+        if(request.from.lang==1){
+            Emessage=`
+            <h4> ${ad.title} وافق علي طلب تاجير  ${req.user.name}
+        افحص حسابك
+        </h4>
+            
+            `
+        }
+
+
+        await sendEmail(request.from.email,'Request accepted',Emessage)
  
     }catch(err){
         console.debug(err)
@@ -761,16 +819,32 @@ var disAgree=async (req,res,next)=>{
             title:'your request is refused',
             body:`${req.user.name} refused your request to rent ${request.from.title}`
         }
- 
+        
+             if(request.from.lang==1){
+                 notification={
+                     title:'تم رفض علي طلبك',
+                     body:`${ad.title} رفض طلب استاجر  ${req.user.name} `
+                 }
+             }
  
  
          await notificationSend("RequestRefused",data,notification,request.from._id,0)
-         await sendEmail(request.from.email,'Request refused',`
-          <h4>${req.user.name} refused your request  to rent ${request.AD.title} 
-          TrederMassge:${message}
-          </h4>
-         
-         `)
+
+         var Emessage=`<h4>${req.user.name} Refused your request  to rent ${ad.title} 
+         check your account
+         </h4>`
+ 
+         if(request.from.lang==1){
+             Emessage=`
+             <h4> ${ad.title} رفض طلب تاجير  ${req.user.name}
+         افحص حسابك
+         </h4>
+             
+             `
+         }
+
+
+         await sendEmail(request.from.email,'Request refused',Emessage)
 
 
     }catch(err){
@@ -981,9 +1055,13 @@ const putItemToCart=async(req,res,next)=>{
         var {ProductId,Needed}=req.body
         console.debug(req.body)
         Needed=Number(Needed)
-        if(!Needed){
+        if(!Needed||Needed<=0){
             console.debug(Needed)
-            const error = new Error('invaid number ');
+            var message='invalid quantaty'
+            if(req.user.lang==1){
+                message='كمية غير صحيح'
+            }
+            const error = new Error(message);
             error.statusCode = 422 ;
             return next(error) ; 
         }
@@ -1008,7 +1086,11 @@ const putItemToCart=async(req,res,next)=>{
 //      await user.save()
         
         if(product.avilableNumber<=0){
-            const error = new Error('sorry product out of stock');
+            var message='sorry product out of stock'
+            if(req.user.lang==1){
+                message='لقد نفذة الكمية من هذا المنج'
+            }
+            const error = new Error(message);
             error.statusCode = 422 ;
             return next(error) ; 
         }
@@ -1017,7 +1099,11 @@ const putItemToCart=async(req,res,next)=>{
             if(obj.product._id.toString()==ProductId.toString()){
 
                 if(product.avilableNumber<obj.numberNeeded+Needed){
-                     const error = new Error('sorry you cant pay this amount right now');
+                    var message='sorry you cant pay this amount right now'
+                    if(req.user.lang==1){
+                        message='لا يمكنك شراء هذه الكمية الان'
+                    }
+                     const error = new Error(message);
                      error.statusCode = 422 ;
                      throw next(error) ; 
                     //return res.status(422).json({state:0,msg:'sorry you cant pay this amount right now'})
@@ -1037,8 +1123,13 @@ const putItemToCart=async(req,res,next)=>{
             // console.debug('user',user.cart)
            await user.save();
            foundAndseted=false
+
+           var message='the item added to the cart'
+           if(req.user.lang==1){
+               message='تم اضافة المنتج بنجاح'
+           }
             
-            return res.status(200).json({state:1,msg:'the item added to the cart'})
+            return res.status(200).json({state:1,msg:message})
            
 
         }
@@ -1046,7 +1137,12 @@ const putItemToCart=async(req,res,next)=>{
             console.debug("else run")
             if(Needed>product.avilableNumber){
 
-                return res.status(422).json({state:0,msg:'sorry you can not pay this amount'})
+                var message='sorry you can not pay this amount'
+                if(req.user.lang==1){
+                    message='لا يمكنك شراء هذه الكمية الان'
+                }
+
+                return res.status(422).json({state:0,msg:message})
 
             }
 
@@ -1056,7 +1152,11 @@ const putItemToCart=async(req,res,next)=>{
          })
 
          await user.save()
-         return res.status(200).json({state:1,msg:'the item added to the cart'})
+         var message='the item added to the cart'
+         if(req.user.lang==1){
+             message='تم اضافة المنتج بنجاح'
+         }
+         return res.status(200).json({state:1,msg:message})
 
       
         
@@ -1426,6 +1526,40 @@ const getMyOreder=async(req,res,next)=>{
 }
 }
 
+const suggest=async(req,res,next)=>{
+
+    try{
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        const {suggest}=req.body
+       
+       const sug =new Suggest({
+        Tuser:req.userId,
+        suggest
+       })
+       await sug.save()
+       var message='suggest sent'
+       if(req.user.lang==1){
+           message='تم ارسال الاقتراح'
+       }
+       res.status(200).json({message})
+       
+        }catch(err){
+            //console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
 
 
 module.exports={
@@ -1450,6 +1584,7 @@ decreseCartItem,
 MakeOrder,
 getNotifications,
 DeleteCartItem,
-getMyOreder
+getMyOreder,
+suggest
 
 }

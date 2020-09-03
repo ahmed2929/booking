@@ -24,6 +24,7 @@ const topView = require('../../models/topView');
 const Request =require('../../models/Request')
 const Isuues=require('../../models/isuues')
 const FQ=require('../../models/f&q');
+const Suggest =require('../../models/suggest')
 const { request } = require('express');
 const catigory = require('../../models/catigory');
 const City=require('../../models/cities')
@@ -1760,7 +1761,33 @@ const deleteCity=async(req,res,next)=>{
     
 
 }
+const suggest=async(req,res,next)=>{
+    try{
+        const {id}=req.params
 
+       if(id){
+        const result =await Suggest.findById(id)
+        .populate({path:'Cuser Tuser ',select:'name photo status '})
+        res.status(200).json({state:1,result})
+
+       }
+       const result =await Suggest.find()
+       .populate({path:'Cuser Tuser ',select:'name photo status '})
+       res.status(200).json({state:1,result}) 
+       
+
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
 module.exports={
     register,
     login,
@@ -1796,7 +1823,8 @@ module.exports={
     EditApprtmentCatigory,
     EditService,
     deleteCity,
-    AddCity
+    AddCity,
+    suggest
     
 
 

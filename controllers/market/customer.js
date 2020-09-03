@@ -21,6 +21,7 @@ const Isuue=require('../../models/isuues');
 const payment = require('../../models/payment');
 const notificationSend=require('../../helpers/send-notfication').send
 const sendEmail=require('../../helpers/sendEmail').sendEmail
+const Suggest=require('../../models/suggest')
 function parseDate(str) {
     var mdy = str.split('-');
     return new Date(mdy[2], mdy[0]-1, mdy[1]);
@@ -39,7 +40,11 @@ const Book=async (req,res,next)=>{
         const errors = validationResult(req);
         console.debug(errors)
         if(!errors.isEmpty()){
-            const error = new Error('validation faild');
+            var message='validation faild'
+        if(req.user.lang==1){
+            message='بينات غير صحيحة'
+        }
+            const error = new Error(message);
             error.statusCode = 422 ;
             error.data = errors.array();
             return next(error) ; 
@@ -50,23 +55,37 @@ const Book=async (req,res,next)=>{
             EndDateD =new Date(Number(EndDate))
 
        if(StartDateD.toString() ==='Invalid Date'||EndDateD.toString()==='Invalid Date'){
-        
-        const error = new Error('invalid date');
+        var message='invalid date'
+        if(req.user.lang==1){
+            message='تاريخ غير صحيح'
+        }
+        const error = new Error(message);
             error.statusCode = 422 ;
             return next(error) ; 
 
        }
 
        if(StartDateD<= Date.now()){
-        const error = new Error('start date cannot be in the past');
+
+        var message='start date cannot be in the past'
+        if(req.user.lang==1){
+            message='لا يمكن لتاريخ البداء ان يكون في الماضي '
+        }
+
+        const error = new Error(message);
         error.statusCode = 422 ;
         return next(error) ; 
 
        }
        
-       if(StartDateD>=EndDateD){
+       if(StartDateD>EndDateD){
+        
+        var message='end date cannot be less than start date'
+        if(req.user.lang==1){
+            message='لا يمكن لتاريخ الانتهاء ان يكون قبل تاريخ البدء '
+        }
 
-        const error = new Error('end date cannot be equal or less than start date');
+        const error = new Error(message);
             error.statusCode = 422 ;
             return next(error) ; 
 
@@ -77,8 +96,11 @@ const Book=async (req,res,next)=>{
            AD:AdId
        })
        if(reque){
-           
-        const error = new Error('you alreay requested this ad');
+        var message='you alreay requested this ad'
+        if(req.user.lang==1){
+            message='لقد قمت بطلب هذا المنتج من قبل'
+        }
+        const error = new Error(message);
         error.statusCode = 422 ;
         return next(error) ; 
 
@@ -119,22 +141,43 @@ const Book=async (req,res,next)=>{
        const data={
            RequestId:newRequest._id,
        }
-       const notification={
+
+
+       var notification={
            title:'you have recived a new request',
            body:`${editCustomer.name} wants to rent ${ad.title}`
+       }
+       if(editCustomer.lang==1){
+        notification={
+            title:'لقد تلقيت طلب جديد',
+            body:` ${ad.title} يريد ان يستأجر ${editCustomer.name}`
+        }
        }
 
       // var month = statrt. getMonth() + 1; // Since getMonth() returns month from 0-11 not 1-12.
      //var year = d. getFullYear();
      //var dateStr = date + "/" + month + "/" + year;
-       res.status(200).json({state:1,msg:'request sent'})
+     var message='you alreay requested this ad'
+        if(req.user.lang==1){
+            message='تم ارسال الطلب'
+        }
+       res.status(200).json({state:1,msg:message})
       await notificationSend("RequestRecived",data,notification,ad.Creator,1)
-       await sendEmail(editTreder.email,'New Request',`
-        <h4>${editCustomer.name} wants to rent ${ad.title} 
-        check your account
-        </h4>
-       
-       `)
+      var Emessage=`
+      <h4>${editCustomer.name} wants to rent ${ad.title} 
+      check your account
+      </h4>
+     
+     `
+      if(req.user.lang==1){
+          Emessage=`
+          <h4>${ad.title} يريد ان يستأجر ${editCustomer.name}
+          تفقد حسابك
+          </h4>
+         
+         `
+      }
+       await sendEmail(editTreder.email,'New Request',Emessage)
 
 
 }catch(err){
@@ -277,7 +320,11 @@ const reschedule=async (req,res,next)=>{
         const errors = validationResult(req);
         console.debug(errors)
         if(!errors.isEmpty()){
-            const error = new Error('validation faild');
+            var message='validation faild'
+            if(req.user.lang==1){
+                message='بينات غير صحيحة'
+            }
+            const error = new Error(message);
             error.statusCode = 422 ;
             error.data = errors.array();
             return next(error) ; 
@@ -288,23 +335,33 @@ const reschedule=async (req,res,next)=>{
        EndDateD =new Date(Number(EndDate))
         
        if(StartDateD.toString() ==='Invalid Date'||EndDateD.toString()==='Invalid Date'){
-        
-        const error = new Error('invalid date');
+        var message='invalid date'
+        if(req.user.lang==1){
+            message='تاريخ غير صحيح'
+        }
+        const error = new Error(message);
             error.statusCode = 422 ;
             return next(error) ; 
 
        }
 
        if(StartDateD<= Date.now()){
-        const error = new Error('start date cannot be in the past');
+        var message='start date cannot be in the past'
+        if(req.user.lang==1){
+            message='لا يمكن لتاريخ البدء ان يكون في الماضي'
+        }
+        const error = new Error(message);
         error.statusCode = 422 ;
         return next(error) ; 
 
        }
        
        if(StartDateD>=EndDateD){
-
-        const error = new Error('end date cannot be equal or less than start date');
+        var message='end date cannot be less than start date'
+        if(req.user.lang==1){
+            message='لا يمكن لتاريخ البدء ان يكون ان يكون بعد تاريخ الانتهاء'
+        }
+        const error = new Error(message);
             error.statusCode = 422 ;
             return next(error) ; 
 
@@ -315,7 +372,6 @@ const reschedule=async (req,res,next)=>{
 
        var request=await Request.findById(RequestId)
        if(!request){
-
         const error = new Error('request not found');
             error.statusCode = 404 ;
             return next( error) ;
@@ -323,7 +379,11 @@ const reschedule=async (req,res,next)=>{
        }
 
        if(request.RequestData.status==1){
-        const error = new Error('your request is aready accepted you can not reschedule');
+        var message='your request is aready accepted you can not reschedule'
+        if(req.user.lang==1){
+            message='لقد تم قبول الطلب لايمكن تعديله'
+        }
+        const error = new Error(message);
         error.statusCode = 404 ;
         return next( error) ;
        }
@@ -345,8 +405,11 @@ const reschedule=async (req,res,next)=>{
        
        console.debug("requested data",request.RequestData)
        await request.save()
-      
-       res.status(200).json({state:1,msg:'request edited'})
+       var message='request edited'
+        if(req.user.lang==1){
+            message='تم تعديل الطلب'
+        }
+       res.status(200).json({state:1,msg:message})
 
 
 
@@ -378,26 +441,38 @@ const Rate=async(req,res,next)=>{
     }
 
      if(request.from.toString()!=req.userId){
-         const error = new Error('usr id doesnt match request sender id');
+         const error = new Error('user id doesnt match request sender id');
          error.statusCode = 404 ;
          return next( error) ;
 
      }
      console.debug(request.RequestData.status)
      if(request.RequestData.status!=1){
-         const error = new Error('you cant rate this ad');
+        var message='you cant rate this ad'
+        if(req.user.lang==1){
+            message='لا يمكنك تقيم هذا المنتج'
+        }
+         const error = new Error(message);
          error.statusCode = 404 ;
          return next( error) ;
 
      }
      if(request.StartDate>Date.now()){
-         const error = new Error('you cant rate this ad wait when your vication start');
+        var message='you can not rate this ad wait when your vication start'
+        if(req.user.lang==1){
+            message='لا يمكنك تقيم هذا المنتج انتظر حتي تبداء عطلتك'
+        }
+         const error = new Error(message);
          error.statusCode = 404 ;
          return next( error) ;
 
      }
      if(request.RateState.status==1){
-         const error = new Error('you cant rate agin you already rated this ad');
+        var message='you can not rate agin you already rated this ad'
+        if(req.user.lang==1){
+            message='لا يمكنك تقيم هذا المنتج لقد قمت بتقيمه بالفعل'
+        }
+         const error = new Error(message);
          error.statusCode = 404 ;
          return next( error) ;
 
@@ -417,25 +492,43 @@ const Rate=async(req,res,next)=>{
     request.RateState.status=1
     request.RateState.star=star
     await request.save()
-    res.status(200).json({state:1,msg:'you rated is success'})
+    res.status(200).json({state:1,msg:'you rated successfuly'})
 
     const data={
      
     }
-    const notification={
+   var  notification={
         title:'new user rated your AD',
         body:`${req.user.name} rated ${rateAd.title} with  ${star} stars`
     }
-
+   
+        if(req.user.lang==1){
+            notification={
+                title:'لقد قام مستخدم جديد بتقيم منتجك',
+                body:` نجمة  ${star} ب  ${rateAd.title} قيم  ${req.user.name}`
+            }
+        }
 
 
      await notificationSend("NewRate",data,notification,rateAd.Creator,1)
-     await sendEmail(rateAd.Creator.email,'NewRate',`
+        
+     var Emassage=`
       <h4>${req.user.name}  rated ${rateAd.title} with  ${star} stars 
       
       </h4>
      
-     `)
+     `
+     if(req.user.lang==1){
+        Emassage=`
+        <h4>
+        $  نجوم  ${star}  ب ${rateAd.title} قيم ${req.user.name}
+        
+        </h4>
+       
+       `
+    }
+     
+     await sendEmail(rateAd.Creator.email,'NewRate',Emassage)
 
 
 
@@ -486,7 +579,11 @@ const putItemToCart=async(req,res,next)=>{
 //      await user.save()
         
         if(product.avilableNumber<=0){
-            const error = new Error('sorry product out of stock');
+            var message='sorry product out of stock'
+            if(req.user.lang==1){
+                message='لقد نفذ المنتج'
+            }
+            const error = new Error(message);
             error.statusCode = 422 ;
             return next(error) ; 
         }
@@ -496,7 +593,11 @@ const putItemToCart=async(req,res,next)=>{
 
                 if(product.avilableNumber<obj.numberNeeded+Needed){
                     console.debug(product.avilableNumber,obj.numberNeeded+Needed)
-                     const error = new Error('sorry you cant pay this amount right now');
+                    var message='sorry you cant pay this amount right now'
+                        if(req.user.lang==1){
+                                    message='لا يمكنك شراء هذه الكمية الان'
+                                }      
+                     const error = new Error(message);
                      error.statusCode = 422 ;
                      throw next(error) ; 
                     //return res.status(422).json({state:0,msg:'sorry you cant pay this amount right now'})
@@ -516,16 +617,22 @@ const putItemToCart=async(req,res,next)=>{
             // console.debug('user',user.cart)
            await user.save();
            foundAndseted=false
-            
-            return res.status(200).json({state:1,msg:'the item added to the cart'})
+           var message='the item added to the cart'
+           if(req.user.lang==1){
+                       message='تم اضافة المنتج'
+                   }    
+            return res.status(200).json({state:1,msg:message})
            
 
         }
         else{
             console.debug("else run")
             if(Needed>product.avilableNumber){
-
-                return res.status(422).json({state:0,msg:'sorry you can not pay this amount'})
+                var message='sorry you cant pay this amount right now'
+                if(req.user.lang==1){
+                            message='لا يمكنك شراء هذه الكمية الان'
+                        }      
+                return res.status(422).json({state:0,msg:message})
 
             }
 
@@ -535,7 +642,11 @@ const putItemToCart=async(req,res,next)=>{
          })
 
          await user.save()
-         return res.status(200).json({state:1,msg:'the item added to the cart'})
+         var message='the item added to the cart'
+           if(req.user.lang==1){
+                       message='تم اضافة المنتج'
+                   }    
+         return res.status(200).json({state:1,msg:message})
 
       
         
@@ -597,7 +708,11 @@ const decreseCartItem=async(req,res,next)=>{
 
         }
         if(product.avilableNumber<=0){
-            const error = new Error('sorry product out of stock');
+            var message='sorry product out of stock'
+            if(req.user.lang==1){
+                        message='لقد نفذ المنتج'
+                    }    
+            const error = new Error(message);
             error.statusCode = 422 ;
             return next(error) ; 
         }
@@ -627,7 +742,11 @@ const decreseCartItem=async(req,res,next)=>{
              console.debug('user',user.cart)
            await user.save();
            foundAndseted=false
-            return res.status(200).json({state:1,msg:'the decresed from  cart'})
+           var message='the decresed from  cart'
+            if(req.user.lang==1){
+                        message='لقد نقص المنتج'
+                    }    
+            return res.status(200).json({state:1,msg:message})
             
             
 
@@ -637,14 +756,18 @@ const decreseCartItem=async(req,res,next)=>{
                 user.cart.splice(deleteIndex,1)
                 deleteItem=false
                 await user.save()
-                return res.status(200).json({state:1,msg:'item deleted'})
+                var message='item deleted'
+            if(req.user.lang==1){
+                        message='تم مسح المنتج'
+                    }   
+                return res.status(200).json({state:1,msg:message})
 
             }
         
 
           
 
-          res.status(422).json({state:0,msg:'cant decrese this is item ,item not found in your cart'})
+          res.status(422).json({state:0,msg:'cant decrese this item ,item not found in your cart'})
         
            
        
@@ -683,7 +806,11 @@ const DeleteCartItem=async(req,res,next)=>{
        }
        user.cart.splice(delIndex, 1)
           await user.save()
-          return res.status(200).json({state:1,msg:'item deleted from carts'})
+          var message='item deleted'
+          if(req.user.lang==1){
+                      message='تم مسح المنتج'
+                  }   
+          return res.status(200).json({state:1,msg:message})
 
        
         }catch(err){
@@ -744,8 +871,12 @@ const editMyProfile=async(req,res,next)=>{
         var user=await CustomerUser.findById(req.userId)
         console.debug(user.methods)
         if(email&&user.methods!='local'){
-
-            const error = new Error('you cant edit your email');
+            var message='you can not edit your email'
+            if(req.user.lang==1){
+                        message='لا يمكنك تعديل الايميل الخاص بك'
+                    }   
+            const error = new Error(message);
+            
             error.statusCode = 422 ;
             error.data = errors.array();
             return next(error) ; 
@@ -762,10 +893,12 @@ const editMyProfile=async(req,res,next)=>{
         await user.save()
         
         
-        
+        var message='user info updated'
+        if(req.user.lang==1){
+                    message='تم تعديل البينات بنجاح'
+                } 
 
-          res.status(200).json({state:1,msg:"user info updated",msg_arb:"لقد تم تعديل البينات بنجاح"})
-        
+          res.status(200).json({state:1,msg:message})
            
        
         }catch(err){
@@ -835,8 +968,12 @@ const MakeOrder=async(req,res,next)=>{
             user.cart=[]
             user.Orders.push(order._id)
             await user.save()
-
-            res.status(200).json({state:1,msg:'order created succesfuly'})
+             
+        var message='order created succesfuly'
+        if(req.user.lang==1){
+                    message='تم انشاء الطلب بنجاح'
+                } 
+            res.status(200).json({state:1,msg:message})
 
         }else if(paymentMethod=='elec'){
 
@@ -868,8 +1005,12 @@ const MakeOrder=async(req,res,next)=>{
             }
             user.cart=[]
             await user.save()
-
-            res.status(200).json({state:1,msg:'order created succesfuly'})
+                   
+        var message='order created succesfuly'
+        if(req.user.lang==1){
+                    message='تم انشاء الطلب بنجاح'
+                } 
+            res.status(200).json({state:1,msg:message})
             
         }else{
             res.status(422).json({state:1,msg:'invalid payment method'})
@@ -1097,6 +1238,41 @@ const PayForAppartment=async(req,res,next)=>{
 }
 }
 
+const suggest=async(req,res,next)=>{
+
+    try{
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        const {suggest}=req.body
+       
+       const sugest =new Suggest({
+        Cuser:req.userId,
+        suggest
+       })
+       await sugest.save()
+       var message='suggest sent'
+       if(req.user.lang==1){
+           message='تم ارسال الاقتراح'
+       }
+       res.status(200).json({message})
+       
+        }catch(err){
+            //console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
 
 module.exports={
 
@@ -1115,6 +1291,6 @@ module.exports={
     DeleteCartItem,
     getMyOreder,
     PayForAppartment,
-
+    suggest
 
 }

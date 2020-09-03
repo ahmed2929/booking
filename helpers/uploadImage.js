@@ -19,8 +19,8 @@ const multer=require('multer')
 
         cb(null,true);
     }else {
-        console.debug('else run')
-      cb(new Error('In correct type'));
+        console.debug('In correct image type req is :',req,' file is :',file)
+      cb(new Error('In correct image type'));
     }
   }
    
