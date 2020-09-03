@@ -66,10 +66,19 @@ const Search = async (req, res, next) => {
             .populate({ path: "catigory", select: "name" })
             .skip((page - 1) * itemPerPage)
             .limit(itemPerPage);
+
+            var fResult=result.map(obj=>{
+              return{
+                images:obj.images,
+                _id:obj._id,
+                price:obj.price,
+                avilableNumber:obj.avilableNumber,
+                title:obj.title
+              }})
             res.status(200).json({
                 state: 1,
                 totalItems:totalItems,
-                searchResult: result,
+                searchResult: fResult,
               });
             }else if(type=="market"){
 
