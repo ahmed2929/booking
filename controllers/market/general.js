@@ -206,6 +206,7 @@ const getAdsFilter=async (req,res,next)=>{
         const itemPerPage = 10;
     const {city,rooms,type,priceFrom,priceTo,review,beds,beach}=req.query
      //review,beds,beach,
+     console.debug(req.query)
         var AD
         var TotalNumOfAds
     if(beach===undefined){
