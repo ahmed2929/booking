@@ -5,7 +5,7 @@ const {validationResult} = require('express-validator');
 const ADS = require('../../models/ADS');
 const Catigory=require('../../models/catigory');
 const { json } = require('body-parser');
-const { countDocuments } = require('../../models/ADS');
+const { countDocuments, exists } = require('../../models/ADS');
 const fs = require('fs');
 const path=require('path')
 const AvilableServices=require('../../models/AvilableServices');
@@ -14,7 +14,8 @@ const mostView=require('../../models/topView');
 const { all } = require('../../routes/admin/admin');
 const { any } = require('../../helpers/uploadImage');
 const shopcatigory =require('../../models/shopcatigory')
-const City=require('./../../models/cities')
+const City=require('./../../models/cities');
+const treder = require('./treder');
 var getAvilableCatigories=async (req,res,next)=>{
 
     try{
@@ -204,78 +205,208 @@ const getAdsFilter=async (req,res,next)=>{
     try{
         const page = req.query.page *1 || 1;
         const itemPerPage = 10;
-    const {city,rooms,type,priceFrom,priceTo,review,beds,beach}=req.query
+    var {city,rooms,type,priceFrom,priceTo,review,beds,beach,userId}=req.query
      //review,beds,beach,
      console.debug(req.query)
         var AD
         var TotalNumOfAds
+        if(!beach){
+            beach=undefined
+        }
+      
+
+        var  CitiesData
+
+       if(city){
+
+        CitiesData =await City.findOne({
+            $or:[{name:new RegExp( city , 'i')},{arb_name:new RegExp( city , 'i')}]
+
+        })
+
+       }
+       var catigoryData={}
+       if(type){
+
+        catigoryData =await Catigory.findOne({
+
+            $or:[{name:new RegExp( type , 'i')},{arb_name:new RegExp( type , 'i')}]
+
+
+        })
+
+       }
+
+          
+
+      
+       
+
     if(beach===undefined){
 
-        TotalNumOfAds=await ADS.find({
-            price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
-            city:city||{ $exists:true}  ,
-            star:{$gte :review||-1},
-            NumOfRooms:rooms||{ $exists:true},
-            beds:beds||{ $exists:true},
-        }).countDocuments()
+
+//console.debug('firstttt',CitiesData.arb_name)
+
+// handle city with tow
+if(city){
+    console.debug(catigoryData)
+    TotalNumOfAds=await ADS.find({
+        price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
+        city:{"$in":[CitiesData.name,CitiesData.arb_name]},
+        star:{$gte :review||-1},
+        NumOfRooms:rooms||{ $exists:true},
+        beds:beds||{ $exists:true},
+        catigory:catigoryData._id||{ $exists:true},
+        Creator:userId.toString()|| { $exists:true} 
+        
+    }).countDocuments()
 
 
 
-         AD=await ADS.find({
-            price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
-            city:city||{ $exists:true}  ,
-            star:{$gte :review||-1},
-            NumOfRooms:rooms||{ $exists:true},
-            beds:beds||{ $exists:true},
-        })
-        .populate({
-            path: 'catigory',
-            select: 'name',
-        })
-        .populate({
-            path: 'services.serviceType',
-            select: 'name',
-        }).select('images title city streetAdress price services')
-        .skip((page - 1) * itemPerPage)
-    .limit(itemPerPage)
-    
-    }else{
-        TotalNumOfAds=await ADS.find({
-            price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
-            city:city||{ $exists:true}  ,
-            star:{$gte :review||-1},
-            NumOfRooms:rooms||{ $exists:true},
-            beds:beds||{ $exists:true},
-            beach:beach
-        }).countDocuments()
      AD=await ADS.find({
-            price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
-            city:city||{ $exists:true}  ,
-            star:{$gte :review||-1},
-            NumOfRooms:rooms||{ $exists:true},
-            beds:beds||{ $exists:true},
-            beach:beach
-        })
-        .populate({
-            path: 'catigory',
-            select: 'name',
-        })
-        .populate({
-            path: 'services.serviceType',
-        }).select('images title city streetAdress price services')
+        price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
+        city:{"$in":[CitiesData.name,CitiesData.arb_name]} ||{ $exists:true},
+        star:{$gte :review||-1},
+        NumOfRooms:rooms||{ $exists:true},
+        beds:beds||{ $exists:true},
+        catigory:catigoryData._id||{ $exists:true},
+        Creator:userId.toString()|| { $exists:true} 
+    })
+    .populate({
+        path: 'catigory',
+        select: 'name',
+    })
+    .populate({
+        path: 'services.serviceType',
+        select: 'name',
+    }).select('images title city streetAdress price services')
+    .skip((page - 1) * itemPerPage)
+.limit(itemPerPage)
+}else{
+    TotalNumOfAds=await ADS.find({
+        price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
+        star:{$gte :review||-1},
+        NumOfRooms:rooms||{ $exists:true},
+        beds:beds||{ $exists:true},
+        catigory:catigoryData._id||{ $exists:true},
+        Creator:userId.toString()|| { $exists:true} 
+    }).countDocuments()
+
+
+
+     AD=await ADS.find({
+        price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
+        star:{$gte :review||-1},
+        NumOfRooms:rooms||{ $exists:true},
+        beds:beds||{ $exists:true},
+        catigory:catigoryData._id||{ $exists:true},
+        Creator:userId.toString()|| { $exists:true} 
+    })
+    .populate({
+        path: 'catigory',
+        select: 'name',
+    })
+    .populate({
+        path: 'services.serviceType',
+        select: 'name',
+    }).select('images title city streetAdress price services')
+.skip((page - 1) * itemPerPage)
+.limit(itemPerPage)
+console.debug(AD.length)
+}
+
+
+
+///////////////   
+    }else{
+
+
+        if(city){
+            console.debug(catigoryData)
+            TotalNumOfAds=await ADS.find({
+                price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
+                city:{"$in":[CitiesData.name,CitiesData.arb_name]},
+                star:{$gte :review||-1},
+                NumOfRooms:rooms||{ $exists:true},
+                beds:beds||{ $exists:true},
+                catigory:catigoryData._id||{ $exists:true},
+                beach:beach,
+                Creator:userId.toString()|| { $exists:true} 
+            }).countDocuments()
+        
+        
+        
+             AD=await ADS.find({
+                price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
+                city:{"$in":[CitiesData.name,CitiesData.arb_name]} ||{ $exists:true},
+                star:{$gte :review||-1},
+                NumOfRooms:rooms||{ $exists:true},
+                beds:beds||{ $exists:true},
+                catigory:catigoryData._id||{ $exists:true},
+                beach:beach,
+                Creator:userId.toString()|| { $exists:true} 
+            })
+            .populate({
+                path: 'catigory',
+                select: 'name',
+            })
+            .populate({
+                path: 'services.serviceType',
+                select: 'name',
+            }).select('images title city streetAdress price services')
+            .skip((page - 1) * itemPerPage)
+        .limit(itemPerPage)
+        }else{
+            TotalNumOfAds=await ADS.find({
+                price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
+                star:{$gte :review||-1},
+                NumOfRooms:rooms||{ $exists:true},
+                beds:beds||{ $exists:true},
+                beach:beach,
+                catigory:catigoryData._id||{ $exists:true},
+                Creator:userId.toString()|| { $exists:true} 
+            }).countDocuments()
+        
+        
+        
+             AD=await ADS.find({
+                price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
+                star:{$gte :review||-1},
+                NumOfRooms:rooms||{ $exists:true},
+                beds:beds||{ $exists:true},
+                catigory:catigoryData._id||{ $exists:true},
+                beach:beach,
+                Creator:userId.toString()|| { $exists:true} 
+
+            })
+            .populate({
+                path: 'catigory',
+                select: 'name',
+            })
+            .populate({
+                path: 'services.serviceType',
+                select: 'name',
+            }).select('images title city streetAdress price services')
         .skip((page - 1) * itemPerPage)
-    .limit(itemPerPage)
-    
+        .limit(itemPerPage)
+        console.debug(AD.length)
+        }
+
+
+
+
+
+
 
     }
 
    
     var finalRes=AD
-  if(type){
-    var finalRes=AD.filter(obj=>{
-        return obj.catigory.name===type
-    })
-  }
+//   if(type){
+//     var finalRes=AD.filter(obj=>{
+//         return obj.catigory.name===type
+//     })
+//   }
     
    res.status(200).json({state:1,finalRes,TotaNum:TotalNumOfAds})
 }
