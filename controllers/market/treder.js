@@ -312,9 +312,10 @@ var deleteById=async (req,res,next)=>{
        // console.debug(AD)
         const request =await Request.findOne({
            "RequestData.status":1,
-            "RequestData.EndDate":{ $gt: Date.now() }
+            "RequestData.EndDate":{ $gt: Date.now() },
+            AD:AdId.toString()
         })
-
+        console.debug(request)
         if(request){
             var message='you alreay accepted request for this ad wait till your requests expire'
             if(req.user.lang==1){
@@ -371,9 +372,12 @@ var deleteById=async (req,res,next)=>{
         });
   
    });
+   var message='apparment deleted Sucessfully'
+   if(req.user.lang==1){
+       message='لقد تم مسح الاعلان'
+   }
 
-
-     res.status(200).json({state:1,message:'apparment deleted Sucessfully'});
+    await res.status(200).json({state:1,message:message});
      if(MailingList){
    await sendEmail(MailingList,'News',`
        your request to rent ${AD.title} has been removed because the owner removed
