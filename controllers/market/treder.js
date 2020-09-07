@@ -918,14 +918,17 @@ const editMyProfile=async(req,res,next)=>{
             return next(error) ; 
 
         }
+
+        if(email!=user.email){
+            user.emailVerfied=false
+        }
+
         user.name=name||user.name
         user.email=email||user.email
         user.local.email=email||user.email
         user.photo=imageUrl||user.photo
         user.lang=lang||user.lang
-        if(email){
-            user.emailVerfied=false
-        }
+       
         await user.save()
         
         
