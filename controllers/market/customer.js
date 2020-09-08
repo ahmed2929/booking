@@ -892,6 +892,8 @@ const editMyProfile=async(req,res,next)=>{
         user.photo=imageUrl||user.photo
         user.lang=lang||user.lang
        
+        
+        
         await user.save()
         
         

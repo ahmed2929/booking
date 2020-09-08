@@ -295,6 +295,7 @@ var deleteById=async (req,res,next)=>{
     }
 
         const AdId=req.body.ADId
+            console.debug('req.body',req.body)
         const AD=await ADS.findById(AdId)
         if(!AD){
         const error = new Error('No AD found !!');
