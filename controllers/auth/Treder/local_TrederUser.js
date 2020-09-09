@@ -535,7 +535,23 @@ const googleWithOuthData=async (req,res,next)=>{
     
     
     
-            return res.status(200).json({state:1,token,userId:existingUser._id})
+            return res.status(200).json({
+                state:1,
+                token,
+                userId:existingUser._id,
+                state:1,
+                name:existingUser.name,
+                email:existingUser.email,
+                mobile:existingUser.mobile,
+                emailVerfied:existingUser.emailVerfied,
+                mobileVerfied:existingUser.mobileVerfied,
+                status:existingUser.status
+                
+            
+            
+            
+            
+            })
     
     
             }
@@ -557,7 +573,22 @@ const googleWithOuthData=async (req,res,next)=>{
     
     
     
-            return res.status(200).json({state:1,token,userId:existingUserLocal._id})
+            return res.status(200).json({
+                state:1,
+                token,
+                userId:existingUserLocal._id,
+                state:1,
+                name:existingUserLocal.name,
+                email:existingUserLocal.email,
+                mobile:existingUserLocal.mobile,
+                emailVerfied:existingUserLocal.emailVerfied,
+                mobileVerfied:existingUserLocal.mobileVerfied,
+                status:existingUserLocal.status
+                
+            
+            
+            
+            })
     
     
             }
@@ -579,7 +610,24 @@ const googleWithOuthData=async (req,res,next)=>{
             
             
             
-                    return res.status(200).json({state:1,token,userId:existingUserfacebook._id})
+                    return res.status(200).json({
+                        token,
+                        userId:existingUserfacebook._id,
+                        state:1,
+                        name:existingUserfacebook.name,
+                        email:existingUserfacebook.email,
+                        mobile:existingUserfacebook.mobile,
+                        emailVerfied:existingUserfacebook.emailVerfied,
+                        mobileVerfied:existingUserfacebook.mobileVerfied,
+                        status:existingUserfacebook.status
+                        
+                        
+                    
+                    
+                    
+                    
+                    
+                    })
             
               
             }
@@ -610,7 +658,20 @@ const googleWithOuthData=async (req,res,next)=>{
             console.debug("new google user is created")
     
     
-            return res.status(200).json({state:1,token, userId:newUser._id})
+            return res.status(200).json({
+                state:1,
+                token,
+                userId:newUser._id,
+                state:1,
+                name:newUser.name,
+                email:newUser.email,
+                mobile:newUser.mobile,
+                emailVerfied:newUser.emailVerfied,
+                mobileVerfied:newUser.mobileVerfied,
+                status:newUser.status
+                
+            
+            })
     
     
        
@@ -648,7 +709,19 @@ const googleWithOuthData=async (req,res,next)=>{
         
         
         
-                return res.status(200).json({state:1,token,userId:existingUser._id})
+                return res.status(200).json({
+            
+                token,
+                userId:existingUser._id,
+                state:1,
+                name:existingUser.name,
+                email:existingUser.email,
+                mobile:existingUser.mobile,
+                emailVerfied:existingUser.emailVerfied,
+                mobileVerfied:existingUser.mobileVerfied,
+                status:existingUser.status
+                
+                })
         
         
                 }
@@ -671,7 +744,18 @@ const googleWithOuthData=async (req,res,next)=>{
         
         
         
-                return res.status(200).json({state:1,token,userId:existingUserLocal._id})
+                return res.status(200).json({
+                token,
+                userId:existingUserLocal._id,
+                state:1,
+                name:existingUserLocal.name,
+                email:existingUserLocal.email,
+                mobile:existingUserLocal.mobile,
+                emailVerfied:existingUserLocal.emailVerfied,
+                mobileVerfied:existingUserLocal.mobileVerfied,
+                status:existingUserLocal.status
+                
+                })
         
         
                 }
@@ -693,7 +777,19 @@ const googleWithOuthData=async (req,res,next)=>{
                 
                 
                 
-                        return res.status(200).json({state:1,token,userId:existingUserfacebook._id})
+                        return res.status(200).json({
+                            token,
+                            userId:existingUserfacebook._id,
+                            state:1,
+                            name:existingUserfacebook.name,
+                            email:existingUserfacebook.email,
+                            mobile:existingUserfacebook.mobile,
+                            emailVerfied:existingUserfacebook.emailVerfied,
+                            mobileVerfied:existingUserfacebook.mobileVerfied,
+                            status:existingUserfacebook.status
+                            
+                        
+                        })
                 
                   
                 }
@@ -727,7 +823,19 @@ const googleWithOuthData=async (req,res,next)=>{
                 console.debug('new user created facebook')
     
         
-                return res.status(200).json({state:1,token,userId:newUser._id})
+                return res.status(200).json({
+                    state:1,
+                    token,
+                    userId:newUser._id,
+                    state:1,
+                    name:newUser.name,
+                    email:newUser.email,
+                    mobile:newUser.mobile,
+                    emailVerfied:newUser.emailVerfied,
+                    mobileVerfied:newUser.mobileVerfied,
+                    status:newUser.status
+                
+                })
         
         
            
