@@ -5,7 +5,7 @@ const User = require('../../models/CustomerUser');
 module.exports = async (req,res,next)=>{
     const authHeader = req.get('Authorization');
     if(!authHeader){
-        const error = new Error('not Authorized!!');
+        const error = new Error('you need to login');
         error.statusCode = 401;
         return next(error);
     }
@@ -14,13 +14,13 @@ module.exports = async (req,res,next)=>{
     let decodedToken;
     try{
    //     console.debug(process.env.JWT_PRIVATE_KEY)
-
+       
         decodedToken = await jwt.verify(token,process.env.JWT_PRIVATE_KEY);
     //    console.debug('decoded token',decodedToken)
         if(!decodedToken){
             const error = new Error('not Authorized!!');
             error.statusCode = 401;
-            throw error;
+            return next(error);
         }
 
         const user   = await User.findById(decodedToken.userId) ;
