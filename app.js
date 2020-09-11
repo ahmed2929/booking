@@ -7,8 +7,6 @@ const path      = require('path');
 const services=require('./models/AvilableServices')
 
 
-
-
 const configMiddleware=require('./midllewares/config');
 var app=express();
 var localDB='mongodb://localhost/Booking-local2'

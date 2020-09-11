@@ -920,15 +920,48 @@ var CreateProduct=async (req,res,next)=>{
         const getuserProfile=async(req,res,next)=>{
             console.debug('controller run')
             try{
+                const page = req.query.page *1 || 1;
+                const itemPerPage = 10; 
                 const UserId=req.params.UserId
                 const type=req.params.type
                // console.debug(type,UserId)
-                if(type=="treder"){
+               const Tuser=await treder.findById(UserId.toString())
+                
+                if(Tuser){
                     console.debug('if run')
+                    var AdsLen=Tuser.MyWonAds.length
                     const user=await treder.findById(UserId.toString())
                     //console.debug(user)
                      .populate({ path: 'MyWonAds', select:'title details images _id'})
-                     .populate({ path: 'cart'})
+
+                     .populate([
+                        // here array is for our memory. 
+                        // because may need to populate multiple things
+                        {
+                            path: 'MyWonAds',
+                            select: 'title details images _id',
+                            
+                            options: {
+                                sort:{'createdAt': -1},
+                                skip: (page - 1) * itemPerPage,
+                                limit : itemPerPage,
+                                lean: true
+                            },
+                            match:{
+                                // filter result in case of multiple result in populate
+                                // may not useful in this case
+                            },
+                             populate: { path: 'services.serviceType'},
+                             lean:true
+            
+                        },
+            
+                       
+            
+                    ])
+                    .lean()
+
+                    .populate({ path: 'Orders',populate:'payment'} )
                     
                     .select('name')
                     .select('email')
@@ -939,16 +972,17 @@ var CreateProduct=async (req,res,next)=>{
                     .select('mobile')
                     .select('blocked')
                     .select('MyWonAds')
+                    .select('Orders')
                     if(!user){
                         return res.status(404).json({state:0,msg:'user not found'})
                     }
-                     return res.status(200).json({state:1,user:user})
+                     return res.status(200).json({state:1,user:user,AdsLen})
                     
-                }else if(type=="customer"){
+                }else{
                     const user=await customer.findById(UserId.toString())
                     //console.debug(user)
-                     .populate({ path: 'pendingRequestTo' ,select:'RequestData.status _id'})
-                    
+                     //.populate({ path: 'pendingRequestTo' ,select:'RequestData.status _id'})
+                     .populate({ path: 'Orders',populate:'payment'} )
                     .select('name')
                     .select('email')
                     .select('photo')
@@ -957,7 +991,7 @@ var CreateProduct=async (req,res,next)=>{
                     .select('mobileVerfied')
                     .select('mobile')
                     .select('blocked')
-                    .select('pendingRequestTo')
+                    .select('Orders')
                     if(!user){
                         return res.status(404).json({state:0,msg:'user not found'})
                     }
@@ -965,7 +999,7 @@ var CreateProduct=async (req,res,next)=>{
                     return res.status(200).json({state:1,user:user})
                 }
                     
-                     return res.status(422).json({state:0,msg:'invalid Type'})
+                     
                 }
                 catch(err){
                     console.debug(err)
