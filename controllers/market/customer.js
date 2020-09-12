@@ -1158,18 +1158,27 @@ const PayForAppartment=async(req,res,next)=>{
        
             const request=await Request.findById(RequestId)
             if(!request){
+                var message='order created succesfuly'
             const error = new Error('invalid request id');
             error.statusCode = 422 ;
             return next(error) ; 
             }
             if(request.RequestData.status!=1){
-                const error = new Error('sorry you can not pay now wait till your request is accespted');
+                var message='sorry you can not pay now wait till your request is accespted'
+                if(req.user.lang==1){
+                    message='لايمكنك الدفع الان انتظر حتي يتم الموافقة علي طلبك'
+                } 
+                const error = new Error(message);
                 error.statusCode = 422 ;
                 return next(error) ; 
             }
 
             if(request.RequestData.payment){
-                const error = new Error('you already payed for it');
+                var message='you already payed for it'
+                if(req.user.lang==1){
+                    message='لقد قمت بالدفع'
+                } 
+                const error = new Error(message);
                 error.statusCode = 422 ;
                 return next(error) ; 
             }
@@ -1188,9 +1197,12 @@ const PayForAppartment=async(req,res,next)=>{
             request.Payment=NewPayMent._id
             await request.save()
 
-           
+            var message='payment created succesfuly'
+            if(req.user.lang==1){
+                message='تم الدفع بنجاح'
+            } 
 
-            res.status(200).json({state:1,msg:'payment created succesfuly'})
+            res.status(200).json({state:1,msg:message})
 
         }else if(paymentMethod=='elec'){
 
