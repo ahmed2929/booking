@@ -6,6 +6,7 @@ const {validationResult} = require('express-validator');
 const TrederUsers = require('../../../models/TrederUsers');
 const CustomerUser=require('../../../models/CustomerUser')
 const validatePhoneNumber = require('validate-phone-number-node-js');
+const Wallet=require('../../../models/wallet')
 //const nodemailerMailgun=require('../../../helpers/sendEmail');
 const sendEmail=require('../../../helpers/sendEmail').sendEmail
 
@@ -19,7 +20,8 @@ var register=async (req,res,next)=>{
         error.data = errors.array();
         return next(error) ; 
     }
-    const email     = req.body.email;
+    var EMAIL=req.body.email.trim().toLowerCase()
+    const email     = EMAIL;
     const password  = req.body.password;
     const name      = req.body.name;
     const mobile    = req.body.mobile;
@@ -43,7 +45,7 @@ var register=async (req,res,next)=>{
         error.statusCode = 422;
        return next(error) ;
     }
-    bycript.hash(password,12).then(hashedPass=>{
+    bycript.hash(password,12).then(async (hashedPass)=>{
         const newUser = new TrederUsers({
             methods:'local',
             local:{
@@ -54,8 +56,12 @@ var register=async (req,res,next)=>{
             name:name,
             mobile:mobile,
         });
-
-
+     var newWalet=new Wallet({
+        user:newUser._id
+     })
+    await newWalet.save()
+        
+        newUser.Wallet=newWalet._id;
         return newUser.save();
     })   
     .then(user=>{

@@ -101,7 +101,25 @@ Router.post('/decreseCartItem',verfiyToken,conttroller.decreseCartItem)
 Router.post('/DeleteCartItem',verfiyToken,conttroller.DeleteCartItem)
 Router.get('/getMyOreder',verfiyToken,conttroller.getMyOreder)
 Router.post('/suggest',verfiyToken,conttroller.suggest)
+Router.post('/MoneyWithDrawRequest',verfiyToken,[
+   
+    body('RequiredWithdrowMoney').not().isEmpty(),
+    body('Address').not().isEmpty(),
+    body('BankName').not().isEmpty(),
+    body('AccountNumber').not().isEmpty(),
+    body('BankCode').not().isEmpty(),
+    body('MobileNumber').not().isEmpty(),
+    body('Email').not().isEmpty(),
 
+    
+
+
+
+
+
+],conttroller.MoneyWithDrawRequest)
+
+Router.get('/getMyWallet',verfiyToken,conttroller.getMyWallet)
 
 
 module.exports=Router

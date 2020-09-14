@@ -127,6 +127,10 @@ const userSchema = new schema({
       type:schema.Types.ObjectId,
       ref:'order'
     }],
+    Wallet:{
+      type:schema.Types.ObjectId,
+      ref:'Wallet'
+    }
 });
 
 module.exports = mongoose.model('TrederUser',userSchema);

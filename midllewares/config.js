@@ -11,6 +11,7 @@ const marketTreder=require('../routes/User/market/treder')
 const marketcustomer=require('../routes/User/market/customer')
 const admin=require('firebase-admin')
 const shop=require('../routes/shop/shop')
+const payment=require('../routes/payment/payment')
 request = require('request');
 const SearchApi=require('../controllers/general/general').Search
 const generalMargetRoutes=require('../routes/User/market/general')
@@ -62,6 +63,7 @@ module.exports=(app)=>{
    app.use('/shop/',shop)
    app.use('/admin',AppAdmin)
    app.use('/search',SearchApi)
+   app.use('/payment',payment)
    
   app.get('/images/*',(req,res)=>{
 

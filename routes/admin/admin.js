@@ -292,6 +292,10 @@ Router.post('/deleteCity',[
 Router.get('/suggests/:id',verfiyToken,controller.suggest)
 Router.get('/suggests',verfiyToken,controller.suggest)
 
+Router.get('/getAllWithDarwRequests',verfiyToken,controller.getAllWithDarwRequests)
+Router.post('/ChangWithDrawStatus',verfiyToken,controller.ChangWithDrawStatus)
+  
+    
 //llsl
 
 module.exports=Router

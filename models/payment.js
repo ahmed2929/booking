@@ -27,6 +27,9 @@ const RequestSchema = new schema({
     descPerc:{
        type: Number,
        default:0
+    },
+    checkoutId:{
+        type:String
     }
     
 }, {timestamps:true});

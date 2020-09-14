@@ -20,8 +20,12 @@ const Order=require('../../models/order')
 const Payment=require('../../models/payment')
 const TopView=require('../../models/topView')
 const Suggest =require('../../models/suggest')
+const Withdraw = require('../../models/withdraw');
+const Wallet=require('../../models/wallet');
+
 sendEmail=require('../../helpers/sendEmail').sendEmail
 const notificationSend=require('../../helpers/send-notfication').send
+
 var CreateAppartment=async (req,res,next)=>{
     console.debug('controller runas')
     try{
@@ -1300,7 +1304,8 @@ const MakeOrder=async(req,res,next)=>{
             return next(error) ; 
         }
 
-        const {paymentMethod,cartPrice,usedPromoCode,finalPrice,descPerc,address}=req.body
+        const {paymentMethod,cartPrice,usedPromoCode,finalPrice,descPerc,address,paymentId}=req.body
+        var checkoutId=paymentId
         const user =await TrederUsers.findById(req.userId)
         .populate({ path: 'cart', populate: { path: 'product'}})
 
@@ -1351,14 +1356,28 @@ const MakeOrder=async(req,res,next)=>{
            return res.status(200).json({state:1,msg:'order created succesfuly'})
 
         }else if(paymentMethod=='elec'){
-
+            if(!checkoutId){
+                var message='checkoutId is required'
+                const error = new Error(message);
+                error.statusCode = 422 ;
+                return next(error) ; 
+                }
+                
+                const {body,status}=await getPaymentReport(checkoutId)
+            if(body.result.code.toString()!='000.100.110'){
+            var message='invalid payment checkout '
+            const error = new Error(message);
+            error.statusCode = 422 ;
+        return next(error) ; 
+            }
             const NewPayMent=new Payment({
                 cuser:user._id,
                 methodOfPay:'elec',
                 totalMoney:cartPrice,
                 finalPrice:finalPrice,
                 status:1,
-                descPerc:descPerc
+                descPerc:descPerc,
+                checkoutId
             })
             await NewPayMent.save()
             const order=new Order({
@@ -1569,6 +1588,200 @@ const suggest=async(req,res,next)=>{
 }
 }
 
+const MoneyWithDrawRequest=async(req,res,next)=>{
+
+    try{
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        var{
+            RequiredWithdrowMoney,
+            FullName,
+            Address,
+            BankName,
+            AccountNumber,
+            BankCode,
+            MobileNumber,
+            Email
+        
+        
+        }=req.body
+
+        console.debug(req.body)
+
+        // validate name
+       
+         // validate email
+         Email=Email.toLowerCase()
+    
+
+        // validate mobile
+    
+        // check amount of money he wants
+        //1 check price is valid
+        if(!Number(RequiredWithdrowMoney)||Number(RequiredWithdrowMoney)<=0){
+            var message='invalid price'
+            if(req.user.lang==1){
+                message='سعر غير صحيح'
+            }
+            const error = new Error(message);
+            error.statusCode = 422 ;
+            return next(error) ; 
+        }
+
+        //2 find if he has wallet
+      var  wallet=await Wallet.findOne({
+            user:req.userId.toString()
+        })
+
+        if(!wallet){
+            var message='wallet not found'
+            if(req.user.lang==1){
+                message='لم يتم اجاد المحفظة'
+            }
+            const error = new Error(message);
+            error.statusCode = 500 ;
+            return next(error) ; 
+        }
+        //3 check if he has credit
+        if(wallet.TotalPrice==0){
+            var message='you have no credit'
+            if(req.user.lang==1){
+                message='ليس لديك رصيد  '
+            }
+            const error = new Error(message);
+            error.statusCode = 422 ;
+            return next(error) ; 
+        }
+        //4 check if the requested money is bigger than his credit 
+        if(wallet.TotalPrice<Number(RequiredWithdrowMoney)){
+            var message='your wallet cridt does not allow that'
+            if(req.user.lang==1){
+                message='رصيد محفظتك لا يسمح بذاك'
+            }
+            const error = new Error(message);
+            error.statusCode = 422 ;
+            return next(error) ; 
+        }
+        //5 check if he has pendig money requests
+        var checkWithDrowl=await Withdraw.findOne({
+            user:req.userId.toString(),
+            RequestStatus:{ $ne: 2 }
+        })
+
+        if(checkWithDrowl){
+            var message='you requested money already wait till you recive it then try again'
+            if(req.user.lang==1){
+                message='لقد قمت بعملية سحب انتظر حتي تستلم المبلغ ثم حاول مجددا'
+            }
+            const error = new Error(message);
+            error.statusCode = 422 ;
+            return next(error) ; 
+        }
+
+    // create request 
+        var newWithdraw=new Withdraw({
+            user:req.userId.toString(),
+            TotalWalletMoney:wallet.TotalPrice,
+            RequiredWithdrowMoney,
+            FullName,
+            Address,
+            BankName,
+            AccountNumber,
+            BankCode,
+            MobileNumber,
+            Email,
+           
+        
+
+        })
+       await newWithdraw.save()
+       wallet.withDarwRequest.push(newWithdraw)
+       await wallet.save()
+       var message='request created '
+       if(req.user.lang==1){
+           message='تم ارسال الطلب'
+       }
+       res.status(200).json({message})
+       
+        }catch(err){
+            //console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
+const getMyWallet=async(req,res,next)=>{
+    try{
+        const page = req.query.page *1 || 1;
+        const itemPerPage = 10;
+        
+        const user=await TrederUsers.findById(req.userId)
+        if(!user){
+            const error = new Error('user not found');
+            error.statusCode = 422 ;
+            return next(error) ; 
+        }
+        
+        var  wal=await Wallet.findOne({
+            user:req.userId
+        })
+        console.debug('wal',wal)
+        var TotalNum=wal.withDarwRequest.length
+        var  wallet=await Wallet.findOne({
+            user:req.userId
+        })
+        .populate([
+            // here array is for our memory. 
+            // because may need to populate multiple things
+            {
+                path: 'withDarwRequest',
+                select: 'RequiredWithdrowMoney RequestStatus',
+                
+                options: {
+                    sort:{'createdAt': -1},
+                    skip: (page - 1) * itemPerPage,
+                    limit : itemPerPage,
+                    lean: true
+                },
+                match:{
+                    // filter result in case of multiple result in populate
+                    // may not useful in this case
+                },
+                 //populate: { path: 'services.serviceType'}
+
+            },
+
+           
+
+        ]).select('-user')
+
+        if(!wallet){
+            const error = new Error('no wallet found to this user');
+            error.statusCode = 422 ;
+            return next(error) ; 
+        }
+        res.status(200).json({wallet,TotalNum})
+           
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
 
 module.exports={
 
@@ -1593,6 +1806,8 @@ MakeOrder,
 getNotifications,
 DeleteCartItem,
 getMyOreder,
-suggest
+suggest,
+MoneyWithDrawRequest,
+getMyWallet
 
 }

@@ -22,6 +22,8 @@ const payment = require('../../models/payment');
 const notificationSend=require('../../helpers/send-notfication').send
 const sendEmail=require('../../helpers/sendEmail').sendEmail
 const Suggest=require('../../models/suggest')
+const getPaymentReport=require('../../controllers/general/payment').getPaymentReport
+const Wallet =require('../../models/wallet')
 function parseDate(str) {
     var mdy = str.split('-');
     return new Date(mdy[2], mdy[0]-1, mdy[1]);
@@ -925,7 +927,8 @@ const MakeOrder=async(req,res,next)=>{
             return next(error) ; 
         }
 
-        const {paymentMethod,cartPrice,finalPrice,descPerc,address}=req.body
+        const {paymentMethod,cartPrice,finalPrice,descPerc,address,paymentId}=req.body
+       var checkoutId= paymentId
         const user =await CustomerUser.findById(req.userId)
         .populate({ path: 'cart', populate: { path: 'product'}})
 
@@ -981,14 +984,33 @@ const MakeOrder=async(req,res,next)=>{
 
         }else if(paymentMethod=='elec'){
 
+            if(!checkoutId){
+                var message='checkoutId is required'
+                const error = new Error(message);
+                error.statusCode = 422 ;
+                return next(error) ; 
+                }
+                
+                const {body,status}=await getPaymentReport(checkoutId)
+                console.debug('res body',body.result.code.toString())
+            if(body.result.code.toString()!='000.100.110'){
+            var message='invalid payment checkout '
+            const error = new Error(message);
+            error.statusCode = 422 ;
+        return next(error) ; 
+            }
+
+
             const NewPayMent=new Payment({
                 cuser:user._id,
                 methodOfPay:'elec',
                 totalMoney:cartPrice,
                 finalPrice:finalPrice,
                 status:1,
-                descPerc:descPerc
+                descPerc:descPerc,
+                checkoutId,
             })
+
             await NewPayMent.save()
             const order=new Order({
                 cuser:req._id,
@@ -1154,11 +1176,11 @@ const PayForAppartment=async(req,res,next)=>{
             return next(error) ; 
         }
 
-        const {paymentMethod,RequestId,finalPrice}=req.body
-       
-            const request=await Request.findById(RequestId)
+        const {paymentMethod,RequestId,finalPrice,paymentId}=req.body
+        var checkoutId=paymentId
+            const request=await Request.findById(RequestId.toString())
+            .populate({path:'to'})
             if(!request){
-                var message='order created succesfuly'
             const error = new Error('invalid request id');
             error.statusCode = 422 ;
             return next(error) ; 
@@ -1172,11 +1194,11 @@ const PayForAppartment=async(req,res,next)=>{
                 error.statusCode = 422 ;
                 return next(error) ; 
             }
-
-            if(request.RequestData.payment){
+            console.debug('req payment',request.Payment)
+            if(request.Payment){
                 var message='you already payed for it'
                 if(req.user.lang==1){
-                    message='لقد قمت بالدفع'
+                    message='لقد قمت بالدفع لها1ا الحجز في السابق'
                 } 
                 const error = new Error(message);
                 error.statusCode = 422 ;
@@ -1197,45 +1219,91 @@ const PayForAppartment=async(req,res,next)=>{
             request.Payment=NewPayMent._id
             await request.save()
 
-            var message='payment created succesfuly'
+            var message='payment method created succesfuly'
             if(req.user.lang==1){
-                message='تم الدفع بنجاح'
+                message='تم تحديد طريقة الدفع بنجاح'
             } 
 
             res.status(200).json({state:1,msg:message})
 
         }else if(paymentMethod=='elec'){
+            if(!checkoutId){
+                var message='checkoutId is required'
+                const error = new Error(message);
+                error.statusCode = 422 ;
+                return next(error) ; 
+            }
+            console.debug('checkoutId',checkoutId)
+
+            const {body,status}=await getPaymentReport(checkoutId.toString())
+            console.debug('body',body)
+            console.debug('res code',body.result.code.toString())
+             if(body.result.code.toString()!='000.100.110'){
+                var message='invalid payment checkout '
+                const error = new Error(message);
+                error.statusCode = 422 ;
+                return next(error) ; 
+             }
 
             const NewPayMent=new Payment({
-                cuser:req.userId,
+                Cuser:req.userId,
                 methodOfPay:'elec',
-                totalMoney:cartPrice,
+                totalMoney:finalPrice,
                 finalPrice:finalPrice,
-                status:1,
-                descPerc:descPerc
+                checkoutId,
+                status:1
             })
+            request.Payment=NewPayMent._id
             await NewPayMent.save()
-            const order=new Order({
-                cuser:req.userId,
-                cart:user.cart,
-                payment:NewPayMent._id,
-                address:address,
-
+            console.debug(request.to._id.toString())
+           var Twallet=await Wallet.findOne({
+                user:request.to._id.toString()
             })
-            await order.save()
-           // console.debug(user.cart)
-           
-            for(let elem of user.cart){
-            
-                const editProduct= await Product.findById(elem.product._id)
-               editProduct.avilableNumber-=elem.numberNeeded
-               
-                   await editProduct.save()
-            }
-            user.cart=[]
-            await user.save()
+           if(!Twallet){
+            var message='wallet not found '
+            const error = new Error(message);
+            error.statusCode = 500 ;
+            return next(error) ; 
+           }
+           Twallet.TotalPrice+=Number(finalPrice)
+           await Twallet.save()
+           var data={}
+           var notification={
+            title:'new money added to your wallet',
+            body:`check your wallet`
+        }
+        if(request.to.lang==1){
+         notification={
+             title:'لقد تم اضافة مال جدبد الي محفظتك',
+             body:` تفقد محفظتك`
+         }
+        }
+ 
+       // var month = statrt. getMonth() + 1; // Since getMonth() returns month from 0-11 not 1-12.
+      //var year = d. getFullYear();
+      //var dateStr = date + "/" + month + "/" + year;
+      var message='payment created'
+         if(req.user.lang==1){
+             message='تم الدفع'
+         }
+        res.status(200).json({state:1,msg:message})
+       await notificationSend("NewMoneyAdded",data,notification,request.to._id,1)
+       var Emessage=`
+       <h4>
+       new money added to your wallet
+       
+       </h4>
+      
+      `
+       if(req.user.lang==1){
+           Emessage=`
+           تم اضافة مال الي محفظتك
+          
+          `
+       }
+        await sendEmail(request.to.email,'NewMoneyAdded',Emessage)
+ 
 
-            res.status(200).json({state:1,msg:'order created succesfuly'})
             
         }else{
             res.status(422).json({state:1,msg:'invalid payment method'})
@@ -1245,7 +1313,7 @@ const PayForAppartment=async(req,res,next)=>{
 
        
         }catch(err){
-            //console.debug(err)
+            console.debug(err)
             if(!err.statusCode){
                 err.statusCode = 500;
             }

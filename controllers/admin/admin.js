@@ -28,7 +28,10 @@ const Suggest =require('../../models/suggest')
 const { request } = require('express');
 const catigory = require('../../models/catigory');
 const City=require('../../models/cities')
+const WithDraw=require('../../models/withdraw');
+const wallet = require('../../models/wallet');
 const pagenation=require('../../helpers/general/helpingFunc').paginate
+const notificationSend=require('../../helpers/send-notfication').send
 var register=async (req,res,next)=>{
 
     const errors = validationResult(req);
@@ -1822,6 +1825,133 @@ const suggest=async(req,res,next)=>{
     
 
 }
+
+
+const getAllWithDarwRequests=async(req,res,next)=>{
+    try{
+        const page=req.query.page
+        const itemPerPage=10
+       const TotalNum= await WithDraw.find().countDocuments()
+       const withDraw=await WithDraw.find()
+       .skip((page - 1) * itemPerPage)
+       .limit(itemPerPage)
+       .sort('-1')
+       
+       res.status(200).json({state:1,result:withDraw,TotalNum}) 
+       
+       
+      
+       
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+
+const ChangWithDrawStatus=async(req,res,next)=>{
+    try{
+       
+       var {status,WithDrawId}=req.body
+        const withdraw=await WithDraw.findById(WithDrawId.toString())
+        .populate('user')
+        if(!withdraw){
+            const error = new Error('withdraw not found');
+            error.statusCode = 422 ;
+            return next(error)
+        }
+        console.debug(withdraw)
+        if(withdraw.RequestStatus==2){
+            const error = new Error('withdraw can not be edit');
+            error.statusCode = 422 ;
+            return next(error)
+        }
+        if(withdraw.RequestStatus==1&&status==0){
+            const error = new Error('can not ignore request after accepting');
+            error.statusCode = 422 ;
+            return next(error)
+        }
+        withdraw.RequestStatus=status
+        
+        await withdraw.save()
+
+        if(status==2){
+            var editTwallet=await wallet.findOne({
+                user:withdraw.user
+            })
+            if(!editTwallet){
+                const error = new Error('wallet not found ');
+            error.statusCode = 500 ;
+            return next(error)
+            }
+            editTwallet.TotalPrice-=withdraw.RequiredWithdrowMoney
+            await editTwallet.save()
+            
+        }
+
+        const data={
+     
+        }
+       var  notification={
+            title:'withdraw state changed',
+            body:`check out your wallet`
+        }
+       
+            if(withdraw.user.lang==1){
+                notification={
+                    title:'لقد حدث تغير في حالة السحب ',
+                    body:` تفقد حسابك`
+                }
+            }
+    
+    
+         await notificationSend("NewRate",data,notification,withdraw.user._id,1)
+            
+         var Emassage=`
+          <h4>
+          withdraw state changed check out your wallet
+          
+          </h4>
+         
+         `
+         if(withdraw.user.lang==1){
+            Emassage=`
+            <h4>
+            لقد حدث تغير في حالة السحب 
+            تفقد حسابك
+
+            
+            </h4>
+           
+           `
+        }
+         
+         await sendEmail(withdraw.user.email,'NewRate',Emassage)
+    
+    
+       res.status(200).json({state:1,result:'withdraw changed'}) 
+       
+       
+      
+       
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
 module.exports={
     register,
     login,
@@ -1858,7 +1988,9 @@ module.exports={
     EditService,
     deleteCity,
     AddCity,
-    suggest
+    suggest,
+    ChangWithDrawStatus,
+    getAllWithDarwRequests
     
 
 
