@@ -1177,9 +1177,11 @@ const PayForAppartment=async(req,res,next)=>{
         }
 
         const {paymentMethod,RequestId,finalPrice,paymentId}=req.body
-        var checkoutId=paymentId
+        var checkoutId=
+        console.debug('requestID',RequestId)
             const request=await Request.findById(RequestId.toString())
             .populate({path:'to'})
+            console.debug('request',request)
             if(!request){
             const error = new Error('invalid request id');
             error.statusCode = 422 ;
