@@ -93,6 +93,21 @@ const Book=async (req,res,next)=>{
 
 
        }
+
+       if(Adult<=0&&children<=0){
+        var message='invalid adult or chiled'
+        if(req.user.lang==1){
+            message='بينات خاطئة'
+        }
+        const error = new Error(message);
+            error.statusCode = 422 ;
+            return next(error) ; 
+
+
+       }
+
+
+
        const reque=await Request.findOne({
            from:req.userId,
            AD:AdId
@@ -108,7 +123,7 @@ const Book=async (req,res,next)=>{
 
        }
 
-
+       console.debug('ad id',AdId)
        const ad=await ADS.findById(AdId)
        if(!ad){
 
@@ -119,6 +134,33 @@ const Book=async (req,res,next)=>{
        }
        console.debug('start date',StartDate)
        console.debug('end date',EndDate)
+
+
+    //    var areadyToken=false
+    //    ad.NotAvilable.forEach(data=>{
+    //        if(Date(StartDate)>=Date(data.StartDate)&&Date(StartDate)<=Date(data.EndDate)){
+    //         areadyToken=true
+    //        }
+
+    //        if(Date(EndDate)>=Date(data.StartDate)&&Date(EndDate)<=Date(data.EndDate)){
+    //         areadyToken=true
+    //        }
+    //    })
+
+    //    if(areadyToken){
+    //     var message='this appartement is not avilable in that date '
+    //     if(req.user.lang==1){
+    //         message='هذا المنتج غير متاح في هذا التاريخ'
+    //     }
+    //     const error = new Error(message);
+    //     error.statusCode = 404 ;
+    //     return next( error) ;
+    //    }
+
+
+
+
+
        var newRequest= new Request({
            from:req.userId,
            to:ad.Creator,
@@ -251,7 +293,8 @@ try{
     var arivalTime=oldObj.RequestData.ArivalTime
     //var message=oldObj.refuseMassage
     var adId=oldObj.AD._id
-    
+    var AdPrice=oldObj.AD.price
+    var AdServices=oldObj.AD.services
     var CanReschedule=oldObj.RequestData.status==0&&NumOfDays>0?true:false
     console.debug(oldObj.Payment==true)
     var CanPay=(!oldObj.Payment&&oldObj.RequestData.status==1)?true:false
@@ -263,8 +306,8 @@ try{
         title,
         RequestId,
         status,
-       // InFuture,
-       // InPast,
+        AdPrice,
+        AdServices,
         arivalTime,
       // message,
         adId,
@@ -370,6 +413,17 @@ const reschedule=async (req,res,next)=>{
 
        }
 
+       if(Adult<=0&&children<=0){
+        var message='invalid adult or chiled'
+        if(req.user.lang==1){
+            message='بينات خاطئة'
+        }
+        const error = new Error(message);
+            error.statusCode = 422 ;
+            return next(error) ; 
+
+
+       }
 
 
        var request=await Request.findById(RequestId)
@@ -389,6 +443,38 @@ const reschedule=async (req,res,next)=>{
         error.statusCode = 404 ;
         return next( error) ;
        }
+       if(request.RequestData.status==1){
+        var message='your request is aready accepted you can not reschedule'
+        if(req.user.lang==1){
+            message='لقد تم قبول الطلب لايمكن تعديله'
+        }
+        const error = new Error(message);
+        error.statusCode = 404 ;
+        return next( error) ;
+       }
+       const AD=await ADS.findById(request.AD)
+       
+    //    var areadyToken=false
+    //    AD.NotAvilable.forEach(data=>{
+    //        if(Date(StartDate)>=Date(data.StartDate)&&Date(StartDate)<=Date(data.EndDate)){
+    //         areadyToken=true
+    //        }
+
+    //        if(Date(EndDate)>=Date(data.StartDate)&&Date(EndDate)<=Date(data.EndDate)){
+    //         areadyToken=true
+    //        }
+    //    })
+
+    //    if(areadyToken){
+    //     var message='this appartement is not avilable in that date '
+    //     if(req.user.lang==1){
+    //         message='هذا المنتج غير متاح في هذا التاريخ'
+    //     }
+    //     const error = new Error(message);
+    //     error.statusCode = 404 ;
+    //     return next( error) ;
+    //    }
+
        //console.debug('start date',StartDate)
        //console.debug('end date',EndDate)
        
@@ -403,6 +489,40 @@ const reschedule=async (req,res,next)=>{
             ArivalTime,
             status:0
            }
+           // find and delete this req from ad
+        //    var index;
+        //   AD.NotAvilable.forEach((data,ind)=>{
+        //     if( data.requestId.toString()==requestId){
+        //         index=ind
+        //     }
+        //    });
+        //    if(index>-1){
+        //     // AD.NotAvilable[index].StartDate=StartDate
+        //     // AD.NotAvilable[index].EndDate=EndDate
+
+
+
+
+        //    }
+        //    else{
+        //     AD.NotAvilable.push({
+        //         requestId,
+        //         EndDate,
+        //         startDate
+        //     })
+        //    }
+          // await AD.save()
+          
+
+            // if (index > -1) {
+            //     array.splice(index, 1);
+            //     }
+
+
+
+
+
+           //
 
        
        console.debug("requested data",request.RequestData)
@@ -862,8 +982,10 @@ const editMyProfile=async(req,res,next)=>{
             error.data = errors.array();
             return next(error) ; 
         }
-        const {name,email,lang}=req.body
+        var {name,email,lang}=req.body
 
+        var EMAIL=req.body.email.trim().toLowerCase()
+     email     = EMAIL;
        var imageUrl 
        if( req.files[0]){
         imageUrl = req.files[0].filename;
@@ -1364,7 +1486,7 @@ module.exports={
 
     Book,
     getMyRequests,   
-     reschedule ,
+    reschedule ,
     Rate ,
     putItemToCart,
     getCartItems,

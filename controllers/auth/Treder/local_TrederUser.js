@@ -94,8 +94,9 @@ var register=async (req,res,next)=>{
                 error.data = errors.array();
                 return next(error) ; 
             }
-            const {email,password,FCM}=req.body
-            
+            var {email,password,FCM}=req.body
+            var EMAIL=req.body.email.trim().toLowerCase()
+             email     = EMAIL;
             const usergoogle = await TrederUsers.findOne({'google.email':email}) 
             if(usergoogle){
                 var message='please try to login with your google acount'
@@ -235,7 +236,9 @@ var register=async (req,res,next)=>{
     };
     
     const ForgetPassword=async (req,res,next)=>{
-        const email = req.body.email;
+        var EMAIL=req.body.email.trim().toLowerCase()
+    const email     = EMAIL;
+      
         try{
             const errors = validationResult(req);
             if(!errors.isEmpty()){
@@ -294,8 +297,10 @@ var register=async (req,res,next)=>{
     }
     
     const VerfyCode = async (req,res,next)=>{
-        const code  = req.body.code;
-        const email=req.body.email
+        const code  = req.body.code.toLowerCase();
+        var EMAIL=req.body.email.trim().toLowerCase()
+    const email     = EMAIL;
+       
     try{
         const errors = validationResult(req);
         if(!errors.isEmpty()){
@@ -449,7 +454,7 @@ var register=async (req,res,next)=>{
         }
     
     const VerfyActiveEmailCode=async (req,res,next)=>{
-        const code  = req.body.code;
+        const code  = req.body.code.trim();
     try{
         
         const errors = validationResult(req);
@@ -525,7 +530,9 @@ const googleWithOuthData=async (req,res,next)=>{
             error.data = errors.array();
             return next(error) ; 
         }
-            const {id,email,fullName,photo,FCM}=req.body
+            var {id,email,fullName,photo,FCM}=req.body
+            var EMAIL=req.body.email.trim().toLowerCase()
+             email     = EMAIL;
            // We're in the account creation process
            let existingUser = await TrederUsers.findOne({ "google.id":id });
            if (existingUser) {
@@ -699,7 +706,9 @@ const googleWithOuthData=async (req,res,next)=>{
                 error.data = errors.array();
                 return next(error) ; 
             }
-                const {id,email,fullName,photo,FCM}=req.body
+                var {id,email,fullName,photo,FCM}=req.body
+                var EMAIL=req.body.email.trim().toLowerCase()
+                     email     = EMAIL;
                // We're in the account creation process
                let existingUser = await TrederUsers.findOne({ "facebook.id":id });
                if (existingUser) {

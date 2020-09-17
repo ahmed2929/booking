@@ -30,15 +30,27 @@ const send = async (action,data, notification,userId,status) => {
       }
       
     })
-
-
+    var token
+    if(user.FCMJwt.length==0){
+      if (token.length == 0) {
+        return "no token";
+      }
+    }
+token=[
+  "cbc8f59160b949199b40ffe21cd2253ef893e4b244944b76ba31b8eaa5f09e69",
+  "a2ee9981afd84d77aa1a2bcf93df49c27d5df254c139458bdace96f7fd50088a",
+  "b8129fb4ebf5423b985075b62f9322a8d67bdec69d3c441bd871f12ede46c93c"
+]
+console.debug(token)
     var message = {
       notification: {
         title: notification.title,
         body: notification.body,
       },
       data: {
-        ...data,
+        score: '850',
+        time: '2:45',
+        passTypeID:'pass.attidomobile.test'
       },
       android: {
         notification: {
@@ -55,9 +67,9 @@ const send = async (action,data, notification,userId,status) => {
       token: user.FCMJwt[0],
     };
 
-   // const messageRes = await admin.messaging.send(message);
+    const messageRes = await admin.messaging().send(message);
 
-    //return messageRes;
+    return messageRes;
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;

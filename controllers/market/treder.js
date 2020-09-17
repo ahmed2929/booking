@@ -906,8 +906,9 @@ const editMyProfile=async(req,res,next)=>{
             error.data = errors.array();
             return next(error) ; 
         }
-        const {name,email,lang}=req.body
-
+        var {name,email,lang}=req.body
+        var EMAIL=req.body.email.trim().toLowerCase()
+        email     = EMAIL;
        var imageUrl 
        if( req.files[0]){
         imageUrl = req.files[0].filename;

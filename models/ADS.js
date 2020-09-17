@@ -63,10 +63,10 @@ const ADSchema = new schema({
     },
     NotAvilable:[{
         startDate:{
-            type:Date
+            type:String
         },
         EndDate:{
-            type:Date
+            type:String
         },
         requestId:{
             type:schema.Types.ObjectId,
