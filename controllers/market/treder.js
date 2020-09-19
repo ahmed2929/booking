@@ -22,6 +22,7 @@ const TopView=require('../../models/topView')
 const Suggest =require('../../models/suggest')
 const Withdraw = require('../../models/withdraw');
 const Wallet=require('../../models/wallet');
+const getPaymentReport=require('../../controllers/general/payment').getPaymentReport
 
 sendEmail=require('../../helpers/sendEmail').sendEmail
 const notificationSend=require('../../helpers/send-notfication').send
