@@ -46,7 +46,7 @@ exports.createCheckOut = async (req,res,next) => {
             error.statusCode = 503 ;
             return next(error) ; 
          }
-         console.debug('body',body)
+         console.debug('create checkout body',body)
 
          if(body.result.code!=="000.200.100"){
             var message='faild to create Checkout'
@@ -54,6 +54,7 @@ exports.createCheckOut = async (req,res,next) => {
             error.statusCode = 503 ;
             return next(error) ; 
          }
+    
          res.status(200).json({state:1,checkoutId:body.id});
 
 
@@ -84,8 +85,8 @@ exports.getStatus = async (req,res,next) => {
  const reg2 = new RegExp("^(000\.400\.0[^3]|000\.400\.100)", 'm');
 
 
- console.debug('status',status) 
- console.debug('body',body) 
+ console.debug('get status state ',status) 
+ console.debug('get status body',body) 
 
   if (!reg1.test(body.result.code.toString()) && !reg2.test(body.result.code.toString())) {
       const error = new Error(`payment faild`);
