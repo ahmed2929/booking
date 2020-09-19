@@ -658,6 +658,12 @@ const googleWithOuthData=async (req,res,next)=>{
         
               });
               newUser.FCMJwt.push(FCM)
+              var newWalet=new Wallet({
+                user:newUser._id
+             })
+            await newWalet.save()
+                
+                newUser.Wallet=newWalet._id;
     
               await newUser.save();
             
@@ -825,7 +831,13 @@ const googleWithOuthData=async (req,res,next)=>{
                   await newUser.save();
                   newUser.FCMJwt.push(FCM)
     
-        
+                  var newWalet=new Wallet({
+                    user:newUser._id
+                 })
+                await newWalet.save()
+                    
+                    newUser.Wallet=newWalet._id;
+                   
                   await newUser.save();
                 
              const token  = jwt.sign(
