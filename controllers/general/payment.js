@@ -27,7 +27,7 @@ exports.createCheckOut = async (req,res,next) => {
         var data = querystring.stringify({
             'entityId': process.env.HYPERPAY_ENTITYID,
             'amount': price,
-            'currency': 'AED',
+            'currency': 'EUR',
             'paymentType': 'DB'
         });
         const { body, status } = await unirest
