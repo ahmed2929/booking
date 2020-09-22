@@ -1299,7 +1299,7 @@ const PayForAppartment=async(req,res,next)=>{
         }
 
         const {paymentMethod,RequestId,finalPrice,paymentId}=req.body
-        var checkoutId=
+        var checkoutId=paymentId
         console.debug('requestID',RequestId)
             const request=await Request.findById(RequestId.toString())
             .populate({path:'to'})
