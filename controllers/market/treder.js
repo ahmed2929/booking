@@ -703,6 +703,52 @@ var acceptRequest =async (req,res,next)=>{
         console.debug(request)
        if(request.RequestData.status==0){
             console.debug('add it for the first time')
+            // make sure no one required it and accepted in that date
+            //
+           var StartDate=request.RequestData.StartDate
+           var EndDate=request.RequestData.EndDate
+           //
+            //
+          var areadyToken=false
+        console.debug("areadyToken ",areadyToken)
+        ad.NotAvilable.forEach(data=>{
+            console.debug('data ',data)
+            console.debug('data.satrtDate ',data.startDate)
+            console.debug('data.EndDate ',data.EndDate)
+            console.debug('EndDate ',EndDate) 
+            console.debug('startDate ',StartDate)
+            console.debug('first',Number(StartDate)>=Number(data.startDate)&&Number(StartDate)<=Number(data.EndDate))
+            if(Number(StartDate)>=Number(data.startDate)&&Number(StartDate)<=Number(data.EndDate)){
+            areadyToken=true;
+            console.debug("if run ",areadyToken)
+            
+        }
+
+
+        console.debug('second',Number(EndDate)>=Number(data.startDate)&&Number(EndDate)<=Number(data.EndDate))
+
+            if(Number(EndDate)>=Number(data.startDate)&&Number(EndDate)<=Number(data.EndDate)){
+             areadyToken=true
+             console.debug("if run from second loop",areadyToken)
+           }
+        })
+
+        if(areadyToken){
+         var message='you accepted a request in that date  '
+         if(req.user.lang==1){
+             message='لقد قمت بالموافقة علي الطلب في هذا التاريخ'
+        }
+         const error = new Error(message);
+         error.statusCode = 404 ;
+         return next( error) ;
+        }
+
+
+
+
+
+
+            //
             ad.NotAvilable.push({
                 startDate:request.RequestData.StartDate,
                 EndDate:request.RequestData.EndDate,
@@ -1354,7 +1400,20 @@ const MakeOrder=async(req,res,next)=>{
             user.cart=[]
             user.Orders.push(order._id)
             await user.save()
-
+            var newMoney=await Money.findOne({
+                type:'shop'
+            })
+            if(!newMoney){
+                newMoney=new Money({
+                    type:'shop',
+                   
+                })
+    
+                
+            }
+            newMoney.TotalCach+=finalPrice;
+            await newMoney.save()
+    
            return res.status(200).json({state:1,msg:'order created succesfuly'})
 
         }else if(paymentMethod=='elec'){
@@ -1401,6 +1460,20 @@ const MakeOrder=async(req,res,next)=>{
             }
             user.cart=[]
             await user.save()
+            
+            var newMoney=await Money.findOne({
+                type:'shop'
+            })
+            if(!newMoney){
+                newMoney=new Money({
+                    type:'shop',
+                   
+                })
+    
+                
+            }
+            newMoney.TotalElec+=finalPrice;
+            await newMoney.save()
 
             res.status(200).json({state:1,msg:'order created succesfuly'})
             

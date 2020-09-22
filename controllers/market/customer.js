@@ -24,6 +24,7 @@ const sendEmail=require('../../helpers/sendEmail').sendEmail
 const Suggest=require('../../models/suggest')
 const getPaymentReport=require('../../controllers/general/payment').getPaymentReport
 const Wallet =require('../../models/wallet')
+const Money=require('../../models/money')
 function parseDate(str) {
     var mdy = str.split('-');
     return new Date(mdy[2], mdy[0]-1, mdy[1]);
@@ -112,14 +113,15 @@ const Book=async (req,res,next)=>{
            from:req.userId,
            AD:AdId
        })
-       if(reque){
+       console.debug('fucken request',reque)
+       if(reque!=null&&Number(reque.RequestData.EndDate)>=Date.now()){
         var message='you alreay requested this ad'
         if(req.user.lang==1){
             message='لقد قمت بطلب هذا المنتج من قبل'
         }
-        const error = new Error(message);
-        error.statusCode = 422 ;
-        return next(error) ; 
+         const error = new Error(message);
+            error.statusCode = 422 ;
+            return next(error); 
 
        }
 
@@ -136,26 +138,39 @@ const Book=async (req,res,next)=>{
        console.debug('end date',EndDate)
 
 
-    //    var areadyToken=false
-    //    ad.NotAvilable.forEach(data=>{
-    //        if(Date(StartDate)>=Date(data.StartDate)&&Date(StartDate)<=Date(data.EndDate)){
-    //         areadyToken=true
-    //        }
+        var areadyToken=false
+        console.debug("areadyToken ",areadyToken)
+        ad.NotAvilable.forEach(data=>{
+            console.debug('data ',data)
+            console.debug('data.satrtDate ',data.startDate)
+            console.debug('data.EndDate ',data.EndDate)
+            console.debug('EndDate ',EndDate) 
+            console.debug('startDate ',StartDate)
+            console.debug('first',Number(StartDate)>=Number(data.startDate)&&Number(StartDate)<=Number(data.EndDate))
+            if(Number(StartDate)>=Number(data.startDate)&&Number(StartDate)<=Number(data.EndDate)){
+            areadyToken=true;
+            console.debug("if run ",areadyToken)
+            
+        }
 
-    //        if(Date(EndDate)>=Date(data.StartDate)&&Date(EndDate)<=Date(data.EndDate)){
-    //         areadyToken=true
-    //        }
-    //    })
 
-    //    if(areadyToken){
-    //     var message='this appartement is not avilable in that date '
-    //     if(req.user.lang==1){
-    //         message='هذا المنتج غير متاح في هذا التاريخ'
-    //     }
-    //     const error = new Error(message);
-    //     error.statusCode = 404 ;
-    //     return next( error) ;
-    //    }
+        console.debug('second',Number(EndDate)>=Number(data.startDate)&&Number(EndDate)<=Number(data.EndDate))
+
+            if(Number(EndDate)>=Number(data.startDate)&&Number(EndDate)<=Number(data.EndDate)){
+             areadyToken=true
+             console.debug("if run from second loop",areadyToken)
+           }
+        })
+
+        if(areadyToken){
+         var message='this appartement is not avilable in that date '
+         if(req.user.lang==1){
+             message='هذا المنتج غير متاح في هذا التاريخ'
+        }
+         const error = new Error(message);
+         error.statusCode = 404 ;
+         return next( error) ;
+        }
 
 
 
@@ -201,7 +216,7 @@ const Book=async (req,res,next)=>{
       // var month = statrt. getMonth() + 1; // Since getMonth() returns month from 0-11 not 1-12.
      //var year = d. getFullYear();
      //var dateStr = date + "/" + month + "/" + year;
-     var message='you alreay requested this ad'
+     var message='request sent'
         if(req.user.lang==1){
             message='تم ارسال الطلب'
         }
@@ -443,37 +458,44 @@ const reschedule=async (req,res,next)=>{
         error.statusCode = 404 ;
         return next( error) ;
        }
-       if(request.RequestData.status==1){
-        var message='your request is aready accepted you can not reschedule'
+       const ad=await ADS.findById(request.AD)
+       var StartDate=StartDate
+       var EndDate=EndDate
+       var areadyToken=false
+       console.debug("areadyToken ",areadyToken)
+       ad.NotAvilable.forEach(data=>{
+           console.debug('data ',data)
+           console.debug('data.satrtDate ',data.startDate)
+           console.debug('data.EndDate ',data.EndDate)
+           console.debug('EndDate ',EndDate) 
+           console.debug('startDate ',StartDate)
+           console.debug('first',Number(StartDate)>=Number(data.startDate)&&Number(StartDate)<=Number(data.EndDate))
+           if(Number(StartDate)>=Number(data.startDate)&&Number(StartDate)<=Number(data.EndDate)){
+           areadyToken=true;
+           console.debug("if run ",areadyToken)
+           
+       }
+
+
+       console.debug('second',Number(EndDate)>=Number(data.startDate)&&Number(EndDate)<=Number(data.EndDate))
+
+           if(Number(EndDate)>=Number(data.startDate)&&Number(EndDate)<=Number(data.EndDate)){
+            areadyToken=true
+            console.debug("if run from second loop",areadyToken)
+          }
+       })
+
+       if(areadyToken){
+        var message='this appartement is not avilable in that date '
         if(req.user.lang==1){
-            message='لقد تم قبول الطلب لايمكن تعديله'
-        }
+            message='هذا المنتج غير متاح في هذا التاريخ'
+       }
         const error = new Error(message);
         error.statusCode = 404 ;
         return next( error) ;
        }
-       const AD=await ADS.findById(request.AD)
-       
-    //    var areadyToken=false
-    //    AD.NotAvilable.forEach(data=>{
-    //        if(Date(StartDate)>=Date(data.StartDate)&&Date(StartDate)<=Date(data.EndDate)){
-    //         areadyToken=true
-    //        }
 
-    //        if(Date(EndDate)>=Date(data.StartDate)&&Date(EndDate)<=Date(data.EndDate)){
-    //         areadyToken=true
-    //        }
-    //    })
 
-    //    if(areadyToken){
-    //     var message='this appartement is not avilable in that date '
-    //     if(req.user.lang==1){
-    //         message='هذا المنتج غير متاح في هذا التاريخ'
-    //     }
-    //     const error = new Error(message);
-    //     error.statusCode = 404 ;
-    //     return next( error) ;
-    //    }
 
        //console.debug('start date',StartDate)
        //console.debug('end date',EndDate)
@@ -1102,6 +1124,23 @@ const MakeOrder=async(req,res,next)=>{
         if(req.user.lang==1){
                     message='تم انشاء الطلب بنجاح'
                 } 
+
+            var newMoney=await Money.findOne({
+                type:'shop'
+            })
+            if(!newMoney){
+                newMoney=new Money({
+                    type:'shop',
+                   
+                })
+
+                
+            }
+            newMoney.TotalCach+=finalPrice;
+            await newMoney.save()
+
+
+
             res.status(200).json({state:1,msg:message})
 
         }else if(paymentMethod=='elec'){
@@ -1158,6 +1197,26 @@ const MakeOrder=async(req,res,next)=>{
         if(req.user.lang==1){
                     message='تم انشاء الطلب بنجاح'
                 } 
+
+
+                
+            var newMoney=await Money.findOne({
+                type:'shop'
+            })
+            if(!newMoney){
+                newMoney=new Money({
+                    type:'shop',
+                   
+                })
+
+                
+            }
+            newMoney.TotalElec+=finalPrice;
+            await newMoney.save()
+
+
+
+
             res.status(200).json({state:1,msg:message})
             
         }else{
@@ -1348,6 +1407,21 @@ const PayForAppartment=async(req,res,next)=>{
                 message='تم تحديد طريقة الدفع بنجاح'
             } 
 
+            var newMoney=await Money.findOne({
+                type:'market'
+            })
+            if(!newMoney){
+                newMoney=new Money({
+                    type:'market',
+                   
+                })
+
+                
+            }
+            newMoney.TotalCach+=finalPrice;
+            await newMoney.save()
+
+
             res.status(200).json({state:1,msg:message})
 
         }else if(paymentMethod=='elec'){
@@ -1410,6 +1484,21 @@ const PayForAppartment=async(req,res,next)=>{
          if(req.user.lang==1){
              message='تم الدفع'
          }
+         
+         var newMoney=await Money.findOne({
+            type:'market'
+        })
+        if(!newMoney){
+            newMoney=new Money({
+                type:'market',
+               
+            })
+
+            
+        }
+        newMoney.TotalElec+=finalPrice;
+        await newMoney.save()
+
         res.status(200).json({state:1,msg:message})
        await notificationSend("NewMoneyAdded",data,notification,request.to._id,1)
        var Emessage=`
