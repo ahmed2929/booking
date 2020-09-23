@@ -300,6 +300,7 @@ try{
     var finalPrice=oldObj.RequestData.finalPrice
     var services=oldObj.RequestData.services  
     var payment=oldObj.Payment
+    var NotAvilable=oldObj.AD.NotAvilable
     console.debug('payment',oldObj.payment)
     const NumOfDays=datediff( Date.now(),StartDate)  
     //var InFuture=StartDate >Date.now() ?true:false
@@ -338,6 +339,7 @@ try{
         CanReschedule,
         CanPay,
         payment,
+        NotAvilable
      //   StartDateMS,
         //EndDateMS
 
