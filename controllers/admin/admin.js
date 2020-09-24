@@ -1801,16 +1801,39 @@ const deleteCity=async(req,res,next)=>{
 const suggest=async(req,res,next)=>{
     try{
         const {id}=req.params
-
+        console.debug('id',id)
        if(id){
         const result =await Suggest.findById(id)
         .populate({path:'Cuser Tuser ',select:'name photo status '})
-        res.status(200).json({state:1,result})
+        .lean()
+
+             var newObj={
+                 user:result.Cuser||result.Tuser,
+                 suggest:result.suggest,
+                 createdAt:result.createdAt,
+                 ID:result._id
+             }
+           
+       
+       return res.status(200).json({state:1,result:newObj})
 
        }
        const result =await Suggest.find()
        .populate({path:'Cuser Tuser ',select:'name photo status '})
-       res.status(200).json({state:1,result}) 
+
+       var Fresult=result.map(oldObj=>{
+        var newObj={
+            user:oldObj.Cuser||oldObj.Tuser,
+            suggest:oldObj.suggest,
+            createdAt:oldObj.createdAt,
+            ID:oldObj._id
+        }
+        return newObj
+    })
+   return res.status(200).json({state:1,result:Fresult})
+
+
+       
        
 
 
