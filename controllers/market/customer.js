@@ -978,9 +978,9 @@ const getMyProfile=async(req,res,next)=>{
         .select('email')
         .select('photo')
         .select('status')
-        .select('method')
         .select('emailVerfied')
         .select('lang')
+        .select('methods')
         
         console.log(user)
           res.status(200).json({state:1,user:user})
