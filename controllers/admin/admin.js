@@ -1543,12 +1543,26 @@ const getSupportMessagesFromUsers=async(req,res,next)=>{
        if(id){
            
         const isuue=await Isuues.findById(id)
-        .populate({path:'Cuser',select:'name email _id photo blocked emailVerfied'})
-        .populate({path:'Tuser',select:'name email _id photo blocked emailVerfied'})
+        .populate({path:'Cuser',select:'name email _id photo blocked emailVerfied status'})
+        .populate({path:'Tuser',select:'name email _id photo blocked emailVerfied status'})
         if(!isuue){
            return res.status(404).json({state:0,mgs:"isuue not found"})
         }
-        return res.status(200).json({state:1,isuue})
+
+    
+            var newObj={
+                user:isuue.Cuser||isuue.Tuser,
+                message:isuue.message,
+                createdAt:isuue.createdAt,
+                ID:isuue._id,
+                answer:isuue.answer,
+                status:isuue.status
+            
+            }
+        
+
+
+        return res.status(200).json({state:1,isuue:newObj})
     }else if(status){
         const isuuesNum=await Isuues.find({
             status:status
@@ -1556,21 +1570,49 @@ const getSupportMessagesFromUsers=async(req,res,next)=>{
         const isuues=await Isuues.find({
             status:status
         })
-        .populate({path:'Cuser',select:'name email _id photo blocked emailVerfied'})
-        .populate({path:'Tuser',select:'name email _id photo blocked emailVerfied'})
+        .populate({path:'Cuser',select:'name email _id photo blocked emailVerfied status'})
+        .populate({path:'Tuser',select:'name email _id photo blocked emailVerfied status'})
         .skip((page - 1) * itemPerPage)
-        .limit(itemPerPage)   
-           return res.status(200).json({state:1,support:isuues,isuuesNum})
+        .limit(itemPerPage)
+        
+        var Fresult=isuues.map(oldObj=>{
+            var newObj={
+                user:oldObj.Cuser||oldObj.Tuser,
+                message:oldObj.message,
+                createdAt:oldObj.createdAt,
+                ID:oldObj._id,
+                answer:oldObj.answer,
+                status:oldObj.status
+            
+            }
+            return newObj
+        })
+
+           return res.status(200).json({state:1,support:Fresult,isuuesNum})
         
     }else{
         const isuuesNum=await Isuues.find({
         }).countDocuments()
         const isuues=await Isuues.find()
-        .populate({path:'Cuser',select:'name email _id photo blocked emailVerfied'})
-        .populate({path:'Tuser',select:'name email _id photo blocked emailVerfied'})
+        .populate({path:'Cuser',select:'name email _id photo blocked emailVerfied status'})
+        .populate({path:'Tuser',select:'name email _id photo blocked emailVerfied status'})
         .skip((page - 1) * itemPerPage)
         .limit(itemPerPage)
-           return res.status(200).json({state:1,support:isuues,TotaNum:isuuesNum})
+
+        var Fresult=isuues.map(oldObj=>{
+            var newObj={
+                user:oldObj.Cuser||oldObj.Tuser,
+                message:oldObj.message,
+                createdAt:oldObj.createdAt,
+                ID:oldObj._id,
+                answer:oldObj.answer,
+                status:oldObj.status
+            
+            }
+            return newObj
+        })
+
+           return res.status(200).json({state:1,support:Fresult,TotaNum:isuuesNum})
 
     }
 
