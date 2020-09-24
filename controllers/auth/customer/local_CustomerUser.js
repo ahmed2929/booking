@@ -77,7 +77,9 @@ var register=async (req,res,next)=>{
 var login=async(req,res,next)=>{
 
     try{
+       
         const errors = validationResult(req);
+        console.debug(errors)
         if(!errors.isEmpty()){
             const error = new Error('validation faild');
             error.statusCode = 422 ;
