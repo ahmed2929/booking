@@ -521,6 +521,7 @@ try{
         return next(error) ; 
     }
         var {id,email,fullName,photo,FCM}=req.body
+        console.debug('req body ',req.body)
         var EMAIL=req.body.email.trim().toLowerCase()
              email     = EMAIL;
        // We're in the account creation process
