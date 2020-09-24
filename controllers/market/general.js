@@ -250,6 +250,7 @@ const getAdsFilter=async (req,res,next)=>{
 // handle city with tow
 if(city){
     console.debug(catigoryData)
+    console.debug(CitiesData)
     TotalNumOfAds=await ADS.find({
         price:{ $gte :priceFrom||0,$lte:priceTo||2147483647},
         city:{"$in":[CitiesData.name,CitiesData.arb_name]},
@@ -278,7 +279,7 @@ if(city){
     })
     .populate({
         path: 'services.serviceType',
-        select: 'name',
+       // select: 'name',
     }).select('images title city streetAdress price services')
     .skip((page - 1) * itemPerPage)
 .limit(itemPerPage)
@@ -308,7 +309,7 @@ if(city){
     })
     .populate({
         path: 'services.serviceType',
-        select: 'name',
+       // select: 'name',
     }).select('images title city streetAdress price services')
 .skip((page - 1) * itemPerPage)
 .limit(itemPerPage)
@@ -352,7 +353,7 @@ console.debug(AD.length)
             })
             .populate({
                 path: 'services.serviceType',
-                select: 'name',
+               // select: 'name',
             }).select('images title city streetAdress price services')
             .skip((page - 1) * itemPerPage)
         .limit(itemPerPage)
@@ -385,7 +386,7 @@ console.debug(AD.length)
             })
             .populate({
                 path: 'services.serviceType',
-                select: 'name',
+               // select: 'name',
             }).select('images title city streetAdress price services')
         .skip((page - 1) * itemPerPage)
         .limit(itemPerPage)
