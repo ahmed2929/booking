@@ -112,7 +112,7 @@ var getProductByID=async(req,res,next)=>{
         const productId=req.params.id||req.query.id
     
           const product=await Product.findById(productId)
-          .select('images _id title price desc avilableNumber')
+          .select('images _id title price desc avilableNumber catigory')
           
        
             res.status(200).json({state:1,product})

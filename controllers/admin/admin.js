@@ -298,7 +298,7 @@ var CreateProduct=async (req,res,next)=>{
     console.debug(images)
         const NewProduct= new Product({
             title,
-            details,
+            desc:details,
             price,
             catigory:catigo._id,
             images:images,

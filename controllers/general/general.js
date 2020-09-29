@@ -40,7 +40,7 @@ const Search = async (req, res, next) => {
           $or:[{name:new RegExp( search.trim() , 'i')},{arb_name:new RegExp( search.trim() , 'i')}]
         
         })
-        console.debug(cato)
+        console.debug('cato',cato)
         var searchParams=[]
         if(cato){
             console.debug('a7a it shouldnt run')
@@ -53,7 +53,7 @@ const Search = async (req, res, next) => {
               ];
 
         }else{
-            console.debug('else rin')
+            console.debug('else rin search is ',new RegExp( search.trim() , 'i'))
             searchParams=[
                 { title: new RegExp( search.trim() , 'i') },
                 { desc: new RegExp( search.trim() , 'i') },
@@ -74,7 +74,7 @@ const Search = async (req, res, next) => {
             .populate({ path: "catigory", select: "name" })
             .skip((page - 1) * itemPerPage)
             .limit(itemPerPage);
-
+          console.debug('resulat ', result)
             var fResult=result.map(obj=>{
               return{
                 images:obj.images,
