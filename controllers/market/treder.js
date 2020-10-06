@@ -26,6 +26,7 @@ const getPaymentReport=require('../../controllers/general/payment').getPaymentRe
 
 sendEmail=require('../../helpers/sendEmail').sendEmail
 const notificationSend=require('../../helpers/send-notfication').send
+const Address =require('../../models/address')
 
 var CreateAppartment=async (req,res,next)=>{
     console.debug('controller runas')
@@ -51,7 +52,7 @@ var CreateAppartment=async (req,res,next)=>{
         error.data = errors.array();
         return next(error) ; 
     }
-    const {country,city,streetAdress,catigory,price,services,NumOfRooms,details,title,beds,beach,N,E}=req.body;
+    const {country,city,streetAdress,catigory,price,services,NumOfRooms,details,title,beds,beach,N,E,terms}=req.body;
     console.debug('reqBody',req.body)
     console.debug('reqimage : ',req.files)
 
@@ -108,7 +109,8 @@ var CreateAppartment=async (req,res,next)=>{
             GPS:{
                 N:N,
                 E:E
-            }
+            },
+            terms
     
         })
         await NewAd.save();
@@ -1857,6 +1859,132 @@ const getMyWallet=async(req,res,next)=>{
 }
 }
 
+const getMyIncome=async(req,res,next)=>{
+    try{
+        const page = req.query.page *1 || 1;
+        const itemPerPage = 10;
+        
+        const user=await TrederUsers.findById(req.userId)
+        .populate([
+            // here array is for our memory. 
+            // because may need to populate multiple things
+            {
+                path: 'income.source',
+                select: 'RequestData AD ',
+                
+                options: {
+                    sort:{'createdAt': -1},
+                    skip: (page - 1) * itemPerPage,
+                    limit : itemPerPage,
+                    lean: true
+                },
+                match:{
+                    // filter result in case of multiple result in populate
+                    // may not useful in this case
+                },
+                 //populate: { path: 'services.serviceType'}
+
+            },
+
+           
+
+        ]).select('income')
+
+        if(!user){
+            const error = new Error('user not found');
+            error.statusCode = 422 ;
+            return next(error) ; 
+        }
+        TotalNum=user.income.source.length
+        
+        res.status(200).json({user,TotalNum})
+           
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
+const CreatAddress=async(req,res,next)=>{
+
+    try{
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        const {N,E,title,address}=req.body
+
+        const user=await TrederUsers.findById(req.userId)
+        if(!user){
+            const error = new Error('user not found');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ;
+        }
+       
+       const newAdd =new Address({
+       N,
+       E,
+       title,
+       address
+       })
+       await newAdd.save()
+       user.dlivaryAddress.push(newAdd._id)
+       await user.save()
+       var message='address added'
+       if(req.user.lang==1){
+           message='تم اضافة عنوان'
+       }
+       res.status(200).json({message})
+       
+        }catch(err){
+            //console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
+const getMyAddress=async(req,res,next)=>{
+    try{
+        const page = req.query.page *1 || 1;
+        const status=req.query.status
+        const itemPerPage = 10;
+        const userCount=await TrederUsers.findById(req.userId)
+        const TotaNum=userCount.notfications.length
+        const user=await TrederUsers.findById(req.userId)
+        .populate({path: 'dlivaryAddress'})
+        .select('dlivaryAddress')
+        .lean()
+
+          res.status(200).json({state:1,user})
+        
+           
+        
+           
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
 module.exports={
 
 CreateAppartment,
@@ -1882,6 +2010,9 @@ DeleteCartItem,
 getMyOreder,
 suggest,
 MoneyWithDrawRequest,
-getMyWallet
+getMyWallet,
+getMyIncome,
+CreatAddress,
+    getMyAddress
 
 }

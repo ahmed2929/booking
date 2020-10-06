@@ -25,6 +25,7 @@ const Suggest=require('../../models/suggest')
 const getPaymentReport=require('../../controllers/general/payment').getPaymentReport
 const Wallet =require('../../models/wallet')
 const Money=require('../../models/money')
+const Address=require('../../models/address')
 function parseDate(str) {
     var mdy = str.split('-');
     return new Date(mdy[2], mdy[0]-1, mdy[1]);
@@ -196,6 +197,9 @@ const Book=async (req,res,next)=>{
        var editCustomer=await CustomerUser.findById(req.userId)
 
        var editTreder=await trederUser.findById(ad.Creator)
+       editTreder.income.total+=finalPrice
+       editTreder.income.source.push(newRequest._id)
+       await editCustomer.save()
        
        const data={
            RequestId:newRequest._id,
@@ -1571,7 +1575,80 @@ const suggest=async(req,res,next)=>{
         
 }
 }
+const CreatAddress=async(req,res,next)=>{
 
+    try{
+        const errors = validationResult(req);
+        console.debug(errors)
+        if(!errors.isEmpty()){
+            const error = new Error('validation faild');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+        }
+
+        const {N,E,title,address}=req.body
+
+        const user=await CustomerUser.findById(req.userId)
+        if(!user){
+            const error = new Error('user not found');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ;
+        }
+       
+       const newAdd =new Address({
+       N,
+       E,
+       title,
+       address
+       })
+       await newAdd.save()
+       user.dlivaryAddress.push(newAdd._id)
+       await user.save()
+       var message='address sent'
+       if(req.user.lang==1){
+           message='تم اضافة العنوان'
+       }
+       res.status(200).json({message})
+       
+        }catch(err){
+            //console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
+
+const getMyAddress=async(req,res,next)=>{
+    try{
+        const page = req.query.page *1 || 1;
+        const status=req.query.status
+        const itemPerPage = 10;
+        const userCount=await CustomerUser.findById(req.userId)
+        const TotaNum=userCount.notfications.length
+        const user=await CustomerUser.findById(req.userId)
+        .populate({path: 'dlivaryAddress'})
+        .select('dlivaryAddress')
+        .lean()
+
+          res.status(200).json({state:1,dlivaryAddress})
+        
+           
+        
+           
+       
+        }catch(err){
+            console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500;
+            }
+            return next(err);
+        
+}
+}
 
 module.exports={
 
@@ -1590,6 +1667,8 @@ module.exports={
     DeleteCartItem,
     getMyOreder,
     PayForAppartment,
-    suggest
+    suggest,
+    CreatAddress,
+    getMyAddress
 
 }

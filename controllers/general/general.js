@@ -173,6 +173,7 @@ const Search = async (req, res, next) => {
                 var  searchParams=[
                       { name: new RegExp( search.trim() , 'i') },
                       { email: new RegExp( search.trim() , 'i') },
+                      { mobile: new RegExp( search.trim() , 'i') },
                     ];
       
               

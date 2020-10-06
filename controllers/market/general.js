@@ -142,10 +142,10 @@ const getAdDetailsById=async(req,res,next)=>{
     try{
         const AdId=req.params.AdId||req.query.id
         const AD= await ADS.findById(AdId)
+        .populate({path:'Creator' ,select:'name email mobile'})
         .select('-catigory')
         .select('-createdAt')
         .select('-updatedAt')
-        .select('-Creator -Rate')
         .populate('services.serviceType')
         
         
@@ -454,7 +454,8 @@ const getAllads=async (req,res,next)=>{
       const  totalAds = await ADS.find({}).countDocuments();   
     const allAds=await ADS.find()
     .sort({'star':-1})
-    .populate({path:'services.serviceType',select:'name image -_id '})
+    .populate({path:'services.serviceType',select:'name image -_id ' , populate: { path: 'Creator',select:'name mobile email'}})
+    //.populate({ path: 'ads', populate: { path: 'services.serviceType'}})
     .select('images title city streetAdress price services ')
     .skip((page - 1) * itemPerPage)
     .limit(itemPerPage)

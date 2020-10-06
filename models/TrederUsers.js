@@ -130,7 +130,29 @@ const userSchema = new schema({
     Wallet:{
       type:schema.Types.ObjectId,
       ref:'Wallet'
-    }
+    },
+    income:{
+      total:{
+        type:Number,
+        default:0
+    },
+    source:[
+      {
+
+        type:schema.Types.ObjectId,
+        ref:'request' 
+
+      }
+    ]
+  }
+    ,
+    dlivaryAddress:[{
+      type:schema.Types.ObjectId,
+      ref:'address'
+      
+    }]
+
+
 });
 
 module.exports = mongoose.model('TrederUser',userSchema);

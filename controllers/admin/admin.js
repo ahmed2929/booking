@@ -15,6 +15,10 @@ const AvilableService=require('../../models/AvilableServices')
 const Order=require('../../models/order')
 const { connected } = require('process');
 const path=require('path')
+const notificationSend=require('../../helpers/send-notfication').send
+const notificationSendALL=require('../../helpers/send-notfication').sendAll
+
+
 //const validatePhoneNumber = require('validate-phone-number-node-js');
 //const nodemailerMailgun=require('../../../helpers/sendEmail');
 const fs=require('fs');
@@ -31,7 +35,7 @@ const City=require('../../models/cities')
 const WithDraw=require('../../models/withdraw');
 const wallet = require('../../models/wallet');
 const pagenation=require('../../helpers/general/helpingFunc').paginate
-const notificationSend=require('../../helpers/send-notfication').send
+
 var register=async (req,res,next)=>{
 
     const errors = validationResult(req);
@@ -1460,6 +1464,7 @@ const getOrders=async(req,res,next)=>{
             .populate({path:'Tuser',select:'name email photo phone status'})
             .populate({path:'payment' ,select:'-Cuser -Tuser -updatedAt'})
             .populate({path:'cart.product',select:'images title price desc'})
+            .populate({path:'',select:'images title price desc'})
             .select('-updatedAt')
 
             if(!order){
@@ -2017,6 +2022,175 @@ const ChangWithDrawStatus=async(req,res,next)=>{
     
 
 }
+
+var sendNotifcationToMobile=async (req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+            console.debug(errors)
+    if(!errors.isEmpty()){
+        const error = new Error('validation faild');
+        error.statusCode = 422 ;
+        error.data = errors.array();
+        return next(error) ; 
+    }
+
+        const {userId,type,msg,title} =req.body
+        if(!type){
+            const error = new Error('type is required');
+            error.statusCode = 422 ;
+            return next(error)
+        }
+        const data={
+            
+        }
+ 
+ 
+        var notification={
+            title,
+            body:`${msg}`
+        }
+        
+        
+        if(type=='single'){
+            if(!userId){
+                const error = new Error('invalid user id');
+            error.statusCode = 422 ;
+            return next(error)
+            }
+            var user
+            var Tuser=await treder.findById(userId)
+            if(!Tuser){
+                var Cuser=await Cuser.findById(userId)
+                if(!Cuser){
+                    const error = new Error('user is not found');
+                    error.statusCode = 422 ;
+                    return next(error)   
+                }
+                await notificationSend("massage form admin",data,notification,Cuser._id,0)
+                return res.status(200).json({state:1,message:'notfication sent'});
+
+                
+              
+            }
+            await notificationSend("massage form admin",data,notification,Tuser._id,1)
+            return res.status(200).json({state:1,message:'notfication sent'});
+
+        }else if(type=='Treader'){
+
+            await notificationSendALL("massage form admin",data,notification,1)
+            
+            return res.status(200).json({state:1,message:'notfication sent'});
+
+
+        }else if(type=='Customer'){
+            console.debug('customer run')
+            await notificationSendALL("massage form admin",data,notification,0)
+            
+            return res.status(200).json({state:1,message:'notfication sent'});
+
+        }
+        
+
+
+     res.status(422).json({state:0,message:'invalid type'});
+
+
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+
+}
+
+const getAdRequest=async(req,res,next)=>{
+    try{
+        const page=req.query.page
+        const itemPerPage=10
+     const {id}=req.params
+
+        if(id){
+           const ad= await ADS.findById(id)
+          return res.status(200).json({state:1,ad})
+        }    
+        const TotalNumfqs= await ADS.find({
+            Accespted:false
+        }).countDocuments()
+        const fqs= await ADS.find({
+            Accespted:false
+        })
+        .skip((page - 1) * itemPerPage)
+        .limit(itemPerPage)
+
+        return res.status(200).json({state:1,ads:fqs,TotaNum:TotalNumfqs})
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+
+const AcceptAdRequest=async(req,res,next)=>{
+    try{
+        const page=req.query.page
+        const itemPerPage=10
+     const {id}=req.params
+
+     if(!id){
+        const error = new Error('id is require');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+     }  
+
+       
+           const ad= await ADS.findById(id)
+          if(!ad){
+            const error = new Error('ad not found');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+          }
+          ad.Accespted=true
+          await ad.save()
+         
+          const data={
+            
+        }
+ 
+ 
+        var notification={
+            title:'your ad is accepted',
+            body:`${ad.title} is accepted`
+        }
+        await notificationSend("adRequest is accepted",data,notification,ad.Creator,1)
+
+
+        return res.status(200).json({state:1,message:'ad accepted'})
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+
+
 module.exports={
     register,
     login,
@@ -2055,7 +2229,10 @@ module.exports={
     AddCity,
     suggest,
     ChangWithDrawStatus,
-    getAllWithDarwRequests
+    getAllWithDarwRequests,
+    sendNotifcationToMobile,
+    getAdRequest,
+    AcceptAdRequest
     
 
 

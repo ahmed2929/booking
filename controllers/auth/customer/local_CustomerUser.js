@@ -523,6 +523,13 @@ try{
         return next(error) ; 
     }
         var {id,email,fullName,photo,FCM}=req.body
+
+        if(!FCM){
+            const error = new Error('FCM is required');
+            error.statusCode = 422;
+           return next(error) ;
+        }
+
         console.debug('req body ',req.body)
         var EMAIL=req.body.email.trim().toLowerCase()
              email     = EMAIL;
@@ -688,6 +695,11 @@ const facebookWithOuthData=async (req,res,next)=>{
             return next(error) ; 
         }
             var {id,email,fullName,photo,FCM}=req.body
+            if(!FCM){
+                const error = new Error('FCM is required');
+                error.statusCode = 422;
+               return next(error) ;
+            }
             var EMAIL=req.body.email.trim().toLowerCase()
              email     = EMAIL;
            // We're in the account creation process

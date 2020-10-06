@@ -72,7 +72,12 @@ const ADSchema = new schema({
             type:schema.Types.ObjectId,
             ref:'request'
         }
-    }]
+    }],
+    terms:String,
+    Accespted:{
+        type:Boolean,
+        default:true
+    }
     
 }, {timestamps:true});
 

@@ -23,7 +23,8 @@ const orderSchema = new schema({
         ref:'payment'
     },
     address:{
-        type:String
+        type:schema.Types.ObjectId,
+        ref:'address'
     },
     delivaryStatus:{
         type:Boolean,

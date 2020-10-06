@@ -56,6 +56,7 @@ Router.post('/acceptRequest',verfiyToken,CheckActivation,conttroller.acceptReque
 Router.post('/DisAgreeRequest',verfiyToken,CheckActivation,conttroller.disAgree)
 
 Router.get('/getMyProfile',verfiyToken,conttroller.getMyProfile)
+Router.get('/getMyIncome',verfiyToken,conttroller.getMyIncome)
 
 Router.put('/editMyProfile',verfiyToken,uploadImage.array('image'),[
     body('email')
@@ -121,5 +122,7 @@ Router.post('/MoneyWithDrawRequest',verfiyToken,[
 
 Router.get('/getMyWallet',verfiyToken,conttroller.getMyWallet)
 
+Router.post('/CreatAddress',verfiyToken,conttroller.CreatAddress)
+Router.get('/getMyAddress',verfiyToken,conttroller.getMyAddress)
 
 module.exports=Router

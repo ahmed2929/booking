@@ -108,6 +108,11 @@ const userSchema = new schema({
       type:schema.Types.ObjectId,
       ref:'order'
     }],
+    dlivaryAddress:[{
+      type:schema.Types.ObjectId,
+      ref:'address'
+      
+    }]
 });
 
 module.exports = mongoose.model('CustomerUser',userSchema);
