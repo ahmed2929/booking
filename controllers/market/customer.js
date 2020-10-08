@@ -1587,7 +1587,7 @@ const CreatAddress=async(req,res,next)=>{
             return next(error) ; 
         }
 
-        const {N,E,title,address}=req.body
+        const {N,E,title,adress}=req.body
 
         const user=await CustomerUser.findById(req.userId)
         if(!user){
@@ -1601,7 +1601,7 @@ const CreatAddress=async(req,res,next)=>{
        N,
        E,
        title,
-       address
+       address:adress
        })
        await newAdd.save()
        user.dlivaryAddress.push(newAdd._id)
@@ -1634,7 +1634,7 @@ const getMyAddress=async(req,res,next)=>{
         .select('dlivaryAddress')
         .lean()
 
-          res.status(200).json({state:1,dlivaryAddress})
+          res.status(200).json({state:1,dlivaryAddress:user})
         
            
         

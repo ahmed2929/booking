@@ -146,6 +146,7 @@ var CreateAppartment=async (req,res,next)=>{
 
 var editAdById= async (req,res,next)=>{
     try{
+        console.debug('vom run')
         const AdId=req.body.ADId
        // console.debug(AdId)
         const AD=await ADS.findById(AdId)
@@ -203,28 +204,51 @@ var editAdById= async (req,res,next)=>{
         return next( error) ;
     }
     let images = [];
+// console.debug('imageUrl.length',imageUrl.length)
+// console.debug('imageUrl',imageUrl)
 
-    if(imageUrl.length!=0){
+//     if(imageUrl.length!=0){
 
-        AD.images.forEach((i) => {
-            console.debug(i)
-          fs.unlink(path.join(i),(err)=>{
-           console.debug(err)
-          });
+//         AD.images.forEach((i) => {
+//             console.debug(i)
+//           fs.unlink(path.join(i),(err)=>{
+//            console.debug(err)
+//           });
 
-        AD.images=[]
-        imageUrl.forEach(image=>{
-            images.push(image.filename);
-        })
+//         AD.images=[]
+//         imageUrl.forEach(image=>{
+//             images.push(image.filename);
+//         })
             
-    });   
-    } else{
-        images=AD.images
-    }
+//     });   
+//     } else{
+//         images=AD.images
+//     }
+
+
+if(imageUrl.length===0){
+  images=AD.images
+}else{
+    AD.images.forEach((i) => {
+                     console.debug(i)
+                   fs.unlink(path.join(i),(err)=>{
+                  console.debug(err)
+                  });
 
 
 
-    console.debug(AD.catigory.toString()!=catigory.toString())
+    })
+    imageUrl.forEach(image=>{
+    
+        images.push(image.filename);
+    
+});
+
+
+}
+
+console.debug('images ',images)
+
     if(AD.catigory.toString()!=catigory.toString()){
 
         const cato=await Catigory.findById(AD.catigory)
@@ -264,9 +288,9 @@ var editAdById= async (req,res,next)=>{
     
         
         await AD.save();
-        var message='apparment created Sucessfully'
+        var message='apparment edited Sucessfully'
         if(req.user.lang==1){
-            message='تم انشاء الاعلان بنجاح'
+            message='تم تعديل الاعلان بنجاح'
         }
             res.status(200).json({state:1,message:message});
         
