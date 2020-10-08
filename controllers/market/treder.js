@@ -31,6 +31,7 @@ const Address =require('../../models/address')
 var CreateAppartment=async (req,res,next)=>{
     console.debug('controller runas')
     try{
+        console.debug('req.files',req.files)
         console.debug('req.body.services',req.body.services)
         if(req.body.services){
             req.body.services=JSON.parse( req.body.services)
@@ -146,6 +147,152 @@ var CreateAppartment=async (req,res,next)=>{
 
 var editAdById= async (req,res,next)=>{
     console.debug(req.files)
+    try{
+        const AdId=req.body.ADId
+       console.debug(AdId)
+        const AD=await ADS.findById(AdId)
+        if(!AD){
+        const error = new Error('No AD found !!');
+        error.statusCode = 404 ;
+        return next( error) ;
+
+        }
+        //console.debug('creator',AD.Creator,'user',req.userId)
+        //console.debug(AD.Creator.toString() !=req.userId.toString())
+        if(AD.Creator.toString() !=req.userId.toString()){
+        const error = new Error('unautharized request');
+        error.statusCode = 403 ;
+        return next( error) ;
+        }
+
+
+
+        if(req.body.services){
+            req.body.services=JSON.parse( req.body.services)
+        }else{
+            req.body.services={}
+        }
+    
+
+
+    const errors = validationResult(req);
+    console.debug(errors)
+    if(!errors.isEmpty()){
+        const error = new Error('validation faild');
+        error.statusCode = 422 ;
+        error.data = errors.array();
+        return next(error) ; 
+    }
+    const {country,city,streetAdress,catigory,price,services,NumOfRooms,details,title,beds,beach,N,E}=req.body;
+    console.debug(catigory)
+    if(!Number(price)){
+        var message='invalid price'
+        if(req.user.lang==1){
+            message='سعر غير صحيح'
+        }
+        const error = new Error(message);
+        error.statusCode = 404 ;
+        return next( error) ;
+    }
+
+
+    const imageUrl = req.files;
+    const catigo = await Catigory.findById(catigory);
+    console.debug(catigo)
+    if(!catigo){
+        const error = new Error('catigory not found');
+        error.statusCode = 404 ;
+        return next( error) ;
+    }
+    let images = [];
+
+    if(imageUrl.length==0){
+
+        
+        images=AD.images
+     
+    } else{
+       
+
+        AD.images.forEach((i) => {
+            console.debug(i)
+          fs.unlink(path.join(i),(err)=>{
+           console.debug(err)
+          });
+
+        });  
+        AD.images=[]
+        imageUrl.forEach(image=>{
+            images.push(image.filename);
+        })
+    
+    }
+
+
+
+    console.debug(AD.catigory.toString()!=catigory.toString())
+    if(AD.catigory.toString()!=catigory.toString()){
+
+        const cato=await Catigory.findById(AD.catigory)
+        const catIndexinArray=cato.ads.indexOf(catigory.toString())
+           if (catIndexinArray > -1) {
+               cato.ads.splice(catIndexinArray, 1);
+             }
+           await cato.save()
+
+           const catonew=await Catigory.findById(catigory)
+           catonew.ads.push(AD._id)
+              await catonew.save()
+
+            }
+
+
+    
+
+
+
+         
+            
+            AD.country=country,
+            AD.city=city
+            AD.streetAdress=streetAdress
+            AD.catigory=catigory
+            AD.price=price
+            AD.services=services
+            AD.images=images
+            AD.NumOfRooms=NumOfRooms
+            AD.details=details
+            AD.title=title
+            AD.beds=beds
+            AD.beach=beach
+            AD.GPS.E=E
+            AD.GPS.N=N
+    
+        
+        await AD.save();
+        var message='apparment edited Sucessfully'
+        if(req.user.lang==1){
+            message='تم تعديل الاعلان بنجاح'
+        }
+            res.status(200).json({state:1,message:message});
+        
+        
+
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+
+
+
+
+
+
 }
 
 

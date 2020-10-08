@@ -8,6 +8,8 @@ const bodyParser = require('body-parser');
 const conttroller=require('../../../controllers/market/treder')
 const CheckActivation=require('../../../helpers/Auth/checkactivation')
 const TrederUser=require('../../../models/TrederUsers')
+
+
 Router.put('/createApartment',verfiyToken,uploadImage.array('image'),[
     body('city')
     .not()
@@ -32,14 +34,12 @@ Router.put('/createApartment',verfiyToken,uploadImage.array('image'),[
 ],CheckActivation,conttroller.CreateAppartment);
 
 
+Router.put('/editApartment',verfiyToken,uploadImage.array('image'),
+CheckActivation,conttroller.editAdById);
 
-Router.put('/editApartment',verfiyToken,uploadImage.array('image'),[
-   
-   body('ADId')
-   .not()
-   .isEmpty()
 
-],CheckActivation,conttroller.editAdById);
+
+
 
 Router.delete('/deleteApartment',verfiyToken,uploadImage.array('image'),[
    
