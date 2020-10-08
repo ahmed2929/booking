@@ -15,7 +15,7 @@ mongoose.connect(remoteDB,{ useNewUrlParser: true,useUnifiedTopology: true },()=
 
     console.log('db connected');
 
-    const server=app.listen(process.env.PORT||4000);
+    const server=app.listen(process.env.PORT||3000);
     require('./socket.io.settings').init(server)
    
      

@@ -15,7 +15,7 @@ const multer=require('multer')
     if(file.mimetype==='image/png'||
     file.mimetype==='image/jpg'   ||
     file.mimetype==='image/jpeg'  ){
-        console.debug('it image',file)
+        console.debug('it image')
 
         cb(null,true);
     }else {
