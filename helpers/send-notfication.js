@@ -17,6 +17,7 @@ const send = async (action,data, notification,userId,status) => {
 
       user =await Tuser.findById(userId)
     }
+    console.debug('token:user.FCMJwt[0]',user.FCMJwt[0])
     var Newnotification= new Notificaton({
       data,
       notification,
@@ -59,7 +60,7 @@ const send = async (action,data, notification,userId,status) => {
         },
       },
       topic: "X",
-      token:user.FCMJwt[0]
+      tokens:user.FCMJwt
     };
 
     const messageRes = await admin.messaging().sendMulticast(message);

@@ -790,6 +790,17 @@ var acceptRequest =async (req,res,next)=>{
             if(req.user.lang==1){
                 message='تم الموافقة علي الطلب'
             }
+
+            var editTreder=await TrederUsers.findById(req.userId.toString())
+       editTreder.income.total+=request.RequestData.finalPrice
+       editTreder.income.source.push(request._id)
+       await editTreder.save()
+       
+
+
+
+
+
         res.status(200).json({state:1,msg:message})
 
          const data={
@@ -2026,6 +2037,6 @@ MoneyWithDrawRequest,
 getMyWallet,
 getMyIncome,
 CreatAddress,
- getMyAddress
+getMyAddress
 
 }

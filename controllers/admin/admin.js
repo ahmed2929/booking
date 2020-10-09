@@ -1457,6 +1457,8 @@ const getOrders=async(req,res,next)=>{
 
     
     try{
+        const page = req.query.page || 1;
+        const productPerPage = 10;
         const orderId=req.params.orderId
         if(orderId){
             const order =await Order.findById(orderId.toString())
@@ -1496,11 +1498,30 @@ const getOrders=async(req,res,next)=>{
 
 const getBookingOpertaions=async(req,res,next)=>{
     try{
+
+        const page = req.query.page || 1;
+        const productPerPage = 10;
         
         const status=req.params.status
-        
+        const id=req.params.id
+        if(id){
+            const order =await Request.findById(id.toString())
+            .populate({path:'from',select:'name email mobile _id'})
+            .populate({path:'to' ,select:'name email mobile _id'})
+            .populate({path:'AD' ,select:'images star price _id'})
+
+            if(!order){
+               return res.status(404).json({state:0,msg:'operation not found'})
+            }
+            return res.status(200).json({state:1,operation:order})
+        }
         console.debug(status)
           if(status){
+              const TotalNum=await Request.find({
+            
+                "RequestData.status": status
+              
+           }).countDocuments()
             const request = await Request.find({
             
                 "RequestData.status": status
@@ -1509,10 +1530,17 @@ const getBookingOpertaions=async(req,res,next)=>{
            .populate({path:'from',select:'name email mobile _id'})
            .populate({path:'to' ,select:'name email mobile _id'})
            .populate({path:'AD' ,select:'images star price _id'})
-
-            return res.status(200).json({state:1,request:request})
+           .skip((page - 1) * productPerPage)
+           .limit(productPerPage)
+            return res.status(200).json({state:1,request:request,TotalNum})
 
           }else{
+
+            const TotalNum=await Request.find({
+            
+                
+              
+           }).countDocuments()
 
             const request = await Request.find({
               
@@ -1520,8 +1548,10 @@ const getBookingOpertaions=async(req,res,next)=>{
            .populate({path:'from',select:'name email mobile _id'})
            .populate({path:'to' ,select:'name email mobile _id'})
            .populate({path:'AD' ,select:'images star price _id'})
+           .skip((page - 1) * productPerPage)
+           .limit(productPerPage)
 
-            return res.status(200).json({state:1,request:request})
+            return res.status(200).json({state:1,request:request,TotalNum})
 
             
 

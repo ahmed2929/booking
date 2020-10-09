@@ -196,10 +196,7 @@ const Book=async (req,res,next)=>{
        await newRequest.save()
        var editCustomer=await CustomerUser.findById(req.userId)
 
-       var editTreder=await trederUser.findById(ad.Creator)
-       editTreder.income.total+=finalPrice
-       editTreder.income.source.push(newRequest._id)
-       await editCustomer.save()
+       
        
        const data={
            RequestId:newRequest._id,
