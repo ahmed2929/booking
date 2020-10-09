@@ -1505,14 +1505,15 @@ const getBookingOpertaions=async(req,res,next)=>{
         const page = req.query.page || 1;
         const productPerPage = 10;
         
-        const status=req.params.status
-        const id=req.params.id
+        const status=req.query.status
+        const id=req.query.id
+        console.debug('req.id',id)
         if(id){
             const order =await Request.findById(id.toString())
             .populate({path:'from',select:'name email mobile _id'})
             .populate({path:'to' ,select:'name email mobile _id'})
             .populate({path:'AD' ,select:'images star price _id'})
-
+            console.debug('req.id',id)
             if(!order){
                return res.status(404).json({state:0,msg:'operation not found'})
             }
