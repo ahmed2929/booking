@@ -1466,7 +1466,10 @@ const getOrders=async(req,res,next)=>{
             .populate({path:'Tuser',select:'name email photo phone status'})
             .populate({path:'payment' ,select:'-Cuser -Tuser -updatedAt'})
             .populate({path:'cart.product',select:'images title price desc'})
-            .populate({path:'',select:'images title price desc'})
+            .populate('address')
+        
+            
+            
             .select('-updatedAt')
 
             if(!order){

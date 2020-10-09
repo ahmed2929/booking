@@ -1320,6 +1320,8 @@ const getMyOreder=async(req,res,next)=>{
           // .populate({ path: 'cart', populate: { path: 'cart.product' ,select:'price images title'}})
             .populate({ path: 'payment', select:'methodOfPay finalPrice'})
               .populate({path:'cart.product',select:'images title price desc'})
+              .populate({ path: 'Orders', populate: { path: 'address'}})
+
             if(!order){
                return res.status(404).json({state:0,msg:'order not found'})
             }
@@ -1329,6 +1331,8 @@ const getMyOreder=async(req,res,next)=>{
     const user=await CustomerUser.findById(req.userId)
     .populate('Orders')
     .populate({ path: 'Orders', populate: { path: 'payment' ,select:'methodOfPay finalPrice'}})
+    .populate({ path: 'Orders', populate: { path: 'address'}})
+
     
     var lmitedData=paginate(user.Orders,itemPerPage,page)
     limetedData=lmitedData.sort((a,b)=>{
