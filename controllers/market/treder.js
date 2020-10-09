@@ -1993,7 +1993,7 @@ const getMyAddress=async(req,res,next)=>{
         .select('dlivaryAddress')
         .lean()
 
-          res.status(200).json({state:1,user})
+          res.status(200).json({state:1,dlivaryAddress:user})
         
            
         
