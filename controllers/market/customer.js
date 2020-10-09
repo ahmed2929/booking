@@ -1139,7 +1139,7 @@ const MakeOrder=async(req,res,next)=>{
 
                 
             }
-            newMoney.TotalCach+=finalPrice;
+            newMoney.TotalCach+=Number(finalPrice);
             await newMoney.save()
 
 

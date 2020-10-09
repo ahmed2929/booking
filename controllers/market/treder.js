@@ -1437,7 +1437,7 @@ const MakeOrder=async(req,res,next)=>{
     
                 
             }
-            newMoney.TotalCach+=finalPrice;
+            newMoney.TotalCach+=Number(finalPrice);
             await newMoney.save()
     
            return res.status(200).json({state:1,msg:'order created succesfuly'})
