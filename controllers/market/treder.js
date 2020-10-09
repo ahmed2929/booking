@@ -1911,7 +1911,7 @@ const getMyIncome=async(req,res,next)=>{
                     // filter result in case of multiple result in populate
                     // may not useful in this case
                 },
-                 //populate: { path: 'services.serviceType'}
+                 populate: { path: 'AD',select:'title'}
 
             },
 
