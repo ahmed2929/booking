@@ -2235,12 +2235,12 @@ const SetDeleverToTrue=async(req,res,next)=>{
     try{
         const page=req.query.page
         const itemPerPage=10
-     const {id}=req.params
+     const {id}=req.query
      
      if(!id){
         const error = new Error('id is require');
             error.statusCode = 422 ;
-            error.data = errors.array();
+           
             return next(error) ; 
      }  
 
