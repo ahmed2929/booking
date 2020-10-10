@@ -243,6 +243,7 @@ Router.post('/sendNotifcationToMobile/',verfiyToken,controller.sendNotifcationTo
 
 Router.get('/getAdRequest/',verfiyToken,controller.getAdRequest);
 Router.post('/AcceptAdRequest/',verfiyToken,controller.AcceptAdRequest);
+Router.post('/SetDeleverToTrue/',verfiyToken,controller.SetDeleverToTrue);
 
 Router.post('/createService',uploadImage.array('image'),[
     

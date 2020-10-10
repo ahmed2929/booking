@@ -34,6 +34,7 @@ const catigory = require('../../models/catigory');
 const City=require('../../models/cities')
 const WithDraw=require('../../models/withdraw');
 const wallet = require('../../models/wallet');
+const order = require('../../models/order');
 const pagenation=require('../../helpers/general/helpingFunc').paginate
 
 var register=async (req,res,next)=>{
@@ -1459,6 +1460,8 @@ const getOrders=async(req,res,next)=>{
     try{
         const page = req.query.page || 1;
         const productPerPage = 10;
+        const status= req.query.status
+
         const orderId=req.params.orderId
         if(orderId){
             const order =await Order.findById(orderId.toString())
@@ -1477,8 +1480,12 @@ const getOrders=async(req,res,next)=>{
             }
             return res.status(200).json({state:1,order})
         }
-        const totalProducts= await Product.find().countDocuments()
-        const orders =await Order.find()
+        const totalProducts= await Product.find({
+            delivaryStatus:status
+        }).countDocuments()
+        const orders =await Order.find({
+            delivaryStatus:status
+        })
 
         .populate({path:'Cuser',select:'name email photo phone status'})
             .populate({path:'Tuser',select:'name email photo phone status'})
@@ -2224,6 +2231,53 @@ const AcceptAdRequest=async(req,res,next)=>{
 
 }
 
+const SetDeleverToTrue=async(req,res,next)=>{
+    try{
+        const page=req.query.page
+        const itemPerPage=10
+     const {id}=req.params
+     
+     if(!id){
+        const error = new Error('id is require');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+     }  
+
+       
+           const ad= await order.findById(id)
+          if(!ad){
+            const error = new Error('ad not found');
+            error.statusCode = 422 ;
+            error.data = errors.array();
+            return next(error) ; 
+          }
+          ad.delivaryStatus=true
+          await ad.save()
+         
+          const data={
+            
+        }
+ 
+ 
+       
+
+        return res.status(200).json({state:1,message:'order delevered accepted'})
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+
+
+
 
 module.exports={
     register,
@@ -2266,7 +2320,8 @@ module.exports={
     getAllWithDarwRequests,
     sendNotifcationToMobile,
     getAdRequest,
-    AcceptAdRequest
+    AcceptAdRequest,
+    SetDeleverToTrue
     
 
 
