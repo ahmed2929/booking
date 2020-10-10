@@ -1480,11 +1480,11 @@ const getOrders=async(req,res,next)=>{
             }
             return res.status(200).json({state:1,order})
         }
-        const totalProducts= await Product.find({
-            delivaryStatus:status
+        const totalProducts= await Order.find({
+            delivaryStatus:status||{ $exists:true}
         }).countDocuments()
         const orders =await Order.find({
-            delivaryStatus:status
+            delivaryStatus:status || { $exists:true}
         })
 
         .populate({path:'Cuser',select:'name email photo phone status'})
@@ -1493,7 +1493,7 @@ const getOrders=async(req,res,next)=>{
             .select('-cart -payment')
             .skip((page - 1) * productPerPage)
         .limit(productPerPage)
-        res.status(200).json({state:1,orders})
+        res.status(200).json({state:1,orders,Num:totalProducts})
 
     }catch(err){
         console.debug(err)
