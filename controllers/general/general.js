@@ -177,7 +177,7 @@ const Search = async (req, res, next) => {
                     ];
       
               
-              totalItemsT = await TrederUsers.find({
+              var totalItemsT = await TrederUsers.find({
                   $or: searchParams,
                   
                 }).countDocuments();
@@ -193,7 +193,7 @@ const Search = async (req, res, next) => {
                     .limit(itemPerPage);
 
                 
-                  totalItemsC = await TrederUsers.find({
+                 var totalItemsC = await TrederUsers.find({
                     $or: searchParams,
                     
                   }).countDocuments();
@@ -214,7 +214,7 @@ const Search = async (req, res, next) => {
                  
                   res.status(200).json({
                       state: 1,
-                      totalItems:totalItemsT+totalItemsC,
+                      totalItems:totalItemsT+totalItemsC+1,
                       searchResult: resultT.concat(resultC),
                     });
 

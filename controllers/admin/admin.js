@@ -981,6 +981,7 @@ var CreateProduct=async (req,res,next)=>{
                     .select('blocked')
                     .select('MyWonAds')
                     .select('Orders')
+                    .select('income')
                     if(!user){
                         return res.status(404).json({state:0,msg:'user not found'})
                     }
@@ -1000,6 +1001,7 @@ var CreateProduct=async (req,res,next)=>{
                     .select('mobile')
                     .select('blocked')
                     .select('Orders')
+                    .select('income')
                     if(!user){
                         return res.status(404).json({state:0,msg:'user not found'})
                     }
