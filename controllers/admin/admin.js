@@ -2247,17 +2247,14 @@ const SetDeleverToTrue=async(req,res,next)=>{
        
            const ad= await order.findById(id)
           if(!ad){
-            const error = new Error('ad not found');
+            const error = new Error('order not found');
             error.statusCode = 422 ;
-            error.data = errors.array();
             return next(error) ; 
           }
           ad.delivaryStatus=true
           await ad.save()
          
-          const data={
-            
-        }
+       
  
  
        
