@@ -1493,7 +1493,7 @@ const getOrders=async(req,res,next)=>{
         const totalProducts= await Order.find({
             delivaryStatus:status||{ $exists:true}
         }).countDocuments()
-        const order=await Order.find({
+        const orders=await Order.find({
             delivaryStatus:status || { $exists:true}
         })
 
@@ -1517,7 +1517,7 @@ const getOrders=async(req,res,next)=>{
         
         }
 
-        var Fresult=isuues.map(order=>{
+        var Fresult=orders.map(order=>{
             var newObj={
                 user:order.Cuser||order.Tuser,
             payment:order.payment,
