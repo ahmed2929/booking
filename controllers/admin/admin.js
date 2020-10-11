@@ -1473,29 +1473,50 @@ const getOrders=async(req,res,next)=>{
             .populate({path:'cart.product',select:'images title price desc'})
             .populate('address')
         
+            var newObj={
+                user:order.Cuser||order.Tuser,
+                payment:order.payment,
+                cart:order.cart,
+                address:order.address,
+                delivaryStatus:order.delivaryStatus
             
+            }
+        
             
             .select('-updatedAt')
 
             if(!order){
                return res.status(404).json({state:0,msg:'order not found'})
             }
-            return res.status(200).json({state:1,order})
+            return res.status(200).json({state:1,order:newObj})
         }
         const totalProducts= await Order.find({
             delivaryStatus:status||{ $exists:true}
         }).countDocuments()
-        const orders =await Order.find({
+        const order=await Order.find({
             delivaryStatus:status || { $exists:true}
         })
 
-        .populate({path:'Cuser',select:'name email photo phone status'})
-            .populate({path:'Tuser',select:'name email photo phone status'})
+      //  .populate({path:'Cuser',select:'name email photo phone status'})
+        //    .populate({path:'Tuser',select:'name email photo phone status'})
             //.populate({path:'payment'})
-            .select('-cart -payment')
+           // .select('-cart -payment')
+           .populate({path:'Cuser',select:'name email photo phone status'})
+           .populate({path:'Tuser',select:'name email photo phone status'})
+           .populate({path:'payment' ,select:'-Cuser -Tuser -updatedAt'})
+           .populate({path:'cart.product',select:'images title price desc'})
+           .populate('address')
             .skip((page - 1) * productPerPage)
         .limit(productPerPage)
-        res.status(200).json({state:1,orders,Num:totalProducts})
+        var newObj={
+            user:order.Cuser||order.Tuser,
+            payment:order.payment,
+            cart:order.cart,
+            address:order.address,
+            delivaryStatus:order.delivaryStatus
+        
+        }
+        res.status(200).json({state:1,orders:newObj,Num:totalProducts})
 
     }catch(err){
         console.debug(err)
