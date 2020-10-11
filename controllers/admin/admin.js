@@ -1482,7 +1482,7 @@ const getOrders=async(req,res,next)=>{
             
             }
         
-            
+         
             .select('-updatedAt')
 
             if(!order){
@@ -1516,7 +1516,22 @@ const getOrders=async(req,res,next)=>{
             delivaryStatus:order.delivaryStatus
         
         }
-        res.status(200).json({state:1,orders:newObj,Num:totalProducts})
+
+        var Fresult=isuues.map(order=>{
+            var newObj={
+                user:order.Cuser||order.Tuser,
+            payment:order.payment,
+            cart:order.cart,
+            address:order.address,
+            delivaryStatus:order.delivaryStatus
+            
+            }
+            return newObj
+        })
+        
+
+
+        res.status(200).json({state:1,orders:Fresult,Num:totalProducts})
 
     }catch(err){
         console.debug(err)
