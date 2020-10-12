@@ -1509,7 +1509,7 @@ const getOrders=async(req,res,next)=>{
             .skip((page - 1) * productPerPage)
         .limit(productPerPage)
         var newObj={
-            id:order._id
+            id:order._id,
             user:order.Cuser||order.Tuser,
             payment:order.payment,
             cart:order.cart,
