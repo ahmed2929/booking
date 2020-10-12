@@ -2320,7 +2320,7 @@ var createPolicy=async(req,res,next)=>{
     
     
     const {POLICY}=req.body;
-    console.debug(POLICY)
+    console.debug(POLICY,POLICY_EN)
     const exist = await policy.find().countDocuments()
     if(exist>0){
         const error = new Error('ploicy exist try to edit it');
@@ -2329,7 +2329,8 @@ var createPolicy=async(req,res,next)=>{
     }
     
         const Newpolicy= new policy({
-            policy:POLICY
+            policy:POLICY,
+            POLICY_EN
         })
         await Newpolicy.save(); 
         res.status(201).json({state:1,msg:'policy created '})
@@ -2361,6 +2362,8 @@ var editPolicy=async(req,res,next)=>{
        const pol=await policy.find()
        console.debug(pol)
        pol[0].policy=POLICY
+       pol[0].POLICY_EN=POLICY_EN
+       
         await pol[0].save(); 
         res.status(201).json({state:1,msg:'policy updated '})
 

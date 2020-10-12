@@ -5,6 +5,9 @@ const schema   = mongoose.Schema;
 const policySchema = new schema({
   policy:{
       type:String
+  },
+  POLICY_EN:{
+    type:String
   }
     
     
