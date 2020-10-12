@@ -19,6 +19,7 @@ const shopcatigory=require('../../models/shopcatigory');
 const Promo=require('../../models/promocode')
 const { connected } = require('process');
 const TrederUsers = require('../../models/TrederUsers');
+const policy =require('../../models/policy')
 const Search = async (req, res, next) => {
     const search = req.query.search;
     const type = req.query.type    || "shop";
@@ -238,10 +239,11 @@ const Search = async (req, res, next) => {
   };
   
 
-
+ 
 
 module.exports={
     Search,
+    
     
 
 }

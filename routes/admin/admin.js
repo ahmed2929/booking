@@ -240,6 +240,8 @@ Router.get('/getAllProducts/',verfiyToken,controller.getAllProducts);
 Router.get('/TotalNum/:status',verfiyToken,controller.TotalNum);
 Router.get('/getItemsByCatigory/',verfiyToken,controller.getItemsByCatigory);
 Router.post('/sendNotifcationToMobile/',verfiyToken,controller.sendNotifcationToMobile);
+Router.post('/createPolicy/',verfiyToken,controller.createPolicy);
+Router.post('/editPolicy/',verfiyToken,controller.editPolicy);
 
 Router.get('/getAdRequest/',verfiyToken,controller.getAdRequest);
 Router.post('/AcceptAdRequest/',verfiyToken,controller.AcceptAdRequest);

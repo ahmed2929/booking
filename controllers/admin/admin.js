@@ -17,7 +17,7 @@ const { connected } = require('process');
 const path=require('path')
 const notificationSend=require('../../helpers/send-notfication').send
 const notificationSendALL=require('../../helpers/send-notfication').sendAll
-
+const policy =require('../../models/policy')
 
 //const validatePhoneNumber = require('validate-phone-number-node-js');
 //const nodemailerMailgun=require('../../../helpers/sendEmail');
@@ -2314,6 +2314,68 @@ const SetDeleverToTrue=async(req,res,next)=>{
 }
 
 
+var createPolicy=async(req,res,next)=>{
+    
+    try{
+    
+    
+    const {POLICY}=req.body;
+    console.debug(POLICY)
+    const exist = await policy.find().countDocuments()
+    if(exist>0){
+        const error = new Error('ploicy exist try to edit it');
+        error.statusCode = 404 ;
+        return next( error) ;
+    }
+    
+        const Newpolicy= new policy({
+            policy:POLICY
+        })
+        await Newpolicy.save(); 
+        res.status(201).json({state:1,msg:'policy created '})
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+      
+var editPolicy=async(req,res,next)=>{
+    
+    try{
+    
+    
+    const {POLICY}=req.body;
+    const exist = await policy.find().countDocuments()
+    if(exist==0){
+        const error = new Error('no policy found');
+        error.statusCode = 404 ;
+        return next( error) ;
+    }
+    
+       const pol=await policy.find()
+       console.debug(pol)
+       pol[0].policy=POLICY
+        await pol[0].save(); 
+        res.status(201).json({state:1,msg:'policy updated '})
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
+      
+
 
 
 module.exports={
@@ -2358,7 +2420,9 @@ module.exports={
     sendNotifcationToMobile,
     getAdRequest,
     AcceptAdRequest,
-    SetDeleverToTrue
+    SetDeleverToTrue,
+    createPolicy,
+    editPolicy
     
 
 

@@ -15,6 +15,7 @@ const { all } = require('../../routes/admin/admin');
 const { any } = require('../../helpers/uploadImage');
 const shopcatigory =require('../../models/shopcatigory')
 const City=require('./../../models/cities');
+const policy =require('../../models/policy')
 const treder = require('./treder');
 var getAvilableCatigories=async (req,res,next)=>{
 
@@ -491,7 +492,24 @@ const getShopAvilablCatigory=async(req,res,next)=>{
   
   }  
 
+  var getPolicy=async(req,res,next)=>{
+    
+    try{
+        
+          const Policy=await policy.find()    
+       
+            res.status(200).json({state:1,Policy})
+    
+        }catch(err){
+            console.debug(err)
+                if(!err.statusCode){
+                    err.statusCode = 500; 
+                }
+                return next(err);
+        }
+        
 
+}
 module.exports={
 getAvilableCatigories,
 getAvilableServices,
@@ -502,6 +520,7 @@ getCatigoriesAdById,
 getAdsFilter,
 getMostView,
 getAllads,
-getShopAvilablCatigory
+getShopAvilablCatigory,
+getPolicy
 
 }

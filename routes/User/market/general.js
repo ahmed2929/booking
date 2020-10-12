@@ -20,7 +20,8 @@ const conttroller=require('../../../controllers/market/general')
  Router.get('/getMostView/',conttroller.getMostView)
  Router.get('/getMostView/',conttroller.getMostView)
  Router.get('/getAllads/',conttroller.getAllads)
-
+ Router.get('/getPolicy/',conttroller.getPolicy)
+ 
  
 
 
