@@ -2319,7 +2319,7 @@ var createPolicy=async(req,res,next)=>{
     try{
     
     
-    const {POLICY}=req.body;
+    const {POLICY,POLICY_EN}=req.body;
     console.debug(POLICY,POLICY_EN)
     const exist = await policy.find().countDocuments()
     if(exist>0){
@@ -2351,7 +2351,7 @@ var editPolicy=async(req,res,next)=>{
     try{
     
     
-    const {POLICY}=req.body;
+    const {POLICY,POLICY_EN}=req.body;
     const exist = await policy.find().countDocuments()
     if(exist==0){
         const error = new Error('no policy found');
