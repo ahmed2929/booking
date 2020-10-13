@@ -1464,7 +1464,7 @@ const getOrders=async(req,res,next)=>{
         const productPerPage = 10;
         const status= req.query.status
 
-        const orderId=req.params.orderId
+        const orderId=req.query.orderId
         if(orderId){
             const order =await Order.findById(orderId.toString())
             .populate({path:'Cuser',select:'name email photo phone status'})
@@ -1483,7 +1483,7 @@ const getOrders=async(req,res,next)=>{
             }
         
          
-            .select('-updatedAt')
+       
 
             if(!order){
                return res.status(404).json({state:0,msg:'order not found'})
