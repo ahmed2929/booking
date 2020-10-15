@@ -2,17 +2,17 @@ const nodemailer = require('nodemailer');
 
 
 let mailTransporter = nodemailer.createTransport({ 
-	service: 'gmail', 
+	service: process.env.domainName, 
 	auth: { 
-		user: 'ak8911938@gmail.com', 
-		pass: 'BOOKINGTEST123'
+		user:  process.env.emailAddress, 
+		pass: process.env.emailPassword
 	} 
 });
 
 const sendEmail=async (to,subject,html )=>{
 
   let mailDetails = { 
-    from: 'ak8911938@gmail.com', 
+    from: process.env.emailAddress, 
     to, 
     subject , 
     html

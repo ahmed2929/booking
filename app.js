@@ -5,13 +5,14 @@ const multer    = require('multer');
 const path      = require('path');
 
 const services=require('./models/AvilableServices')
-
+require('dotenv').config();
 
 const configMiddleware=require('./midllewares/config');
 var app=express();
-var localDB='mongodb://localhost/Booking-local2'
-var remoteDB='mongodb+srv://AK:a01129292532@cluster0.uf0py.mongodb.net/booking?retryWrites=true&w=majority'
-mongoose.connect(remoteDB,{ useNewUrlParser: true,useUnifiedTopology: true },()=>{
+//var localDB='mongodb://localhost/Booking-local2'
+//var remoteDB='mongodb+srv://AK:a01129292532@cluster0.uf0py.mongodb.net/booking?retryWrites=true&w=majority'
+console.debug(process.env.DB_URL)
+mongoose.connect(process.env.DB_URL,{ useNewUrlParser: true,useUnifiedTopology: true },()=>{
 
     console.log('db connected');
 
