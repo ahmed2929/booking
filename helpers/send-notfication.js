@@ -290,9 +290,5 @@ const sendAll = async (action,data, notification,status) => {
 
 
 
-
-
-module.exports={
-  send,
-  sendAll
-}
+exports.send = send;
+exports.sendAll = sendAll;

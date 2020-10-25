@@ -195,7 +195,7 @@ const Book=async (req,res,next)=>{
        })
        await newRequest.save()
        var editCustomer=await CustomerUser.findById(req.userId) 
-        var editTreder=await trederUser.findById(AD.Creator) 
+        var editTreder=await trederUser.findById(ad.Creator) 
        
        
        const data={
@@ -222,7 +222,6 @@ const Book=async (req,res,next)=>{
             message='تم ارسال الطلب'
         }
       
-   //   await notificationSend("RequestRecived",data,notification,ad.Creator,1)
       var Emessage=`
       <h4>${editCustomer.name} wants to rent ${ad.title} 
       check your account
@@ -238,6 +237,10 @@ const Book=async (req,res,next)=>{
          `
       }
        await sendEmail(editTreder.email,'New Request',Emessage)
+       await notificationSend("RequestRecived",data,notification,ad.Creator,1)
+
+       //require('../../helpers/send-notfication').send("RequestRecived",data,notification,ad.Creator,1)
+
        res.status(200).json({state:1,msg:message})
 
 }catch(err){
