@@ -7,7 +7,77 @@ const TrederUsers = require("../models/TrederUsers");
 const customer = require("../controllers/market/customer");
 //  data notificaton userid status
 
-const send = async (action,data, notification,userId,status) => {
+// const send = async function(action,data, notification,userId,status){
+//   try {
+//     console.debug('noti',notification)
+//     var user; 
+//     if(status==0){ //for customer
+//       user =await Cuser.findById(userId)
+//     }else if(status==1){
+
+//       user =await Tuser.findById(userId)
+//     }
+//     console.debug('token:user.FCMJwt[0]',user.FCMJwt[0])
+//     var Newnotification= new Notificaton({
+//       data,
+//       notification,
+//       action:action
+//     })
+//     await Newnotification.save()
+//     user.notfications.push(Newnotification._id)
+//     await user.save()
+//     console.debug(`notfication::${userId}`)
+//     io.getIo().emit(`notfication::${userId}`,{
+//       action:action,
+//       notfications: {
+//         data: data,
+//         notification: notification,
+//       }
+      
+//     })
+//     if(user.FCMJwt.length==0){
+      
+//         return "no token";
+      
+//     }
+
+
+//     var message = {
+//       notification: {
+//         title: notification.title,
+//         body: notification.body,
+//       },
+//       android: {
+//         notification: {
+//           sound: "default",
+//         },
+//       },
+//       apns: {
+//         payload: {
+//           aps: {
+//             sound: "default",
+//           },
+//         },
+//       },
+//       topic: "X",
+//       tokens:user.FCMJwt
+//     };
+
+//     const messageRes = await admin.messaging().sendMulticast(message);
+
+//     return messageRes;
+//   } catch (err) {
+//     if (!err.statusCode) {
+//       err.statusCode = 500;
+//     }
+//     throw err;
+//   }
+// };
+
+
+
+ module.exports=async function send (action,data, notification,userId,status ){
+
   try {
     console.debug('noti',notification)
     var user; 
@@ -72,7 +142,16 @@ const send = async (action,data, notification,userId,status) => {
     }
     throw err;
   }
-};
+  
+
+
+}
+
+
+
+
+
+
 
 const sendAll = async (action,data, notification,status) => {
   try {
@@ -293,6 +372,6 @@ const sendAll = async (action,data, notification,status) => {
 
 
 module.exports={
-  send,
+// send,
   sendAll
 }

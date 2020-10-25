@@ -19,6 +19,7 @@ const sendEmail=async (to,subject,html )=>{
   }; 
   
  const result =await mailTransporter.sendMail(mailDetails)
+ console.debug('email send run ',result)
  return result
     
   
