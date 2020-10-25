@@ -26,7 +26,7 @@ const Money =require('../../models/money')
 const getPaymentReport=require('../../controllers/general/payment').getPaymentReport
 
 sendEmail=require('../../helpers/sendEmail').sendEmail
-const notificationSend=require('../../helpers/send-notfication').send
+const notificationSend=require('../../helpers/send-notfication')
 const Address =require('../../models/address')
 
 var CreateAppartment=async (req,res,next)=>{
@@ -822,7 +822,7 @@ var acceptRequest =async (req,res,next)=>{
         
        console.debug(request.from.email)
 
-        await notificationSend("RequestAccepted",data,notification,request.from._id,0)
+        await notificationSend.send("RequestAccepted",data,notification,request.from._id,0)
 
         var Emessage=`<h4>${req.user.name} accepted your request  to rent ${ad.title} 
         check your account
@@ -892,6 +892,9 @@ var disAgree=async (req,res,next)=>{
         request.refuseMassage=message
        await request.save();
 
+        
+
+
         res.status(200).json({state:1,msg:'request disagreed'})
 
         const data={
@@ -911,7 +914,7 @@ var disAgree=async (req,res,next)=>{
              }
  
  
-         await notificationSend("RequestRefused",data,notification,request.from._id,0)
+         await notificationSend.send("RequestRefused",data,notification,request.from._id,0)
 
          var Emessage=`<h4>${req.user.name} Refused your request  to rent ${ad.title} 
          check your account

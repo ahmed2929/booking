@@ -19,7 +19,7 @@ const Payment=require('../../models/payment')
 const Order=require('../../models/order')
 const Isuue=require('../../models/isuues');
 const payment = require('../../models/payment');
-const notificationSend=require('../../helpers/send-notfication').send
+const notificationSend=require('../../helpers/send-notfication')
 const sendEmail=require('../../helpers/sendEmail').sendEmail
 const Suggest=require('../../models/suggest')
 const getPaymentReport=require('../../controllers/general/payment').getPaymentReport
@@ -115,7 +115,7 @@ const Book=async (req,res,next)=>{
            AD:AdId
        })
        console.debug('fucken request',reque)
-       if(reque!=null&&Number(reque.RequestData.EndDate)>=Date.now()){
+       if(reque!=null&&Number(reque.RequestData.EndDate)>=Date.now()&&Number(reque.RequestData.status!=-1)){
         var message='you alreay requested this ad'
         if(req.user.lang==1){
             message='لقد قمت بطلب هذا المنتج من قبل'
@@ -237,7 +237,7 @@ const Book=async (req,res,next)=>{
          `
       }
        await sendEmail(editTreder.email,'New Request',Emessage)
-       await notificationSend("RequestRecived",data,notification,ad.Creator,1)
+       await notificationSend.send("RequestRecived",data,notification,ad.Creator,1)
 
        //require('../../helpers/send-notfication').send("RequestRecived",data,notification,ad.Creator,1)
 
@@ -660,7 +660,7 @@ const Rate=async(req,res,next)=>{
         }
 
 
-     await notificationSend("NewRate",data,notification,rateAd.Creator,1)
+     await notificationSend.send("NewRate",data,notification,rateAd.Creator,1)
         
      var Emassage=`
       <h4>${req.user.name}  rated ${rateAd.title} with  ${star} stars 
@@ -1510,7 +1510,7 @@ const PayForAppartment=async(req,res,next)=>{
         await newMoney.save()
 
         res.status(200).json({state:1,msg:message})
-       await notificationSend("NewMoneyAdded",data,notification,request.to._id,1)
+       await notificationSend.send("NewMoneyAdded",data,notification,request.to._id,1)
        var Emessage=`
        <h4>
        new money added to your wallet

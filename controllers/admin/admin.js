@@ -15,8 +15,8 @@ const AvilableService=require('../../models/AvilableServices')
 const Order=require('../../models/order')
 const { connected } = require('process');
 const path=require('path')
-const notificationSend=require('../../helpers/send-notfication').send
-const notificationSendALL=require('../../helpers/send-notfication').sendAll
+const notificationSend=require('../../helpers/send-notfication')
+const notificationSendALL=require('../../helpers/send-notfication')
 const policy =require('../../models/policy')
 
 //const validatePhoneNumber = require('validate-phone-number-node-js');
@@ -2062,7 +2062,7 @@ const ChangWithDrawStatus=async(req,res,next)=>{
             }
     
     
-         await notificationSend("NewRate",data,notification,withdraw.user._id,1)
+         await notificationSend.send("NewRate",data,notification,withdraw.user._id,1)
             
          var Emassage=`
           <h4>
@@ -2147,25 +2147,25 @@ var sendNotifcationToMobile=async (req,res,next)=>{
                     error.statusCode = 422 ;
                     return next(error)   
                 }
-                await notificationSend("massage form admin",data,notification,Cuser._id,0)
+                await notificationSend.send("massage form admin",data,notification,Cuser._id,0)
                 return res.status(200).json({state:1,message:'notfication sent'});
 
                 
               
             }
-            await notificationSend("massage form admin",data,notification,Tuser._id,1)
+            await notificationSend.send("massage form admin",data,notification,Tuser._id,1)
             return res.status(200).json({state:1,message:'notfication sent'});
 
         }else if(type=='Treader'){
 
-            await notificationSendALL("massage form admin",data,notification,1)
+            await notificationSendALL.sendAll("massage form admin",data,notification,1)
             
             return res.status(200).json({state:1,message:'notfication sent'});
 
 
         }else if(type=='Customer'){
             console.debug('customer run')
-            await notificationSendALL("massage form admin",data,notification,0)
+            await notificationSendALL.sendAll("massage form admin",data,notification,0)
             
             return res.status(200).json({state:1,message:'notfication sent'});
 
@@ -2254,7 +2254,7 @@ const AcceptAdRequest=async(req,res,next)=>{
             title:'your ad is accepted',
             body:`${ad.title} is accepted`
         }
-        await notificationSend("adRequest is accepted",data,notification,ad.Creator,1)
+        await notificationSend.send("adRequest is accepted",data,notification,ad.Creator,1)
 
 
         return res.status(200).json({state:1,message:'ad accepted'})
