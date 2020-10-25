@@ -37,10 +37,6 @@ function datediff(first, second) {
     return Math.round((second-first)/(1000*60*60*24));
 }
 
-
-
-
-
 const Book=async (req,res,next)=>{
     console.debug('request body',req.body)
     try{
@@ -199,7 +195,7 @@ const Book=async (req,res,next)=>{
        })
        await newRequest.save()
        var editCustomer=await CustomerUser.findById(req.userId) 
-        var editTreder =await trederUser.findById(ad.Creator)
+        var editTreder=await trederUser.findById(AD.Creator) 
        
        
        const data={
@@ -225,10 +221,8 @@ const Book=async (req,res,next)=>{
         if(req.user.lang==1){
             message='تم ارسال الطلب'
         }
-        res.status(200).json({state:1,msg:message})
-console.debug('typeeeee ',typeof notificationSend)      
-      await notificationSend("RequestRecived",data,notification,ad.Creator,1)
- 
+      
+   //   await notificationSend("RequestRecived",data,notification,ad.Creator,1)
       var Emessage=`
       <h4>${editCustomer.name} wants to rent ${ad.title} 
       check your account
@@ -244,7 +238,7 @@ console.debug('typeeeee ',typeof notificationSend)
          `
       }
        await sendEmail(editTreder.email,'New Request',Emessage)
-      
+       res.status(200).json({state:1,msg:message})
 
 }catch(err){
         console.debug(err)
