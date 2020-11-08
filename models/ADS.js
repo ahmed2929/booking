@@ -76,7 +76,7 @@ const ADSchema = new schema({
     terms:String,
     Accespted:{
         type:Boolean,
-        default:true
+        default:false
     }
     
 }, {timestamps:true});

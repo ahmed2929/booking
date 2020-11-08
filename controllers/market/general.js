@@ -452,8 +452,8 @@ const getAllads=async (req,res,next)=>{
     const page = req.query.page *1 || 1;
     const itemPerPage = 10; 
     try{
-      const  totalAds = await ADS.find({}).countDocuments();   
-    const allAds=await ADS.find()
+      const  totalAds = await ADS.find({Accespted:true}).countDocuments();   
+    const allAds=await ADS.find({Accespted:true})
     .sort({'star':-1})
     .populate({path:'services.serviceType',select:'name image -_id ' , populate: { path: 'Creator',select:'name mobile email'}})
     //.populate({ path: 'ads', populate: { path: 'services.serviceType'}})

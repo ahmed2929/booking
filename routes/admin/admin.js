@@ -301,8 +301,10 @@ Router.get('/suggests',verfiyToken,controller.suggest)
 
 Router.get('/getAllWithDarwRequests',verfiyToken,controller.getAllWithDarwRequests)
 Router.post('/ChangWithDrawStatus',verfiyToken,controller.ChangWithDrawStatus)
-  
-    
+Router.delete('/deleteAppartmetbyID',verfiyToken,controller.deleteById)
+Router.get('/getShopIncome',verfiyToken,controller.getShopIncome)
+
+
 //llsl
 
 module.exports=Router

@@ -11,14 +11,15 @@ const ADS=require('../../models/ADS')
 const TopView=require('../../models/topView')
 const customer=require('../../models/CustomerUser')
 const treder=require('../../models/TrederUsers')
+const TrederUsers=require('../../models/TrederUsers')
 const AvilableService=require('../../models/AvilableServices')
-const Order=require('../../models/order')
+const Order=require('../../models/order');
+const Money =require('../../models/money')
 const { connected } = require('process');
 const path=require('path')
 const notificationSend=require('../../helpers/send-notfication')
 const notificationSendALL=require('../../helpers/send-notfication')
 const policy =require('../../models/policy')
-
 //const validatePhoneNumber = require('validate-phone-number-node-js');
 //const nodemailerMailgun=require('../../../helpers/sendEmail');
 const fs=require('fs');
@@ -278,7 +279,7 @@ var CreateProduct=async (req,res,next)=>{
 
     const imageUrl = req.files;
     var catigo ;
-    catigo= await Catigory.findById(CatigoryID);
+    catigo= await Catigory.findById(CatigoryID.toString());
     
     if(!catigo){
             const error = new Error('catigory not Found');
@@ -335,7 +336,7 @@ var CreateProduct=async (req,res,next)=>{
         try{
             const AdId=req.body.productID
            // console.debug(AdId)
-            const product=await Product.findById(AdId)
+            const product=await Product.findById(AdId.toString())
             if(!product){
             const error = new Error('No product found !!');
             error.statusCode = 404 ;
@@ -364,7 +365,7 @@ var CreateProduct=async (req,res,next)=>{
     
         const imageUrl = req.files;
         var catigo 
-        catigo= await Catigory.findById(CatigoryID)
+        catigo= await Catigory.findById(CatigoryID.toString())
         console.debug(catigo)
         if(!catigo){
             const error = new Error('catigory not found');
@@ -403,7 +404,7 @@ var CreateProduct=async (req,res,next)=>{
             }
             await oldCat.save()
     
-               var catonew=await Catigory.findById(CatigoryID)
+               var catonew=await Catigory.findById(CatigoryID.toString())
                catonew.products.push(product._id)
                   await catonew.save()
     
@@ -452,7 +453,7 @@ var CreateProduct=async (req,res,next)=>{
         }
     
             const productID =req.body.produtId
-            const product=await Product.findById(productID)
+            const product=await Product.findById(productID.toString())
             if(!product){
             const error = new Error('No product found !!');
             error.statusCode = 404 ;
@@ -463,7 +464,7 @@ var CreateProduct=async (req,res,next)=>{
             
            // console.debug(AD)
             console.debug(product)
-        const catigory=await Catigory.findById(product.catigory)
+        const catigory=await Catigory.findById(product.catigory.toString())
         console.debug(catigory)
         const catigoryIndex=await catigory.products.indexOf(productID.toString())
         if (catigoryIndex > -1) {
@@ -472,7 +473,7 @@ var CreateProduct=async (req,res,next)=>{
           }
           console.debug( 'catigory array',catigory.ads)
           await catigory.save()
-         await Product.findByIdAndDelete(productID);
+         await Product.findByIdAndDelete(productID.toString());
     
     
           product.images.forEach((i) => {
@@ -511,7 +512,7 @@ var CreateProduct=async (req,res,next)=>{
         }
     
             const {adId,position} =req.body
-            const ad=await ADS.findById(adId)
+            const ad=await ADS.findById(adId.toString())
             if(!ad){
             const error = new Error('No ad found !!');
             error.statusCode = 404 ;
@@ -565,7 +566,7 @@ var CreateProduct=async (req,res,next)=>{
         }
     
             const {adId} =req.body
-           await topView.findByIdAndDelete(adId)
+           await topView.findByIdAndDelete(adId.toString())
     
     
          res.status(200).json({state:1,message:'ad deleted from top view'});
@@ -636,7 +637,7 @@ var CreateProduct=async (req,res,next)=>{
         const {name,arb_name,CatId}=req.body;
         var newname=name.toLowerCase();
         var catigo 
-        catigo= await MarketCatigory.findById(CatId);
+        catigo= await MarketCatigory.findById(CatId.toString());
         if(!catigo){
             const error = new Error('catigory not found');
             error.statusCode = 404 ;
@@ -677,9 +678,9 @@ var CreateProduct=async (req,res,next)=>{
         const {userId,block,status}=req.body;
         var user 
        if(status=='customer'){
-         user = await customer.findById(userId);
+         user = await customer.findById(userId.toString());
        }else if(status=='treder'){
-         user = await treder.findById(userId);
+         user = await treder.findById(userId.toString());
        }
         
         if(!user){
@@ -844,7 +845,7 @@ var CreateProduct=async (req,res,next)=>{
             name=name.toLowerCase();
             const imageUrl = req.files;
             console.debug(name)
-            const service = await AvilableService.findById(ServiceId);
+            const service = await AvilableService.findById(ServiceId.toString());
            
             if(!service){
                 const error = new Error('service not found');
@@ -1161,6 +1162,39 @@ try{
                             })
                         })
                              break;
+                    
+                             case 'rented':
+                                TotalNum= await Request.find({
+                                    "RequestData.status":1,
+                                     // "RequestData.EndDate":{ $gt: Date.now() },
+                                       //  AD:AdId.toString()
+                                })
+                                .countDocuments()
+                                     break;
+                            
+                                     case 'rentedToDay':
+                                        var now = new Date();
+                                        var startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                        var startOfTow = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1);
+
+                                        TotalNum= await Request.find({
+                                            "RequestData.status":1,
+                                             // "RequestData.EndDate":{ $gt: Date.now() },
+                                               //  AD:AdId.toString()
+                                               createdAt: { $gte: startOfToday, $lt: startOfTow } 
+                                        })
+                                        .countDocuments()
+                                             break;
+
+                                             case 'SoldProducts':
+                                                
+                                                var product= await Product.find()
+                                                TotalNum=product.reduce((x,y)=>{
+                                                    return x.sold+y.sold
+                                                })
+                                                
+                                                break;
+                        
                 
     
         default:
@@ -1201,7 +1235,7 @@ try{
             }
             const id=req.params.id;
             if(id){
-                const ad =await ADS.findById(id)
+                const ad =await ADS.findById(id.toString())
                 if(!ad){
                     const error = new Error('user not found');
                 error.statusCode = 404 ;
@@ -1245,7 +1279,7 @@ try{
             }
             const id=req.params.id;
             if(id){
-                const order =await Order.findById(id)
+                const order =await Order.findById(id.toString())
                 if(!order){
                     const error = new Error('order not found');
                 error.statusCode = 404 ;
@@ -1385,7 +1419,7 @@ const editPromo=async(req,res,next)=>{
     }
     const {name,descPercent,PromoId}=req.body;
 
-    const promo=await PromoCode.findById(PromoId)
+    const promo=await PromoCode.findById(PromoId.toString())
     promo.name=name
     promo.descPercent=descPercent
 
@@ -1417,7 +1451,7 @@ const deletePromo=async(req,res,next)=>{
     }
     const {PromoId}=req.body;
 
-    await PromoCode.findByIdAndDelete(PromoId)
+    await PromoCode.findByIdAndDelete(PromoId.toString())
     
         res.status(200).json({state:1,msg:'promo deleted '})
 
@@ -1628,7 +1662,7 @@ const getSupportMessagesFromUsers=async(req,res,next)=>{
        const {status,id,page}=req.query
        if(id){
            
-        const isuue=await Isuues.findById(id)
+        const isuue=await Isuues.findById(id.toString())
         .populate({path:'Cuser',select:'name email _id photo blocked emailVerfied status'})
         .populate({path:'Tuser',select:'name email _id photo blocked emailVerfied status'})
         if(!isuue){
@@ -1717,7 +1751,7 @@ const AnswerSupport=async(req,res,next)=>{
         
        const {id,answer}=req.body
        
-        var isuue=await Isuues.findById(id)
+        var isuue=await Isuues.findById(id.toString())
        
         if(!isuue){
            return res.status(404).json({state:0,mgs:"isuue not found"})
@@ -1785,7 +1819,7 @@ const editFQ=async(req,res,next)=>{
         }
 
         const {FQID,question,answer}=req.body
-       await FQ.findByIdAndUpdate(FQID,{
+       await FQ.findByIdAndUpdate(FQID.toString(),{
         question,
         answer
        })
@@ -1818,7 +1852,7 @@ const deleteFQ=async(req,res,next)=>{
         }
 
         const {FQID}=req.body
-       await FQ.findByIdAndDelete(FQID)
+       await FQ.findByIdAndDelete(FQID.toString())
        
         
         res.status(200).json({state:1,msg:'FQ deleted'})
@@ -1842,7 +1876,7 @@ const getFQ=async(req,res,next)=>{
      const {id}=req.params
 
         if(id){
-           const fq= await FQ.findById(id)
+           const fq= await FQ.findById(id.toString())
           return res.status(200).json({state:1,fq})
         }    
         const TotalNumfqs= await FQ.find().countDocuments()
@@ -1909,7 +1943,7 @@ const deleteCity=async(req,res,next)=>{
         }
 
         const {cityId}=req.body
-       await City.findByIdAndDelete(cityId)
+       await City.findByIdAndDelete(cityId.toString())
      
         
         res.status(200).json({state:1,msg:"city delted"})
@@ -1931,7 +1965,7 @@ const suggest=async(req,res,next)=>{
         const {id}=req.params
         console.debug('id',id)
        if(id){
-        const result =await Suggest.findById(id)
+        const result =await Suggest.findById(id.toString())
         .populate({path:'Cuser Tuser ',select:'name photo status '})
         .lean()
 
@@ -2139,9 +2173,9 @@ var sendNotifcationToMobile=async (req,res,next)=>{
             return next(error)
             }
             var user
-            var Tuser=await treder.findById(userId)
+            var Tuser=await treder.findById(userId.toString())
             if(!Tuser){
-                var Cuser=await Cuser.findById(userId)
+                var Cuser=await Cuser.findById(userId.toString())
                 if(!Cuser){
                     const error = new Error('user is not found');
                     error.statusCode = 422 ;
@@ -2195,7 +2229,7 @@ const getAdRequest=async(req,res,next)=>{
      const {id}=req.params
 
         if(id){
-           const ad= await ADS.findById(id)
+           const ad= await ADS.findById(id.toString())
           return res.status(200).json({state:1,ad})
         }    
         const TotalNumfqs= await ADS.find({
@@ -2225,21 +2259,22 @@ const AcceptAdRequest=async(req,res,next)=>{
     try{
         const page=req.query.page
         const itemPerPage=10
-     const {id}=req.params
+     const {id}=req.query
 
      if(!id){
         const error = new Error('id is require');
             error.statusCode = 422 ;
-            error.data = errors.array();
+            //error.data = error.array();
             return next(error) ; 
      }  
 
        
-           const ad= await ADS.findById(id)
+           const ad= await ADS.findById(id.toString())
+           const user=await TrederUsers.findById(ad.Creator.toString())
           if(!ad){
             const error = new Error('ad not found');
             error.statusCode = 422 ;
-            error.data = errors.array();
+           // error.data = error.array();
             return next(error) ; 
           }
           ad.Accespted=true
@@ -2255,6 +2290,22 @@ const AcceptAdRequest=async(req,res,next)=>{
             body:`${ad.title} is accepted`
         }
         await notificationSend.send("adRequest is accepted",data,notification,ad.Creator,1)
+
+        var Emessage=`
+        <h4>your ad request is now accepted ad name is ${ad.title} </h4>
+        
+        `
+
+        if(user.lang==1){
+            Emessage=`
+        <h4>لقد تم الموافقة علي اعلان ${ad.title}   </h4>
+            
+            `
+        }
+
+
+        await sendEmail(user.email,'news',Emessage)
+
 
 
         return res.status(200).json({state:1,message:'ad accepted'})
@@ -2285,7 +2336,7 @@ const SetDeleverToTrue=async(req,res,next)=>{
      }  
 
        
-           const ad= await order.findById(id)
+           const ad= await order.findById(id.toString())
           if(!ad){
             const error = new Error('order not found');
             error.statusCode = 422 ;
@@ -2379,7 +2430,143 @@ var editPolicy=async(req,res,next)=>{
 }
       
 
+var deleteById=async (req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+            console.debug(errors)
+    if(!errors.isEmpty()){
+        var message='validation faild'
+        if(req.user.lang==1){
+            message='بينات غير صحيحة'
+        }
+        const error = new Error(message);
+        error.statusCode = 422 ;
+        error.data = errors.array();
+        return next(error) ; 
+    }
 
+        const AdId=req.body.ADId
+            console.debug('req.body',req.body)
+        const AD=await ADS.findById(AdId.toString())
+        console.debug('AD is ** ' ,AD)
+        if(!AD){
+        const error = new Error('No AD found !!');
+        error.statusCode = 404 ;
+        return next( error) ;
+
+        }
+    
+        // if(AD.Creator.toString() !=req.userId.toString()){
+        // const error = new Error('unautharized request');
+        // error.statusCode = 403 ;
+        // return next( error) ;
+        // }
+        
+       // console.debug(AD)
+        const request =await Request.findOne({
+           "RequestData.status":1,
+            "RequestData.EndDate":{ $gt: Date.now() },
+            AD:AdId.toString()
+        })
+        console.debug(request)
+        if(request){
+            var message='the treader alreay accepted request for this ad wait till all requests expire'
+          
+            const error = new Error(message);
+            error.statusCode = 422 ;
+            return next(error) ; 
+        }
+
+       const user=await TrederUsers.findById(AD.Creator.toString())
+      const userIndex=user.MyWonAds.indexOf(AdId.toString())
+         if (userIndex > -1) {
+             user.MyWonAds.splice(userIndex, 1);
+           }
+           console.debug('AD.catigory**',AD.catigory)
+     const catigory=await MarketCatigory.findById(AD.catigory.toString())
+     console.debug('catigory***',catigory)
+     const catigoryIndex=await catigory.ads.indexOf(AdId.toString())
+     if (catigoryIndex > -1) {
+         console.debug(catigoryIndex)
+         catigory.ads.splice(catigoryIndex, 1);
+       }
+       console.debug( 'catigory array',catigory.ads)
+       await catigory.save()
+       await user.save()
+
+      await ADS.findByIdAndDelete(AdId.toString());
+       await TopView.deleteOne({
+          ad:AdId
+       })
+
+      var MailingList=await Request.find({
+        AD:AdId,
+
+      }).populate({path:'from',select:'email'})
+      .select('from')
+      MailingList=MailingList.map(obj=>{
+          return obj.from.email
+      })
+     
+
+
+     const deleted= await Request.deleteMany({
+         AD:AdId
+       })
+
+      console.debug('deleted',deleted)
+    
+       AD.images.forEach((i) => {
+          console.debug(i)
+        fs.unlink(path.join(i),(err)=>{
+        console.debug(err)
+        });
+  
+   });
+   var message='apparment deleted Sucessfully'
+ 
+
+    await res.status(200).json({state:1,message:message});
+     if(MailingList){
+   await sendEmail(MailingList,'News',`
+       your request to rent ${AD.title} has been removed because the owner removed
+       the AD form the market try to see other appartments in the market
+      
+      `)
+     }
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+
+}
+
+
+const getShopIncome=async(req,res,next)=>{
+    try{
+        
+
+        
+           const income= await Money.find()
+          return res.status(200).json({state:1,income:income[0].TotalCach})
+            
+      
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+    
+
+}
 
 module.exports={
     register,
@@ -2425,8 +2612,9 @@ module.exports={
     AcceptAdRequest,
     SetDeleverToTrue,
     createPolicy,
-    editPolicy
-    
+    editPolicy,
+    deleteById,
+    getShopIncome
 
 
 

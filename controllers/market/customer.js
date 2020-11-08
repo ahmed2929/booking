@@ -1081,7 +1081,7 @@ const MakeOrder=async(req,res,next)=>{
        var checkoutId= paymentId
         const user =await CustomerUser.findById(req.userId)
         .populate({ path: 'cart', populate: { path: 'product'}})
-
+       var cartProducts=[]
         if(!user){
             const error = new Error('user not found');
             error.statusCode = 422 ;
@@ -1118,6 +1118,8 @@ const MakeOrder=async(req,res,next)=>{
             for(let elem of user.cart){
             
                 const editProduct= await Product.findById(elem.product._id)
+                cartProducts.push(`${editProduct.title} `)
+
                editProduct.avilableNumber-=elem.numberNeeded
                editProduct.sold+=elem.numberNeeded
                    await editProduct.save()
@@ -1144,6 +1146,30 @@ const MakeOrder=async(req,res,next)=>{
             }
             newMoney.TotalCach+=Number(finalPrice);
             await newMoney.save()
+
+            var Emessage=`
+            <h4>your order to pay { ${cartProducts} } is created </h4>
+           <h3> methodOfPayment:'cach'</h3>
+           <h3> totalprice:${cartPrice}</h3>
+           <h3> finalPrice:${finalPrice} </h3>
+           <h3> discountPercent:${descPerc} </h3>
+            
+            `
+    
+            if(user.lang==1){
+                Emessage=`
+            
+                <h4> { ${cartProducts} } تم معالجة طلبك لشراء </h4>
+                <h3> وسيلة الدفع : نقدي</h3>
+                <h3> ${cartPrice} : السعر الاجمالي</h3>
+                <h3> ${finalPrice}: السعر النهائي </h3>
+                <h3> ${descPerc} : نسبة الخصم </h3>
+                
+                `
+            }
+    
+    
+            await sendEmail(user.email,'shop order',Emessage)
 
 
 
