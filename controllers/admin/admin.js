@@ -2430,7 +2430,7 @@ var editPolicy=async(req,res,next)=>{
 }
       
 
-var deleteById=async (req,res,next)=>{
+var deleteADById=async (req,res,next)=>{
     try{
         const errors = validationResult(req);
             console.debug(errors)
@@ -2503,7 +2503,7 @@ var deleteById=async (req,res,next)=>{
         AD:AdId,
 
       }).populate({path:'from',select:'email'})
-      .select('from')
+      .select('from to')
       MailingList=MailingList.map(obj=>{
           return obj.from.email
       })
@@ -2527,13 +2527,50 @@ var deleteById=async (req,res,next)=>{
  
 
     await res.status(200).json({state:1,message:message});
-     if(MailingList){
-   await sendEmail(MailingList,'News',`
-       your request to rent ${AD.title} has been removed because the owner removed
-       the AD form the market try to see other appartments in the market
-      
-      `)
-     }
+  
+
+     var message=`
+     
+     your ad  ${AD.title} is deleted from market
+    
+    
+
+     `
+if(user.lang==1){
+     message=`
+     
+     ${AD.title} لقد تم مسح 
+  من السوق 
+   
+
+    `
+
+}
+//console.debug('request is',request)
+//console.debug('request[0].to.email',request[0].to.email)
+
+     await sendEmail(user.email,'News',message)
+
+     const data={
+       
+    }
+    var notification={
+        title:'news',
+        body:`your ad  ${AD.title} is deleted from market`
+    }
+
+         if(user.lang==1){
+             notification={
+                 title:'اخبار ',
+                 body:`${AD.title} تم حزف اعلانك  `
+             }
+         }
+
+     
+    console.debug(user.email)
+
+     await notificationSend.send("news",data,notification,user._id,0)
+
 
 
     }catch(err){
@@ -2567,6 +2604,164 @@ const getShopIncome=async(req,res,next)=>{
     
 
 }
+
+
+
+var refuseADbyID=async (req,res,next)=>{
+    try{
+        const errors = validationResult(req);
+            console.debug(errors)
+    if(!errors.isEmpty()){
+        var message='validation faild'
+        if(req.user.lang==1){
+            message='بينات غير صحيحة'
+        }
+        const error = new Error(message);
+        error.statusCode = 422 ;
+        error.data = errors.array();
+        return next(error) ; 
+    }
+
+        const AdId=req.body.ADId
+            console.debug('req.body',req.body)
+        const AD=await ADS.findById(AdId.toString())
+        console.debug('AD is ** ' ,AD)
+        if(!AD){
+        const error = new Error('No AD found !!');
+        error.statusCode = 404 ;
+        return next( error) ;
+
+        }
+    
+        // if(AD.Creator.toString() !=req.userId.toString()){
+        // const error = new Error('unautharized request');
+        // error.statusCode = 403 ;
+        // return next( error) ;
+        // }
+        
+       // console.debug(AD)
+        const request =await Request.findOne({
+           "RequestData.status":1,
+            "RequestData.EndDate":{ $gt: Date.now() },
+            AD:AdId.toString()
+        })
+        console.debug(request)
+        if(request){
+            var message='the treader alreay accepted request for this ad wait till all requests expire'
+          
+            const error = new Error(message);
+            error.statusCode = 422 ;
+            return next(error) ; 
+        }
+
+       const user=await TrederUsers.findById(AD.Creator.toString())
+      const userIndex=user.MyWonAds.indexOf(AdId.toString())
+         if (userIndex > -1) {
+             user.MyWonAds.splice(userIndex, 1);
+           }
+           console.debug('AD.catigory**',AD.catigory)
+     const catigory=await MarketCatigory.findById(AD.catigory.toString())
+     console.debug('catigory***',catigory)
+     const catigoryIndex=await catigory.ads.indexOf(AdId.toString())
+     if (catigoryIndex > -1) {
+         console.debug(catigoryIndex)
+         catigory.ads.splice(catigoryIndex, 1);
+       }
+       console.debug( 'catigory array',catigory.ads)
+       await catigory.save()
+       await user.save()
+
+      await ADS.findByIdAndDelete(AdId.toString());
+       await TopView.deleteOne({
+          ad:AdId
+       })
+
+      var MailingList=await Request.find({
+        AD:AdId,
+
+      }).populate({path:'from',select:'email'})
+      .select('from to')
+      MailingList=MailingList.map(obj=>{
+          return obj.from.email
+      })
+     
+
+
+     const deleted= await Request.deleteMany({
+         AD:AdId
+       })
+
+      console.debug('deleted',deleted)
+    
+       AD.images.forEach((i) => {
+          console.debug(i)
+        fs.unlink(path.join(i),(err)=>{
+        console.debug(err)
+        });
+  
+   });
+   var message='apparment refused Sucessfully'
+ 
+
+    await res.status(200).json({state:1,message:message});
+  
+
+     var message=`
+     
+     your ad  ${AD.title} is refused 
+    
+    
+
+     `
+if(user.lang==1){
+     message=`
+     
+     ${AD.title} لقد تم رفض 
+  من السوق 
+   
+
+    `
+
+}
+//console.debug('request is',request)
+//console.debug('request[0].to.email',request[0].to.email)
+
+     await sendEmail(user.email,'News',message)
+
+     const data={
+       
+    }
+    var notification={
+        title:'news',
+        body:`your ad  ${AD.title} is refused from market`
+    }
+
+         if(user.lang==1){
+             notification={
+                 title:'اخبار ',
+                 body:`${AD.title} تم رفض اعلانك  `
+             }
+         }
+
+     
+    console.debug(user.email)
+
+     await notificationSend.send("news",data,notification,user._id,0)
+
+
+
+    }catch(err){
+        console.debug(err)
+            if(!err.statusCode){
+                err.statusCode = 500; 
+            }
+            return next(err);
+    }
+
+}
+
+
+
 
 module.exports={
     register,
@@ -2613,8 +2808,9 @@ module.exports={
     SetDeleverToTrue,
     createPolicy,
     editPolicy,
-    deleteById,
-    getShopIncome
+    deleteADById,
+    getShopIncome,
+    refuseADbyID
 
 
 

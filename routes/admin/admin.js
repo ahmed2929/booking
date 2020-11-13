@@ -301,7 +301,9 @@ Router.get('/suggests',verfiyToken,controller.suggest)
 
 Router.get('/getAllWithDarwRequests',verfiyToken,controller.getAllWithDarwRequests)
 Router.post('/ChangWithDrawStatus',verfiyToken,controller.ChangWithDrawStatus)
-Router.post('/deleteAppartmetbyID',verfiyToken,controller.deleteById)
+Router.post('/deleteAppartmetbyID',verfiyToken,controller.deleteADById)
+Router.post('/refuseADbyID',verfiyToken,controller.refuseADbyID)
+
 Router.get('/getShopIncome',verfiyToken,controller.getShopIncome)
 
 
